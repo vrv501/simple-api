@@ -1,0 +1,119 @@
+run:
+  timeout: 30m
+  tests: false
+  skip-dirs-use-default: true
+
+issues:
+  exclude-rules:
+    - linters:
+        - lll
+      source: "^//go:generate "
+  exclude-files:
+    - ".*mock\\.go$"
+    - ".*test\\.go$"
+    - ".*\\.gen\\.go$"
+    - ".*\\.generated\\.go$"
+    - ".*\\.pb\\.go$"
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  new: false
+  fix: false
+
+linters:
+  enable-all: true
+  disable:
+    - contextcheck
+    - cyclop
+    - deadcode
+    - decorder
+    - depguard
+    - dogsled
+    - dupword
+    - err113
+    - errchkjson
+    - execinquery
+    - exhaustivestruct
+    - exhaustruct
+    - exportloopref
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - gci
+    - ginkgolinter
+    - gocognit
+    - goconst	
+    - gocyclo
+    - godot
+    - godox
+    - gofumpt
+    - goheader
+    - golint
+    - gomnd
+    - gomodguard
+    - gosmopolitan 
+    - grouper
+    - ifshort
+    - importas
+    - inamedparam
+    - interfacebloat	
+    - interfacer
+    - ireturn
+    - loggercheck
+    - maintidx
+    - maligned
+    - misspell
+    - nakedret
+    - nlreturn		
+    - nosnakecase
+    - paralleltest
+    - prealloc
+    - scopelint
+    - structcheck
+    - stylecheck
+    - tagalign
+    - tagliatelle
+    - testableexamples
+    - testpackage
+    - varcheck
+    - varnamelen
+    - wrapcheck
+    - wsl
+    - zerologlint
+
+linters-settings:
+    lll:
+      line-length: 128
+      tab-width: 4
+    
+    dupl:
+      threshold: 120
+    
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+    
+    gosec:
+      exclude-generated: true
+    
+    goimports:
+      local-prefixes: github.com/org/project # UPDATE ME
+
+    exhaustive:
+      check:
+        - switch
+        - map
+    
+    gocritic:
+      settings:
+        captLocal:
+          paramsOnly: false
+        underef:
+          skipRecvDeref: false
+    
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment
+      settings:
+        shadow:
+          strict: true

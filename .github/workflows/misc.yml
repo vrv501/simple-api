@@ -1,0 +1,28 @@
+name: Misc Workflows
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:  # Default: opened, reopened, synchronize
+    branches:
+      - master
+      - main
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  gitleaks-scan:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
+      - name: GitLeaks Scan
+        uses: gitleaks/gitleaks-action@44c470ffc35caa8b1eb3e8012ca53c2f9bea4eb5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

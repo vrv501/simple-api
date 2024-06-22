@@ -1,0 +1,131 @@
+name: Go Workflows
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - "v*"
+  pull_request:  # Default: opened, reopened, synchronize
+    branches:
+      - master
+      - main
+
+concurrency:
+  group: '${{ github.workflow }} @ ${{ github.ref }}'
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: golangci-lint
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      - name: Setup Go ToolChain
+        uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
+        with:
+          go-version-file: "./go.mod"
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@a4f60bb28d35aeee14e6880718e0c85ff1882e64
+        with:
+          version: "latest"
+          args: "--config=./.golangci.yml"
+
+  coverage:
+    name: code-coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      - name: Setup Go ToolChain
+        uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
+        with:
+          go-version-file: "./go.mod"
+      - name: Calculate Code Coverage
+        run: |
+          make coverage
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: ${{ github.repository }}
+          files: "./coverage/coverage.out"
+          codecov_yml_path: "./.codecov.yml"
+
+  build-and-analyze:
+    name: codeql-analysis
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - coverage
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+    - name: Setup Go ToolChain
+      uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7
+      with:
+        go-version-file: "./go.mod"
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@23acc5c183826b7a8a97bce3cecc52db901f8251
+      with:
+        languages: go
+        build-mode: manual
+    - name: Build App
+      run: |
+        make build
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@23acc5c183826b7a8a97bce3cecc52db901f8251
+      with:
+        category: "/language:go"
+
+  build-container-image:
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    env:
+      REGISTRY: ghcr.io
+    name: Build
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - coverage
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      - name: Extract metadata
+        id: img-metadata
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}
+      - name: Login to Container Registry
+        if: ${{ github.event_name != 'pull_request' && github.ref_type == 'tag' }}
+        uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          logout: true
+      - name: Build and Push
+        id: build-img
+        uses: docker/build-push-action@f6010ea70151369b06f0194be1051fbbdff851b2
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' && github.ref_type == 'tag' }}
+          tags: ${{ steps.img-metadata.outputs.tags }}
+          labels: ${{ steps.img-metadata.outputs.labels }}
+          platforms: linux/amd64
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@7c2007bcb556501da015201bcba5aa14069b74e2
+        with:
+          image-ref: ${{ steps.build-img.outputs.imageid }}
+          exit-code: "1"
+          ignore-unfixed: true
+          trivyignores: "./.trivyignore"
