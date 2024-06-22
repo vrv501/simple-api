@@ -17,6 +17,10 @@
 # Dependency directories (remove the comment below to include it)
 vendor/
 
+# Local Directories
+coverage/
+bin/
+
 # env vars
 *.env 
 
