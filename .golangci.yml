@@ -96,7 +96,7 @@ linters-settings:
       exclude-generated: true
     
     goimports:
-      local-prefixes: github.com/org/project # UPDATE ME
+      local-prefixes: github.com/vrv501/simple-api
 
     exhaustive:
       check:
