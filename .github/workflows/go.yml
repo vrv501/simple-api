@@ -73,7 +73,7 @@ jobs:
       with:
         go-version-file: "./go.mod"
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@afb54ba388a7dca6ecae48f608c4ff05ff4cc77a
+      uses: github/codeql-action/init@eb055d739abdc2e8de2e5f4ba1a8b246daa779aa
       with:
         languages: go
         build-mode: manual
@@ -81,7 +81,7 @@ jobs:
       run: |
         make build
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@afb54ba388a7dca6ecae48f608c4ff05ff4cc77a
+      uses: github/codeql-action/analyze@eb055d739abdc2e8de2e5f4ba1a8b246daa779aa
       with:
         category: "/language:go"
 
