@@ -1,4 +1,4 @@
-FROM golang:1.22.6-bullseye AS builder
+FROM golang:1.23.0-bullseye AS builder
 WORKDIR /base
 COPY . .
 RUN make clean-build
