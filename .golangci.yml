@@ -1,119 +1,124 @@
+version: "2"
+
 run:
   timeout: 30m
   tests: false
-  skip-dirs-use-default: true
 
 issues:
-  exclude-rules:
-    - linters:
-        - lll
-      source: "^//go:generate "
-  exclude-files:
-    - ".*mock\\.go$"
-    - ".*test\\.go$"
-    - ".*\\.gen\\.go$"
-    - ".*\\.generated\\.go$"
-    - ".*\\.pb\\.go$"
   max-issues-per-linter: 0
   max-same-issues: 0
   new: false
   fix: false
 
 linters:
-  enable-all: true
+  default: all
   disable:
     - contextcheck
     - cyclop
-    - deadcode
     - decorder
     - depguard
     - dogsled
     - dupword
     - err113
     - errchkjson
-    - execinquery
-    - exhaustivestruct
     - exhaustruct
-    - exportloopref
     - forbidigo
     - forcetypeassert
     - funlen
-    - gci
     - ginkgolinter
+    - gochecknoglobals
+    - gochecknoinits
     - gocognit
-    - goconst	
+    - goconst
     - gocyclo
     - godot
     - godox
-    - gofumpt
     - goheader
-    - golint
-    - gomnd
     - gomodguard
-    - gosmopolitan 
+    - gosmopolitan
     - grouper
-    - ifshort
     - importas
     - inamedparam
-    - interfacebloat	
-    - interfacer
+    - interfacebloat
     - ireturn
     - loggercheck
     - maintidx
-    - maligned
     - misspell
+    - mnd
     - nakedret
-    - nlreturn		
-    - nosnakecase
+    - nlreturn
     - paralleltest
     - prealloc
-    - scopelint
-    - structcheck
-    - stylecheck
     - tagalign
     - tagliatelle
     - testableexamples
     - testpackage
-    - varcheck
     - varnamelen
     - wrapcheck
     - wsl
-    - zerologlint
-
-linters-settings:
-    lll:
-      line-length: 128
-      tab-width: 4
-    
+  settings:
     dupl:
       threshold: 120
-    
-    nolintlint:
-      require-explanation: true
-      require-specific: true
-    
-    gosec:
-      exclude-generated: true
-    
-    goimports:
-      local-prefixes: github.com/vrv501/simple-api
-
     exhaustive:
       check:
         - switch
         - map
-    
     gocritic:
       settings:
         captLocal:
           paramsOnly: false
         underef:
           skipRecvDeref: false
-    
     govet:
-      enable-all: true
       disable:
         - fieldalignment
+      enable-all: true
       settings:
         shadow:
           strict: true
+    lll:
+      line-length: 128
+      tab-width: 4
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - lll
+        source: '^//go:generate '
+    paths:
+      - .*mock\.go$
+      - .*test\.go$
+      - .*\.gen\.go$
+      - .*\.generated\.go$
+      - .*\.pb\.go$
+      - third_party$
+      - builtin$
+      - examples$
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/vrv501/simple-api
+  exclusions:
+    generated: lax
+    paths:
+      - .*mock\.go$
+      - .*test\.go$
+      - .*\.gen\.go$
+      - .*\.generated\.go$
+      - .*\.pb\.go$ 
+      - third_party$
+      - builtin$
+      - examples$
