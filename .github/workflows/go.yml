@@ -48,7 +48,7 @@ jobs:
         run: |
           make coverage
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@ad3126e916f78f00edff4ed0317cf185271ccc2d
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: ${{ github.repository }}
@@ -63,17 +63,20 @@ jobs:
       - coverage
     permissions:
       security-events: write
+      packages: read
       actions: read
       contents: read
     steps:
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with: 
+        fetch-depth: 0
     - name: Setup Go ToolChain
       uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32
       with:
         go-version-file: "./go.mod"
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@45775bd8235c68ba998cffa5171334d58593da47
+      uses: github/codeql-action/init@5378192d256ef1302a6980fffe5ca04426d43091
       with:
         languages: go
         build-mode: manual
@@ -81,7 +84,7 @@ jobs:
       run: |
         make build
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@45775bd8235c68ba998cffa5171334d58593da47
+      uses: github/codeql-action/analyze@5378192d256ef1302a6980fffe5ca04426d43091
       with:
         category: "/language:go"
 
@@ -92,7 +95,7 @@ jobs:
       packages: write
     env:
       REGISTRY: ghcr.io
-    name: Build
+    name: build-container-image
     runs-on: ubuntu-latest
     needs:
       - lint
@@ -102,7 +105,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Extract metadata
         id: img-metadata
-        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804
+        uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81
         with:
           images: ${{ env.REGISTRY }}/${{ github.repository }}
       - name: Login to Container Registry
@@ -115,7 +118,7 @@ jobs:
           logout: true
       - name: Build and Push
         id: build-img
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4
+        uses: docker/build-push-action@4f58ea79222b3b9dc2c8bbdd6debcef730109a75
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' && github.ref_type == 'tag' }}
