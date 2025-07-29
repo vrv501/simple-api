@@ -25,7 +25,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Setup Go ToolChain
-        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5
         with:
           go-version-file: "./go.mod"
       - name: golangci-lint
@@ -41,14 +41,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - name: Setup Go ToolChain
-        uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5
         with:
           go-version-file: "./go.mod"
       - name: Calculate Code Coverage
         run: |
           make coverage
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@ad3126e916f78f00edff4ed0317cf185271ccc2d
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: ${{ github.repository }}
@@ -63,17 +63,20 @@ jobs:
       - coverage
     permissions:
       security-events: write
+      packages: read
       actions: read
       contents: read
     steps:
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      with: 
+        fetch-depth: 0
     - name: Setup Go ToolChain
-      uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32
+      uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5
       with:
         go-version-file: "./go.mod"
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@45775bd8235c68ba998cffa5171334d58593da47
+      uses: github/codeql-action/init@5378192d256ef1302a6980fffe5ca04426d43091
       with:
         languages: go
         build-mode: manual
@@ -81,7 +84,7 @@ jobs:
       run: |
         make build
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@45775bd8235c68ba998cffa5171334d58593da47
+      uses: github/codeql-action/analyze@5378192d256ef1302a6980fffe5ca04426d43091
       with:
         category: "/language:go"
 
@@ -92,7 +95,7 @@ jobs:
       packages: write
     env:
       REGISTRY: ghcr.io
-    name: Build
+    name: build-container-image
     runs-on: ubuntu-latest
     needs:
       - lint
@@ -115,7 +118,7 @@ jobs:
           logout: true
       - name: Build and Push
         id: build-img
-        uses: docker/build-push-action@471d1dc4e07e5cdedd4c2171150001c434f0b7a4
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' && github.ref_type == 'tag' }}
@@ -123,7 +126,7 @@ jobs:
           labels: ${{ steps.img-metadata.outputs.labels }}
           platforms: linux/amd64
       - name: Run Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@6e7b7d1fd3e4fef0c5fa8cce1229c54b2c9bd0d8
+        uses: aquasecurity/trivy-action@dc5a429b52fcf669ce959baa2c2dd26090d2a6c4
         with:
           image-ref: ${{ steps.build-img.outputs.imageid }}
           exit-code: "1"
