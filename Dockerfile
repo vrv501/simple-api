@@ -3,7 +3,7 @@ WORKDIR /base
 COPY . .
 RUN make clean-build
 
-FROM debian:stable-20241202-slim
+FROM debian:stable-20250407-slim
 ARG APP_USER=app-user
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get upgrade -y && apt-get install -y ca-certificates && \
