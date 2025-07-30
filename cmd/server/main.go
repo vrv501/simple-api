@@ -10,17 +10,29 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 
+	ogenMiddleware "github.com/oapi-codegen/nethttp-middleware"
+
 	handler "github.com/vrv501/simple-api/internal/api-handler"
 	"github.com/vrv501/simple-api/internal/constants"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
+	"github.com/vrv501/simple-api/internal/middleware"
 )
 
 func main() {
 	ctx := signals.SetupSignalHandler()
+
+	spec, _ := genRouter.GetSwagger()
+	spec.Servers = nil
+	ogenMw := ogenMiddleware.OapiRequestValidatorWithOptions(spec, &ogenMiddleware.Options{
+		Options: openapi3filter.Options{
+			AuthenticationFunc: nil,
+		},
+	})
 
 	configLogger()
 	port := getPort()
@@ -34,8 +46,18 @@ func main() {
 		},
 	)
 	server := http.Server{
-		Addr:         fmt.Sprintf("0.0.0.0:%d", port),
-		Handler:      genRouter.HandlerFromMux(handler.NewHandler(), router),
+		Addr: fmt.Sprintf("0.0.0.0:%d", port),
+		Handler: genRouter.HandlerWithOptions(
+			genRouter.NewStrictHandler(handler.NewAPIHandler(), nil),
+			genRouter.StdHTTPServerOptions{
+				BaseRouter: router,
+				Middlewares: []genRouter.MiddlewareFunc{
+					middleware.AddRequestID,
+					middleware.PanicRecovery,
+					ogenMw,
+				},
+			},
+		),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 90 * time.Second,
 		IdleTimeout:  2 * time.Minute,
