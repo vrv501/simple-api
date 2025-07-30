@@ -45,9 +45,9 @@ func PanicRecovery(h http.Handler) http.Handler {
 			if err := recover(); err != nil {
 				stack := make([]byte, 4096)
 				stack = stack[:runtime.Stack(stack, false)]
-				log.Error().
-					Interface("Panic", err).
-					Str("Stack-Trace", string(stack)).
+				log.Ctx(r.Context()).Error().
+					Interface(constants.LogFieldPanic, err).
+					Str(constants.LogFieldStackTrace, string(stack)).
 					Msg("Recovered from panic")
 
 				w.Header().Set("Content-Type", "application/json")
