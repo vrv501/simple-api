@@ -52,7 +52,7 @@ func main() {
 			genRouter.StdHTTPServerOptions{
 				BaseRouter: router,
 				Middlewares: []genRouter.MiddlewareFunc{
-					middleware.AddRequestID,
+					middleware.Audit,
 					middleware.PanicRecovery,
 					ogenMw,
 				},
