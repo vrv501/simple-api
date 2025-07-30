@@ -48,7 +48,7 @@ clean:
 .PHONY: clean
 
 run:
-	@go run ./cmd/main.go
+	@go run ./cmd/server/main.go
 .PHONY: run
 
 clean-build: degenerate clean build

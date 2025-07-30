@@ -2,8 +2,6 @@ package constants
 
 const (
 	DefaultServerPort = 8300
-
-	MongoDB = "mongodb"
-
-	Postgres = "postgres"
+	MongoDB           = "mongodb"
+	Postgres          = "postgres"
 )
