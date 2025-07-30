@@ -1,4 +1,5 @@
-package: generated
+# yaml-language-server: $schema=https://raw.githubusercontent.com/oapi-codegen/oapi-codegen/HEAD/configuration-schema.json
+package: genRouter
 generate:
   std-http-server: true 
   strict-server: true 
@@ -6,4 +7,4 @@ generate:
   embedded-spec: true
 output-options:
   skip-prune: true
-output: internal/generated/server.gen.go
+output: router/router.gen.go
