@@ -11,7 +11,7 @@ import (
 	"github.com/vrv501/simple-api/internal/constants"
 )
 
-func AddRequestID(h http.Handler) http.Handler {
+func Audit(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet && r.URL.Path != "/status" {
 			requestID := r.Header.Get(constants.HeaderRequestID)
