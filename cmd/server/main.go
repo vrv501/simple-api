@@ -14,8 +14,9 @@ import (
 	"github.com/rs/zerolog/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 
-	"github.com/vrv501/go-template/internal/constants"
-	"github.com/vrv501/go-template/internal/generated"
+	handler "github.com/vrv501/simple-api/internal/api-handler"
+	"github.com/vrv501/simple-api/internal/constants"
+	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 )
 
 func main() {
@@ -34,7 +35,7 @@ func main() {
 	)
 	server := http.Server{
 		Addr:         fmt.Sprintf("0.0.0.0:%d", port),
-		Handler:      generated.HandlerFromMux(_, router),
+		Handler:      genRouter.HandlerFromMux(handler.NewHandler(), router),
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 90 * time.Second,
 		IdleTimeout:  2 * time.Minute,

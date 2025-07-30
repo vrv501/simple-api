@@ -1,4 +1,4 @@
-module github.com/vrv501/go-template
+module github.com/vrv501/simple-api
 
 go 1.24
 
