@@ -34,8 +34,8 @@ func main() {
 		},
 	})
 
-	configLogger()
-	port := getPort()
+	configLogger(ctx)
+	port := getPort(ctx)
 
 	router := http.NewServeMux()
 	router.HandleFunc("GET /status",
@@ -71,7 +71,7 @@ func main() {
 		// log.Fatal() will call os.Exit(1) which halts the entire program
 		if err := server.ListenAndServe(); err != nil &&
 			!errors.Is(err, http.ErrServerClosed) {
-			log.Fatal().Err(err).Msg("Failed to start server")
+			log.Ctx(ctx).Fatal().Err(err).Msg("Failed to start server")
 		}
 	}()
 
@@ -79,11 +79,11 @@ func main() {
 	timedCtx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 	if err := server.Shutdown(timedCtx); err != nil {
-		log.Fatal().Err(err).Msg("Failed to shutdown server")
+		log.Ctx(ctx).Fatal().Err(err).Msg("Failed to shutdown server")
 	}
 }
 
-func getPort() int {
+func getPort(ctx context.Context) int {
 	portStr := os.Getenv(constants.ServerPort)
 	if portStr == "" {
 		return constants.DefaultServerPort
@@ -91,17 +91,34 @@ func getPort() int {
 
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
-		log.Fatal().Err(err).Msgf("Invalid %s", constants.ServerPort)
+		log.Ctx(ctx).Fatal().Err(err).Msgf("Invalid %s", constants.ServerPort)
 	}
 	return port
 }
 
-func configLogger() {
-	log.Logger = zerolog.New(os.Stdout).With().Caller().Timestamp().Logger()
+func configLogger(ctx context.Context) {
+	zeroLogger := zerolog.New(os.Stdout).With().Caller().Timestamp().Logger()
+	zeroLogger.Hook(
+		zerolog.HookFunc(
+			func(e *zerolog.Event, _ zerolog.Level, _ string) {
+				ctx := e.GetCtx() // this will never return nil
+				requestID, _ := ctx.Value(constants.RequestIDKey).(string)
+				e.Str(constants.LogFieldRequestID, requestID)
+				method, _ := ctx.Value(constants.HTTPMethod).(string)
+				e.Str(constants.LogFieldHTTPMethod, method)
+				path, _ := ctx.Value(constants.URLPath).(string)
+				e.Str(constants.LogFieldURLPath, path)
+				clientIP, _ := ctx.Value(constants.ClientIPAddr).(string)
+				e.Str(constants.LogFieldClientIP, clientIP)
+			},
+		),
+	)
+
+	log.Logger = zeroLogger
 
 	logLevel, err := zerolog.ParseLevel(os.Getenv(constants.LogLevel))
 	if err != nil {
-		log.Fatal().Err(err).Msgf("Invalid %s", constants.LogLevel)
+		log.Ctx(ctx).Fatal().Err(err).Msgf("Invalid %s", constants.LogLevel)
 	}
 	if logLevel.String() == "" {
 		logLevel = zerolog.InfoLevel
