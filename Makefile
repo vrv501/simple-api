@@ -31,7 +31,7 @@ degenerate:
 .PHONY: degenerate
 
 generate: degenerate vendor
-	@go generate ./...
+	@go generate -x ./...
 .PHONY: generate
 
 test: vendor generate
