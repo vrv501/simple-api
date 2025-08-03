@@ -11,11 +11,10 @@ import (
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3filter"
+	ogenMiddleware "github.com/oapi-codegen/nethttp-middleware"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
-
-	ogenMiddleware "github.com/oapi-codegen/nethttp-middleware"
 
 	handler "github.com/vrv501/simple-api/internal/api-handler"
 	"github.com/vrv501/simple-api/internal/constants"
@@ -43,6 +42,7 @@ func main() {
 			w.WriteHeader(http.StatusOK)
 			byteArr, _ := json.Marshal(map[string]string{"status": "healthy"})
 			w.Write(byteArr)
+			w.Write([]byte("\n"))
 		},
 	)
 
