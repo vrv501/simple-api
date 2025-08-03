@@ -12,7 +12,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/hlog"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 
 	ogenMiddleware "github.com/oapi-codegen/nethttp-middleware"
@@ -25,36 +25,57 @@ import (
 
 func main() {
 	ctx := signals.SetupSignalHandler()
-
 	spec, _ := genRouter.GetSwagger()
 	spec.Servers = nil
 	ogenMw := ogenMiddleware.OapiRequestValidatorWithOptions(spec, &ogenMiddleware.Options{
 		Options: openapi3filter.Options{
-			AuthenticationFunc: nil,
+			AuthenticationFunc: func(_ context.Context, _ *openapi3filter.AuthenticationInput) error {
+				return nil
+			},
 		},
 	})
 
-	configLogger(ctx)
-	port := getPort(ctx)
-
+	logger := configLogger()
+	port := getPort(logger)
 	router := http.NewServeMux()
-	router.HandleFunc("GET /status",
+	router.HandleFunc(http.MethodGet+" "+constants.StatusPath,
 		func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			byteArr, _ := json.Marshal(map[string]string{"status": "healthy"})
 			w.Write(byteArr)
 		},
 	)
+
+	apiHandler := handler.NewAPIHandler()
+	defer apiHandler.Close()
+
 	server := http.Server{
 		Addr: fmt.Sprintf("0.0.0.0:%d", port),
 		Handler: genRouter.HandlerWithOptions(
-			genRouter.NewStrictHandler(handler.NewAPIHandler(), nil),
+			genRouter.NewStrictHandler(apiHandler, nil),
 			genRouter.StdHTTPServerOptions{
 				BaseRouter: router,
 				Middlewares: []genRouter.MiddlewareFunc{
-					middleware.Audit,
-					middleware.PanicRecovery,
+					/*
+						Order matters here.
+						Middleware is executed in order from reverse
+					*/
 					ogenMw,
+					middleware.EntryAudit,
+					hlog.RequestHandler(constants.LogFieldMethodAndURL),
+					hlog.RemoteAddrHandler(constants.LogFieldClientIP),
+					hlog.RequestIDHandler(constants.LogFieldRequestID, constants.HeaderRequestID),
+					middleware.PanicRecovery,
+					hlog.AccessHandler(
+						// The below function is a deferred call
+						func(r *http.Request, status, _ int, duration time.Duration) {
+							hlog.FromRequest(r).Info().
+								Int(constants.LogFieldStatus, status).
+								Str(constants.LogFieldLatency, duration.String()).
+								Msg("Exit Audit")
+						},
+					),
+					hlog.NewHandler(logger),
 				},
 			},
 		),
@@ -71,7 +92,7 @@ func main() {
 		// log.Fatal() will call os.Exit(1) which halts the entire program
 		if err := server.ListenAndServe(); err != nil &&
 			!errors.Is(err, http.ErrServerClosed) {
-			log.Ctx(ctx).Fatal().Err(err).Msg("Failed to start server")
+			logger.Fatal().Err(err).Msg("Failed to start server")
 		}
 	}()
 
@@ -79,11 +100,11 @@ func main() {
 	timedCtx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 	if err := server.Shutdown(timedCtx); err != nil {
-		log.Ctx(ctx).Fatal().Err(err).Msg("Failed to shutdown server")
+		logger.Fatal().Err(err).Msg("Failed to shutdown server")
 	}
 }
 
-func getPort(ctx context.Context) int {
+func getPort(logger zerolog.Logger) int {
 	portStr := os.Getenv(constants.ServerPort)
 	if portStr == "" {
 		return constants.DefaultServerPort
@@ -91,39 +112,21 @@ func getPort(ctx context.Context) int {
 
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
-		log.Ctx(ctx).Fatal().Err(err).Msgf("Invalid %s", constants.ServerPort)
+		logger.Fatal().Err(err).Msgf("Invalid %s", constants.ServerPort)
 	}
 	return port
 }
 
-func configLogger(ctx context.Context) {
-	zeroLogger := zerolog.New(os.Stdout).With().Caller().Timestamp().Logger()
-	zeroLogger.Hook(
-		zerolog.HookFunc(
-			func(e *zerolog.Event, _ zerolog.Level, _ string) {
-				ctx := e.GetCtx() // this will never return nil
-				requestID, _ := ctx.Value(constants.RequestIDKey).(string)
-				e.Str(constants.LogFieldRequestID, requestID)
-				method, _ := ctx.Value(constants.HTTPMethod).(string)
-				e.Str(constants.LogFieldHTTPMethod, method)
-				path, _ := ctx.Value(constants.URLPath).(string)
-				e.Str(constants.LogFieldURLPath, path)
-				clientIP, _ := ctx.Value(constants.ClientIPAddr).(string)
-				e.Str(constants.LogFieldClientIP, clientIP)
-			},
-		),
-	)
-
-	log.Logger = zeroLogger
-
+func configLogger() zerolog.Logger {
+	logger := zerolog.New(os.Stdout).With().Caller().Timestamp().Logger()
+	// To disable logging entirely, pass [zerolog.Disabled]
 	logLevel, err := zerolog.ParseLevel(os.Getenv(constants.LogLevel))
 	if err != nil {
-		log.Ctx(ctx).Fatal().Err(err).Msgf("Invalid %s", constants.LogLevel)
+		logger.Fatal().Err(err).Msgf("Invalid %s", constants.LogLevel)
 	}
 	if logLevel.String() == "" {
 		logLevel = zerolog.InfoLevel
 	}
 
-	// To disable logging entirely, pass [zerolog.Disabled]
-	zerolog.SetGlobalLevel(logLevel)
+	return logger.Level(logLevel)
 }

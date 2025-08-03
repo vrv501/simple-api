@@ -11,3 +11,8 @@ func NewAPIHandler() *ApiHandler {
 		//dbClient: db.NewDBHandler(),
 	}
 }
+
+// Closes all clients associated with api handler
+func (a *ApiHandler) Close() {
+	a.dbClient.Close()
+}

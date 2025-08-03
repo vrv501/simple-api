@@ -7,6 +7,8 @@ import (
 
 type DBHandler interface {
 	AddPet(ctx context.Context)
+
+	Close()
 }
 
 func NewDBHandler() DBHandler {
