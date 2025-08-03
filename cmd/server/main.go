@@ -60,12 +60,10 @@ func main() {
 						Order matters here.
 						Middleware is executed in order from reverse
 					*/
-					ogenMw,
 					middleware.EntryAudit,
 					hlog.RequestHandler(constants.LogFieldMethodAndURL),
 					hlog.RemoteAddrHandler(constants.LogFieldClientIP),
 					hlog.RequestIDHandler(constants.LogFieldRequestID, constants.HeaderRequestID),
-					middleware.PanicRecovery,
 					hlog.AccessHandler(
 						// The below function is a deferred call
 						func(r *http.Request, status, _ int, duration time.Duration) {
@@ -75,6 +73,8 @@ func main() {
 								Msg("Exit Audit")
 						},
 					),
+					ogenMw,
+					middleware.PanicRecovery,
 					hlog.NewHandler(logger),
 				},
 			},
