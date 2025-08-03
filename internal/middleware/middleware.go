@@ -17,8 +17,6 @@ func EntryAudit(h http.Handler) http.Handler {
 }
 
 func PanicRecovery(h http.Handler) http.Handler {
-	jsonBody, _ := json.Marshal(map[string]string{
-		"msg": http.StatusText(http.StatusInternalServerError)})
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -30,6 +28,8 @@ func PanicRecovery(h http.Handler) http.Handler {
 					Msg("Recovered from panic")
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusInternalServerError)
+				jsonBody, _ := json.Marshal(map[string]string{
+					"msg": http.StatusText(http.StatusInternalServerError)})
 				w.Write(jsonBody)
 				w.Write([]byte("\n"))
 			}
