@@ -16,7 +16,7 @@ import (
 	"github.com/rs/zerolog/hlog"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
 
-	handler "github.com/vrv501/simple-api/internal/api-handler"
+	apihandler "github.com/vrv501/simple-api/internal/api-handler"
 	"github.com/vrv501/simple-api/internal/constants"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 	"github.com/vrv501/simple-api/internal/middleware"
@@ -39,6 +39,7 @@ func main() {
 	router := http.NewServeMux()
 	router.HandleFunc(http.MethodGet+" "+constants.StatusPath,
 		func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			byteArr, _ := json.Marshal(map[string]string{"status": "healthy"})
 			w.Write(byteArr)
@@ -46,7 +47,7 @@ func main() {
 		},
 	)
 
-	apiHandler := handler.NewAPIHandler()
+	apiHandler := apihandler.NewAPIHandler(ctx)
 	defer apiHandler.Close()
 
 	server := http.Server{
@@ -97,7 +98,8 @@ func main() {
 	}()
 
 	<-ctx.Done()
-	timedCtx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+	timedCtx, cancel := context.WithTimeout(context.Background(),
+		constants.DefaultShutdownTimeout)
 	defer cancel()
 	if err := server.Shutdown(timedCtx); err != nil {
 		logger.Fatal().Err(err).Msg("Failed to shutdown server")

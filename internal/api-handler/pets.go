@@ -9,6 +9,7 @@ import (
 // Add a new pet to the store.
 // (POST /pet)
 func (h *ApiHandler) AddPet(ctx context.Context, request genRouter.AddPetRequestObject) (genRouter.AddPetResponseObject, error) {
+	//logger := log.Ctx(ctx)
 
 	panic("not implemented") // TODO: Implement
 }

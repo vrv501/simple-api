@@ -4,6 +4,8 @@ package constants
 const (
 	LogLevel   = "LOG_LEVEL"
 	ServerPort = "SERVER_PORT"
+	DBUsername = "DB_USERNAME"
+	DBPassword = "DB_PASSWORD"
 )
 
 // Headers
