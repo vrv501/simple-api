@@ -1,6 +1,5 @@
 
-// connect to mongodb using admin creds then switch to pets server 
-// mongosh -u purger -p myPassword  --authenticationDatabase shop shop
+// connect to mongodb using admin creds then switch to shop db
 
 use shop
 db.createRole({
@@ -85,20 +84,21 @@ db.createCollection("animal-categories", {
    validator: {
       $jsonSchema: {
          bsonType: "object",
-         required: [ "name", "created_on" ],
+         required: [ "name", "created_on", "updated_on" ],
          properties: {
             name: {
                bsonType: "string",
                minLength: 1,
                maxLength: 150,
-               description: "animal category"
+               description: "animal category",
+               pattern: "^[a-z0-9-]+$",
             },
             created_on: {
                bsonType: "date",
                description: "creation date time(UTC) of document"
             },
             updated_on: {
-               bsonType: "date",
+               bsonType: ["date", "null"],
                description: "last updated date time(UTC) of document"
             },
          }
@@ -106,4 +106,4 @@ db.createCollection("animal-categories", {
    }
 })
 
-db.getCollection("animal-categories").createIndex({})
+db.getCollection("animal-categories").createIndex({ name: 1 }, { unique: true })
