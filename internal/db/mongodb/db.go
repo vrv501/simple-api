@@ -38,7 +38,7 @@ func NewInstance(ctx context.Context) *MongoClient {
 		panic(fmt.Sprintf("%s is empty", constants.DBPassword))
 	}
 
-	// Default Connect timeout: 30s
+	// Default Connect timeout, Server Selection Timeout: 30s
 	// Max PoolConnSize: 100
 	// Retries are default activated for all sorts of operations
 	c := options.Client()
