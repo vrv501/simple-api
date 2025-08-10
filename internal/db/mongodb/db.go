@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	dbName string = "pet-store"
+	dbName string = "shop"
 )
 
 type MongoClient struct {
