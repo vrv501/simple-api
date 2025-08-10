@@ -1,0 +1,70 @@
+[
+    {
+        "create": "users",
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "required": [
+                    "username",
+                    "full_name",
+                    "email",
+                    "password",
+                    "phone_number",
+                    "created_on",
+                    "updated_on",
+                    "deleted_on"
+                ],
+                "properties": {
+                    "username": {
+                        "bsonType": "string",
+                        "minLength": 1,
+                        "maxLength": 150,
+                        "pattern": "^[a-z0-9-]+$"
+                    },
+                    "full_name": {
+                        "bsonType": "string",
+                        "minLength": 1,
+                        "maxLength": 150,
+                        "pattern": "^[a-z\\s-]+$"
+                    },
+                    "email": {
+                        "bsonType": "string",
+                        "minLength": 1,
+                        "maxLength": 320,
+                        "pattern": "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+                    },
+                    "password": {
+                        "bsonType": "string",
+                        "minLength": 1,
+                        "maxLength": 320,
+                        "description": "hashed password"
+                    },
+                    "phone_number": {
+                        "bsonType": "string",
+                        "minLength": 1,
+                        "maxLength": 16,
+                        "pattern": "^\\+?[0-9]{7,15}$"
+                    },
+                    "created_on": {
+                        "bsonType": "date",
+                        "description": "creation date time(UTC) of document"
+                    },
+                    "updated_on": {
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "last updated date time(UTC) of document"
+                    },
+                    "deleted_on": {
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "deleted date time(UTC) of document. Used to mark document as soft-deleted"
+                    }
+                }
+            }
+        }
+    }
+]

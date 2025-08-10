@@ -1,0 +1,81 @@
+[
+    {
+        "create": "pets",
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "required": [
+                    "name",
+                    "category_id",
+                    "photo_urls",
+                    "status",
+                    "tags",
+                    "created_on",
+                    "updated_on",
+                    "deleted_on"
+                ],
+                "properties": {
+                    "name": {
+                        "bsonType": "string",
+                        "minLength": 1,
+                        "maxLength": 150,
+                        "description": "pet name",
+                        "pattern": "^[a-z\\s-]+$"
+                    },
+                    "category_id": {
+                        "bsonType": "objectId",
+                        "description": "Reference to animalCategories collection _id"
+                    },
+                    "photo_urls": {
+                        "bsonType": ["array", "null"],
+                        "minItems": 1,
+                        "maxItems": 10,
+                        "items": {
+                            "bsonType": "string",
+                            "minLength": 1,
+                            "maxLength": 2000
+                        },
+                        "description": "photo urls of the pet"
+                    },
+                    "status": {
+                        "enum": [
+                            "available",
+                            "pending",
+                            "sold"
+                        ],
+                        "description": "purchase status of pet"
+                    },
+                    "tags": {
+                        "bsonType": ["array", "null"],
+                        "minItems": 1,
+                        "maxItems": 50,
+                        "items": {
+                            "bsonType": "string",
+                            "minLength": 1,
+                            "maxLength": 20
+                        },
+                        "description": "array of keys for tagging & metadata"
+                    },
+                    "created_on": {
+                        "bsonType": "date",
+                        "description": "creation date time(UTC) of document"
+                    },
+                    "updated_on": {
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "last updated date time(UTC) of document"
+                    },
+                    "deleted_on": {
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "deleted date time(UTC) of document. Used to mark document as soft-deleted"
+                    }
+                }
+            }
+        }
+    }
+]

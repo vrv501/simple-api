@@ -1,0 +1,43 @@
+[
+    {
+        "create": "animalCategories",
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "required": [
+                    "name",
+                    "created_on",
+                    "updated_on",
+                    "deleted_on"
+                ],
+                "properties": {
+                    "name": {
+                        "bsonType": "string",
+                        "minLength": 1,
+                        "maxLength": 150,
+                        "description": "animal category",
+                        "pattern": "^[a-z0-9\\s-]+$"
+                    },
+                    "created_on": {
+                        "bsonType": "date",
+                        "description": "creation date time(UTC) of document"
+                    },
+                    "updated_on": {
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "last updated date time(UTC) of document"
+                    },
+                    "deleted_on": {
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "deleted date time(UTC) of document. Used to mark document as soft-deleted"
+                    }
+                }
+            }
+        }
+    }
+]

@@ -1,0 +1,24 @@
+services:
+  mongodb:
+    image: mongodb/mongodb-community-server:7.0.22-ubi8
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=mongo
+      - MONGODB_INITDB_ROOT_PASSWORD=mongo
+    volumes:
+      - type: bind
+        source: /tmp/mongo
+        target: /data
+      - type: bind
+        source: ./mongo-admin.sh
+        target: /docker-entrypoint-initdb.d/mongo-admin.sh
+    restart: unless-stopped
+    network_mode: host
+  migrations:
+    image: migrate/migrate:v4.18.3
+    command: '-path=/migrations/ -database mongodb://mongo:mongo@localhost:27017/shop?authSource=admin up'
+    network_mode: host
+    restart: on-failure:3
+    volumes:
+      - type: bind
+        source: ./migrations
+        target: /migrations

@@ -1,0 +1,15 @@
+[
+    {
+        "createIndexes": "pets",
+        "indexes": [
+            {
+                "key": {
+                    "name": 1,
+                    "category_id": 1
+                },
+                "name": "name_category_id_unique_idx",
+                "unique": true
+            }
+        ]
+    }
+]

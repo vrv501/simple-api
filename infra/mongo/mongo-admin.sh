@@ -4,13 +4,12 @@ set -e
 # Configurations -- UPDATE_ME
 MONGO_HOST="localhost"
 MONGO_PORT="27017"
-MONGO_ADMIN_USER="" 
-MONGO_ADMIN_PASS=''
-APP_PWD=''
-PURGER_PWD=''
-MIGRATOR_PWD=''
+MONGO_ADMIN_USER="mongo" 
+MONGO_ADMIN_PASS='mongo'
+APP_PWD='mongo'
+PURGER_PWD='mongo'
 
-if [ -z "$APP_PWD" ] || [ -z "$PURGER_PWD" ] || [ -z "$MIGRATOR_PWD" ]; then
+if [ -z "$APP_PWD" ] || [ -z "$PURGER_PWD" ]; then
     echo "Error: All passwords must be set"
     exit 1
 fi
@@ -52,7 +51,7 @@ if (!db.getRole("appRole")) {
         }
       ],
       roles: []
-    })
+    }, { w: "majority" })
 }
 
 if (!db.getRole("purgerRole")) {
@@ -71,41 +70,7 @@ if (!db.getRole("purgerRole")) {
         }
       ],
       roles: []
-    })
-}
-
-if (!db.getRole("migratorRole")) {
-    db.createRole({
-      role: "migratorRole",
-      privileges: [
-        {
-          resource: { db: "${DB_NAME}", collection: "" },
-          actions: [
-            "bypassDocumentValidation",
-            "changeOwnCustomData",
-            "changeOwnPassword",
-            "collMod",
-            "convertToCapped",
-            "createCollection",
-            "createIndex",
-            "createSearchIndexes",
-            "dropCollection",
-            "dropIndex",
-            "dropSearchIndex",
-            "listCollections",
-            "listIndexes",
-            "listSearchIndexes",
-            "reIndex",
-            "updateSearchIndex",
-            "renameCollectionSameDB",
-            "validate",
-            "storageDetails",
-            "update"
-          ]
-        }
-      ],
-      roles: []
-    })
+    }, { w: "majority" })
 }
 
 if (!db.getUser("apiUser")) {
@@ -113,8 +78,8 @@ if (!db.getUser("apiUser")) {
       user: "apiUser",
       pwd: "${APP_PWD}",
       roles: [ { role: "appRole", db: "${DB_NAME}" } ],
-      mechanisms: ["SCRAM-SHA-256"]
-    })
+      mechanisms: ["SCRAM-SHA-256" ]
+    },{ w: "majority" })
 }
 
 if (!db.getUser("purger")) {
@@ -122,20 +87,11 @@ if (!db.getUser("purger")) {
       user: "purger",
       pwd: "${PURGER_PWD}",
       roles: [ { role: "purgerRole", db: "${DB_NAME}" } ],
-      mechanisms: [ "SCRAM-SHA-256"]
-    })
-}
-
-if (!db.getUser("migrator")) {
-    db.createUser({
-      user: "migrator",
-      pwd: "${MIGRATOR_PWD}",
-      roles: [ { role: "migratorRole", db: "${DB_NAME}" } ],
-      mechanisms: [ "SCRAM-SHA-256"]
-    })
+      mechanisms: [ "SCRAM-SHA-256" ]
+    }, { w: "majority" })
 }
 exit()
 EOF
 
-echo 'Created user with roles: {apiUser: appRole, purger: purgerRole, migrator: migratorRole}'
+echo 'Created user with roles: {apiUser: appRole, purger: purgerRole}'
       

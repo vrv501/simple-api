@@ -1,0 +1,14 @@
+[
+    {
+        "createIndexes": "animalCategories",
+        "indexes": [
+            {
+                "key": {
+                    "name": 1
+                },
+                "name": "name_unique_idx",
+                "unique": true
+            }
+        ]
+    }
+]
