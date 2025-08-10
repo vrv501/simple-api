@@ -31,11 +31,11 @@ func NewInstance(ctx context.Context) *MongoClient {
 
 	username := os.Getenv(constants.DBUsername)
 	if username == "" {
-		panic(fmt.Sprintf("%s is empty", constants.DBUsername))
+		username = "apiUser"
 	}
 	pswd := os.Getenv(constants.DBPassword)
 	if pswd == "" {
-		panic(fmt.Sprintf("%s is empty", constants.DBPassword))
+		pswd = "mongo"
 	}
 
 	// Default Connect timeout, Server Selection Timeout: 30s
