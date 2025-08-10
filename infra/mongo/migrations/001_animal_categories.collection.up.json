@@ -1,6 +1,6 @@
 [
     {
-        "create": "animalCategories",
+        "create": "animal_categories",
         "validator": {
             "$jsonSchema": {
                 "bsonType": "object",

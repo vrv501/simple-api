@@ -1,6 +1,6 @@
 [
     {
-        "createIndexes": "animalCategories",
+        "createIndexes": "animal_categories",
         "indexes": [
             {
                 "key": {

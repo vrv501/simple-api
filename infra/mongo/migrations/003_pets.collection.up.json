@@ -24,7 +24,7 @@
                     },
                     "category_id": {
                         "bsonType": "objectId",
-                        "description": "Reference to animalCategories collection _id"
+                        "description": "Reference to animal_categories collection _id"
                     },
                     "photo_urls": {
                         "bsonType": ["array", "null"],
