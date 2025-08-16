@@ -301,10 +301,7 @@ paths:
       description: Place new orders in the store.
       operationId: placeOrders
       requestBody:
-        content:
-          application/json:
-            schema:
-              "$ref": "#/components/requestBodies/OrderRequest"
+        "$ref": "#/components/requestBodies/OrderRequest"
       responses:
         "201":
           description: successful operation
@@ -355,11 +352,7 @@ paths:
       summary: Create user.
       operationId: createUser
       requestBody:
-        description: Created user object
-        content:
-          application/json:
-            schema:
-              "$ref": "#/components/requestBodies/UserRequest"
+        "$ref": "#/components/requestBodies/UserRequest"
       responses:
         "201":
           description: successful operation
@@ -398,11 +391,7 @@ paths:
         - description: username to be replaced
           "$ref": "#/components/parameters/UsernameParameter"
       requestBody:
-        description: Replace an existing user in the store
-        content:
-          application/json:
-            schema:
-              "$ref": "#/components/requestBodies/UserRequest"
+        "$ref": "#/components/requestBodies/UserRequest"
       responses:
         "200":
           description: successful operation
