@@ -8,6 +8,7 @@
                     "name",
                     "category_id",
                     "photo_uris",
+                    "price",
                     "status",
                     "tags",
                     "created_on",
@@ -29,6 +30,10 @@
                             "bsonType": "string"
                         },
                         "description": "photo urls of the pet"
+                    },
+                    "price": {
+                        "bsonType": "decimal128",
+                        "description": "price of the pet in decimal128 format"
                     },
                     "status": {
                         "enum": [

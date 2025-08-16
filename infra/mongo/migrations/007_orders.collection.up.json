@@ -10,7 +10,7 @@
                     "shipped_date",
                     "status",
                     "created_on",
-                    "deleted_on"
+                    "updated_on"
                 ],
                 "properties": {
                     "user_id": {
@@ -22,13 +22,17 @@
                         "description": "Reference to pets collection _id"
                     },
                     "shipped_date": {
-                        "bsonType": ["date", "null"],
-                        "description": "shipped date of order"
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "shipped date of the pet"
                     },
                     "status": {
                         "enum": [
                             "placed",
-                            "approved",
+                            "cancelled",
+                            "in-progress",
                             "delivered"
                         ],
                         "description": "order status"
@@ -37,12 +41,12 @@
                         "bsonType": "date",
                         "description": "creation date time(UTC) of document"
                     },
-                    "deleted_on": {
+                    "updated_on": {
                         "bsonType": [
                             "date",
                             "null"
                         ],
-                        "description": "deleted date time(UTC) of document. Used to mark document as soft-deleted"
+                        "description": "updated date time(UTC) of document"
                     }
                 }
             }
