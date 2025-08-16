@@ -85,15 +85,16 @@ type animalCategory struct {
 }
 
 type pet struct {
-	ID         bson.ObjectID `bson:"_id,omitempty"`
-	Name       string        `bson:"name"`        // "bsonType": "string"
-	CategoryID bson.ObjectID `bson:"category_id"` // "bsonType": "objectId"
-	PhotoURLs  []string      `bson:"photo_urls"`  // "bsonType": ["array", "null"]
-	Status     string        `bson:"status"`      // "bsonType": "string"
-	Tags       []string      `bson:"tags"`        // "bsonType": ["array", "null"]
-	CreatedOn  time.Time     `bson:"created_on"`  // "bsonType": "date"
-	UpdatedOn  *time.Time    `bson:"updated_on"`  // "bsonType": ["date", "null"]
-	DeletedOn  *time.Time    `bson:"deleted_on"`  // "bsonType": ["date", "null"]
+	ID         bson.ObjectID   `bson:"_id,omitempty"`
+	Name       string          `bson:"name"`        // "bsonType": "string"
+	CategoryID bson.ObjectID   `bson:"category_id"` // "bsonType": "objectId"
+	PhotoURIs  []string        `bson:"photo_uris"`  // "bsonType": ["array", "null"]
+	Price      bson.Decimal128 `bson:"price"`       // "bsonType": "decimal"
+	Status     string          `bson:"status"`      // "bsonType": "string"
+	Tags       []string        `bson:"tags"`        // "bsonType": ["array", "null"]
+	CreatedOn  time.Time       `bson:"created_on"`  // "bsonType": "date"
+	UpdatedOn  *time.Time      `bson:"updated_on"`  // "bsonType": ["date", "null"]
+	DeletedOn  *time.Time      `bson:"deleted_on"`  // "bsonType": ["date", "null"]
 }
 
 type user struct {
@@ -115,7 +116,7 @@ type order struct {
 	ShippedDate *time.Time    `bson:"shipped_date"` // "bsonType": ["date", "null"]
 	Status      string        `bson:"status"`       // "bsonType": "string"
 	CreatedOn   time.Time     `bson:"created_on"`   // "bsonType": "date"
-	DeletedOn   *time.Time    `bson:"deleted_on"`   // "bsonType": ["date", "null"]
+	UpdatedOn   *time.Time    `bson:"updated_on"`   // "bsonType": ["date", "null"]
 }
 
 type fsFile struct {
