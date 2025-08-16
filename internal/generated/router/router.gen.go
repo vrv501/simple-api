@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"path"
@@ -22,224 +23,384 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/oapi-codegen/runtime"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
+	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 const (
-	Api_keyScopes       = "api_key.Scopes"
-	Petstore_authScopes = "petstore_auth.Scopes"
+	BearerAuthScopes = "bearerAuth.Scopes"
 )
 
 // Defines values for OrderStatus.
 const (
-	Approved  OrderStatus = "approved"
+	Cancelled OrderStatus = "cancelled"
 	Delivered OrderStatus = "delivered"
 	Placed    OrderStatus = "placed"
 )
 
 // Defines values for PetStatus.
 const (
-	PetStatusAvailable PetStatus = "available"
-	PetStatusPending   PetStatus = "pending"
-	PetStatusSold      PetStatus = "sold"
+	Available PetStatus = "available"
+	Pending   PetStatus = "pending"
+	Sold      PetStatus = "sold"
 )
 
-// Defines values for FindPetsByStatusParamsStatus.
-const (
-	FindPetsByStatusParamsStatusAvailable FindPetsByStatusParamsStatus = "available"
-	FindPetsByStatusParamsStatusPending   FindPetsByStatusParamsStatus = "pending"
-	FindPetsByStatusParamsStatusSold      FindPetsByStatusParamsStatus = "sold"
-)
+// AnimalCategoryName defines model for AnimalCategoryName.
+type AnimalCategoryName = string
 
-// ApiResponse defines model for ApiResponse.
-type ApiResponse struct {
-	Code    *int32  `json:"code,omitempty"`
-	Message *string `json:"message,omitempty"`
-	Type    *string `json:"type,omitempty"`
+// DateTimeMetadata defines model for DateTimeMetadata.
+type DateTimeMetadata struct {
+	// CreatedAt Date when the pet was created in the store
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+
+	// UpdatedAt Date when the pet was last updated
+	UpdatedAt *time.Time `json:"updated_at"`
 }
 
-// Category defines model for Category.
-type Category struct {
-	Id   *int64  `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
-}
+// Id defines model for Id.
+type Id = string
 
-// Order defines model for Order.
-type Order struct {
-	Complete *bool      `json:"complete,omitempty"`
-	Id       *int64     `json:"id,omitempty"`
-	PetId    *int64     `json:"petId,omitempty"`
-	Quantity *int32     `json:"quantity,omitempty"`
-	ShipDate *time.Time `json:"shipDate,omitempty"`
+// OrderResp defines model for OrderResp.
+type OrderResp struct {
+	// CreatedAt Date when the pet was created in the store
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
+	Id          *Id        `json:"id,omitempty"`
+	PetId       *Id        `json:"pet_id,omitempty"`
+	ShippedDate *time.Time `json:"shippedDate"`
 
-	// Status Order Status
+	// Status order status.
 	Status *OrderStatus `json:"status,omitempty"`
+
+	// UpdatedAt Date when the pet was last updated
+	UpdatedAt *time.Time `json:"updated_at"`
 }
 
-// OrderStatus Order Status
+// OrderStatus order status.
 type OrderStatus string
 
 // Pet defines model for Pet.
 type Pet struct {
-	Category  *Category `json:"category,omitempty"`
-	Id        *int64    `json:"id,omitempty"`
-	Name      string    `json:"name"`
-	PhotoUrls []string  `json:"photoUrls"`
+	CategoryId string  `json:"category_id"`
+	Name       PetName `json:"name"`
+
+	// Price Price in USD. Must be positive with max 2 decimal places.
+	Price string `json:"price"`
 
 	// Status pet status in the store
 	Status *PetStatus `json:"status,omitempty"`
-	Tags   *[]Tag     `json:"tags,omitempty"`
+	Tags   *PetTags   `json:"tags,omitempty"`
+}
+
+// PetName defines model for PetName.
+type PetName = string
+
+// PetResp defines model for PetResp.
+type PetResp struct {
+	CategoryId string `json:"category_id"`
+
+	// CreatedAt Date when the pet was created in the store
+	CreatedAt *time.Time `json:"created_at,omitempty"`
+	Id        *Id        `json:"id,omitempty"`
+	Name      PetName    `json:"name"`
+	PhotoUris *[]string  `json:"photo_uris,omitempty"`
+
+	// Price Price in USD. Must be positive with max 2 decimal places.
+	Price string `json:"price"`
+
+	// Status pet status in the store
+	Status *PetStatus `json:"status,omitempty"`
+	Tags   *PetTags   `json:"tags,omitempty"`
+
+	// UpdatedAt Date when the pet was last updated
+	UpdatedAt *time.Time `json:"updated_at"`
 }
 
 // PetStatus pet status in the store
 type PetStatus string
 
-// Tag defines model for Tag.
-type Tag struct {
-	Id   *int64  `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
-}
+// PetTags defines model for PetTags.
+type PetTags = []string
 
 // User defines model for User.
 type User struct {
-	Email     *string `json:"email,omitempty"`
-	FirstName *string `json:"firstName,omitempty"`
-	Id        *int64  `json:"id,omitempty"`
-	LastName  *string `json:"lastName,omitempty"`
-	Password  *string `json:"password,omitempty"`
-	Phone     *string `json:"phone,omitempty"`
-
-	// UserStatus User Status
-	UserStatus *int32  `json:"userStatus,omitempty"`
-	Username   *string `json:"username,omitempty"`
+	Email       string   `json:"email"`
+	FullName    string   `json:"full_name"`
+	PhoneNumber string   `json:"phone_number"`
+	Username    Username `json:"username"`
 }
 
-// UserArray defines model for UserArray.
-type UserArray = []User
+// Username defines model for Username.
+type Username = string
 
-// FindPetsByStatusParams defines parameters for FindPetsByStatus.
-type FindPetsByStatusParams struct {
+// AnimalCategoryIdParameter defines model for AnimalCategoryIdParameter.
+type AnimalCategoryIdParameter = Id
+
+// Cursor defines model for Cursor.
+type Cursor = string
+
+// ImageIdParameter defines model for ImageIdParameter.
+type ImageIdParameter = Id
+
+// Limit defines model for Limit.
+type Limit = int
+
+// OrderIdParameter defines model for OrderIdParameter.
+type OrderIdParameter = Id
+
+// PetIdParameter defines model for PetIdParameter.
+type PetIdParameter = Id
+
+// UsernameParameter defines model for UsernameParameter.
+type UsernameParameter = Username
+
+// AnimalCategoryResponse defines model for AnimalCategoryResponse.
+type AnimalCategoryResponse struct {
+	// CreatedAt Date when the pet was created in the store
+	CreatedAt *time.Time          `json:"created_at,omitempty"`
+	Id        *Id                 `json:"id,omitempty"`
+	Name      *AnimalCategoryName `json:"name,omitempty"`
+
+	// UpdatedAt Date when the pet was last updated
+	UpdatedAt *time.Time `json:"updated_at"`
+}
+
+// ApiResponse defines model for ApiResponse.
+type ApiResponse struct {
+	Action  *string `json:"action,omitempty"`
+	Message *string `json:"message,omitempty"`
+}
+
+// OrderResponse defines model for OrderResponse.
+type OrderResponse = OrderResp
+
+// OrderResponseArray defines model for OrderResponseArray.
+type OrderResponseArray struct {
+	// Count Total number of pets
+	Count *int         `json:"count,omitempty"`
+	Pets  *[]OrderResp `json:"pets,omitempty"`
+}
+
+// PetResponse defines model for PetResponse.
+type PetResponse = PetResp
+
+// PetResponseArray defines model for PetResponseArray.
+type PetResponseArray struct {
+	// Count Total number of pets
+	Count *int       `json:"count,omitempty"`
+	Pets  *[]PetResp `json:"pets,omitempty"`
+}
+
+// UserResponse defines model for UserResponse.
+type UserResponse struct {
+	// CreatedAt Date when the pet was created in the store
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
+	Email       string     `json:"email"`
+	FullName    string     `json:"full_name"`
+	PhoneNumber string     `json:"phone_number"`
+
+	// UpdatedAt Date when the pet was last updated
+	UpdatedAt *time.Time `json:"updated_at"`
+	Username  Username   `json:"username"`
+}
+
+// AnimalCategoryRequest defines model for AnimalCategoryRequest.
+type AnimalCategoryRequest struct {
+	Name AnimalCategoryName `json:"name"`
+}
+
+// OrderRequest defines model for OrderRequest.
+type OrderRequest = []struct {
+	PetId Id `json:"petId"`
+}
+
+// UserRequest defines model for UserRequest.
+type UserRequest struct {
+	Email       string   `json:"email"`
+	FullName    string   `json:"full_name"`
+	Password    string   `json:"password"`
+	PhoneNumber string   `json:"phone_number"`
+	Username    Username `json:"username"`
+}
+
+// FindAnimalCategoryParams defines parameters for FindAnimalCategory.
+type FindAnimalCategoryParams struct {
+	// Name Name of animal category
+	Name AnimalCategoryName `form:"name" json:"name"`
+}
+
+// AddAnimalCategoryJSONBody defines parameters for AddAnimalCategory.
+type AddAnimalCategoryJSONBody struct {
+	Name AnimalCategoryName `json:"name"`
+}
+
+// ReplaceAnimalCategoryJSONBody defines parameters for ReplaceAnimalCategory.
+type ReplaceAnimalCategoryJSONBody struct {
+	Name AnimalCategoryName `json:"name"`
+}
+
+// FindPetsParams defines parameters for FindPets.
+type FindPetsParams struct {
+	// Name Name of pet
+	Name *PetName `form:"name,omitempty" json:"name,omitempty"`
+
 	// Status Status values that need to be considered for filter
-	Status *FindPetsByStatusParamsStatus `form:"status,omitempty" json:"status,omitempty"`
-}
+	Status *[]PetStatus `form:"status,omitempty" json:"status,omitempty"`
 
-// FindPetsByStatusParamsStatus defines parameters for FindPetsByStatus.
-type FindPetsByStatusParamsStatus string
-
-// FindPetsByTagsParams defines parameters for FindPetsByTags.
-type FindPetsByTagsParams struct {
 	// Tags Tags to filter by
-	Tags *[]string `form:"tags,omitempty" json:"tags,omitempty"`
+	Tags *PetTags `form:"tags,omitempty" json:"tags,omitempty"`
+
+	// Cursor Cursor for pagination (from previous response)
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Number of items to return
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
-// DeletePetParams defines parameters for DeletePet.
-type DeletePetParams struct {
-	ApiKey *string `json:"api_key,omitempty"`
+// AddPetMultipartBody defines parameters for AddPet.
+type AddPetMultipartBody struct {
+	Pet Pet `json:"pet"`
+
+	// Photos Pet images (up to 10)
+	Photos *[]openapi_types.File `json:"photos,omitempty"`
 }
 
-// UpdatePetWithFormParams defines parameters for UpdatePetWithForm.
-type UpdatePetWithFormParams struct {
-	// Name Name of pet that needs to be updated
-	Name *string `form:"name,omitempty" json:"name,omitempty"`
+// ReplacePetMultipartBody defines parameters for ReplacePet.
+type ReplacePetMultipartBody struct {
+	Pet Pet `json:"pet"`
 
-	// Status Status of pet that needs to be updated
-	Status *string `form:"status,omitempty" json:"status,omitempty"`
+	// Photos Pet images (up to 10)
+	Photos *[]openapi_types.File `json:"photos,omitempty"`
 }
 
-// UploadFileParams defines parameters for UploadFile.
-type UploadFileParams struct {
-	// AdditionalMetadata Additional Metadata
-	AdditionalMetadata *string `form:"additionalMetadata,omitempty" json:"additionalMetadata,omitempty"`
+// UploadPetImageMultipartBody defines parameters for UploadPetImage.
+type UploadPetImageMultipartBody struct {
+	// Photos Pet images (up to 10)
+	Photos []openapi_types.File `json:"photos"`
 }
 
-// CreateUsersWithListInputJSONBody defines parameters for CreateUsersWithListInput.
-type CreateUsersWithListInputJSONBody = []User
+// FindOrdersParams defines parameters for FindOrders.
+type FindOrdersParams struct {
+	// Status Status values that need to be considered for filter
+	Status *[]OrderStatus `form:"status,omitempty" json:"status,omitempty"`
 
-// LoginUserParams defines parameters for LoginUser.
-type LoginUserParams struct {
-	// Username The user name for login
-	Username *string `form:"username,omitempty" json:"username,omitempty"`
+	// AfterDate Filter orders placed after this date
+	AfterDate *time.Time `form:"afterDate,omitempty" json:"afterDate,omitempty"`
 
-	// Password The password for login in clear text
-	Password *string `form:"password,omitempty" json:"password,omitempty"`
+	// Cursor Cursor for pagination (from previous response)
+	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
+
+	// Limit Number of items to return
+	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
 }
 
-// AddPetJSONRequestBody defines body for AddPet for application/json ContentType.
-type AddPetJSONRequestBody = Pet
+// PlaceOrdersJSONBody defines parameters for PlaceOrders.
+type PlaceOrdersJSONBody = []struct {
+	PetId Id `json:"petId"`
+}
 
-// UpdatePetJSONRequestBody defines body for UpdatePet for application/json ContentType.
-type UpdatePetJSONRequestBody = Pet
+// CreateUserJSONBody defines parameters for CreateUser.
+type CreateUserJSONBody struct {
+	Email       string   `json:"email"`
+	FullName    string   `json:"full_name"`
+	Password    string   `json:"password"`
+	PhoneNumber string   `json:"phone_number"`
+	Username    Username `json:"username"`
+}
 
-// PlaceOrderJSONRequestBody defines body for PlaceOrder for application/json ContentType.
-type PlaceOrderJSONRequestBody = Order
+// ReplaceUserJSONBody defines parameters for ReplaceUser.
+type ReplaceUserJSONBody struct {
+	Email       string   `json:"email"`
+	FullName    string   `json:"full_name"`
+	Password    string   `json:"password"`
+	PhoneNumber string   `json:"phone_number"`
+	Username    Username `json:"username"`
+}
+
+// AddAnimalCategoryJSONRequestBody defines body for AddAnimalCategory for application/json ContentType.
+type AddAnimalCategoryJSONRequestBody AddAnimalCategoryJSONBody
+
+// ReplaceAnimalCategoryJSONRequestBody defines body for ReplaceAnimalCategory for application/json ContentType.
+type ReplaceAnimalCategoryJSONRequestBody ReplaceAnimalCategoryJSONBody
+
+// AddPetMultipartRequestBody defines body for AddPet for multipart/form-data ContentType.
+type AddPetMultipartRequestBody AddPetMultipartBody
+
+// ReplacePetMultipartRequestBody defines body for ReplacePet for multipart/form-data ContentType.
+type ReplacePetMultipartRequestBody ReplacePetMultipartBody
+
+// UploadPetImageMultipartRequestBody defines body for UploadPetImage for multipart/form-data ContentType.
+type UploadPetImageMultipartRequestBody UploadPetImageMultipartBody
+
+// PlaceOrdersJSONRequestBody defines body for PlaceOrders for application/json ContentType.
+type PlaceOrdersJSONRequestBody = PlaceOrdersJSONBody
 
 // CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
-type CreateUserJSONRequestBody = User
+type CreateUserJSONRequestBody CreateUserJSONBody
 
-// CreateUsersWithListInputJSONRequestBody defines body for CreateUsersWithListInput for application/json ContentType.
-type CreateUsersWithListInputJSONRequestBody = CreateUsersWithListInputJSONBody
-
-// UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
-type UpdateUserJSONRequestBody = User
+// ReplaceUserJSONRequestBody defines body for ReplaceUser for application/json ContentType.
+type ReplaceUserJSONRequestBody ReplaceUserJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Add a new pet to the store.
-	// (POST /pet)
+	// Find animal-category using name
+	// (GET /animal-categories)
+	FindAnimalCategory(w http.ResponseWriter, r *http.Request, params FindAnimalCategoryParams)
+	// Add new animal-category to the store.
+	// (POST /animal-categories)
+	AddAnimalCategory(w http.ResponseWriter, r *http.Request)
+	// Delete an animal-category.
+	// (DELETE /animal-categories/{animalCategoryId})
+	DeleteAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryIdParameter)
+	// Replace existing animal-category data using Id.
+	// (PUT /animal-categories/{animalCategoryId})
+	ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryIdParameter)
+	// Find Pets using name, status, tags.
+	// (GET /pets)
+	FindPets(w http.ResponseWriter, r *http.Request, params FindPetsParams)
+	// Add new pet to the store.
+	// (POST /pets)
 	AddPet(w http.ResponseWriter, r *http.Request)
-	// Update an existing pet.
-	// (PUT /pet)
-	UpdatePet(w http.ResponseWriter, r *http.Request)
-	// Finds Pets by status.
-	// (GET /pet/findByStatus)
-	FindPetsByStatus(w http.ResponseWriter, r *http.Request, params FindPetsByStatusParams)
-	// Finds Pets by tags.
-	// (GET /pet/findByTags)
-	FindPetsByTags(w http.ResponseWriter, r *http.Request, params FindPetsByTagsParams)
-	// Deletes a pet.
-	// (DELETE /pet/{petId})
-	DeletePet(w http.ResponseWriter, r *http.Request, petId int64, params DeletePetParams)
+	// Delete a pet.
+	// (DELETE /pets/{petId})
+	DeletePet(w http.ResponseWriter, r *http.Request, petId PetIdParameter)
 	// Find pet by ID.
-	// (GET /pet/{petId})
-	GetPetById(w http.ResponseWriter, r *http.Request, petId int64)
-	// Updates a pet in the store with form data.
-	// (POST /pet/{petId})
-	UpdatePetWithForm(w http.ResponseWriter, r *http.Request, petId int64, params UpdatePetWithFormParams)
-	// Uploads an image.
-	// (POST /pet/{petId}/uploadImage)
-	UploadFile(w http.ResponseWriter, r *http.Request, petId int64, params UploadFileParams)
-	// Returns pet inventories by status.
-	// (GET /store/inventory)
-	GetInventory(w http.ResponseWriter, r *http.Request)
-	// Place an order for a pet.
-	// (POST /store/order)
-	PlaceOrder(w http.ResponseWriter, r *http.Request)
+	// (GET /pets/{petId})
+	GetPetById(w http.ResponseWriter, r *http.Request, petId PetIdParameter)
+	// Replace existing pet data using Id.
+	// (PUT /pets/{petId})
+	ReplacePet(w http.ResponseWriter, r *http.Request, petId PetIdParameter)
+	// Upload a new image for a pet.
+	// (POST /pets/{petId}/images)
+	UploadPetImage(w http.ResponseWriter, r *http.Request, petId PetIdParameter)
+	// Delete a pet image.
+	// (DELETE /pets/{petId}/images/{imageId})
+	DeletePetImage(w http.ResponseWriter, r *http.Request, petId PetIdParameter, imageId ImageIdParameter)
+	// Get a pet image using ID.
+	// (GET /pets/{petId}/images/{imageId})
+	GetImageByPetId(w http.ResponseWriter, r *http.Request, petId PetIdParameter, imageId ImageIdParameter)
+	// Find user Orders using status.
+	// (GET /store/orders)
+	FindOrders(w http.ResponseWriter, r *http.Request, params FindOrdersParams)
+	// Place orders for pets.
+	// (POST /store/orders)
+	PlaceOrders(w http.ResponseWriter, r *http.Request)
 	// Delete purchase order by identifier.
-	// (DELETE /store/order/{orderId})
-	DeleteOrder(w http.ResponseWriter, r *http.Request, orderId int64)
+	// (DELETE /store/orders/{orderId})
+	DeleteOrder(w http.ResponseWriter, r *http.Request, orderId OrderIdParameter)
 	// Find purchase order by ID.
-	// (GET /store/order/{orderId})
-	GetOrderById(w http.ResponseWriter, r *http.Request, orderId int64)
+	// (GET /store/orders/{orderId})
+	GetOrderById(w http.ResponseWriter, r *http.Request, orderId OrderIdParameter)
 	// Create user.
-	// (POST /user)
+	// (POST /users)
 	CreateUser(w http.ResponseWriter, r *http.Request)
-	// Creates list of users with given input array.
-	// (POST /user/createWithList)
-	CreateUsersWithListInput(w http.ResponseWriter, r *http.Request)
-	// Logs user into the system.
-	// (GET /user/login)
-	LoginUser(w http.ResponseWriter, r *http.Request, params LoginUserParams)
-	// Logs out current logged in user session.
-	// (GET /user/logout)
-	LogoutUser(w http.ResponseWriter, r *http.Request)
 	// Delete user resource.
-	// (DELETE /user/{username})
-	DeleteUser(w http.ResponseWriter, r *http.Request, username string)
+	// (DELETE /users/{username})
+	DeleteUser(w http.ResponseWriter, r *http.Request, username UsernameParameter)
 	// Get user by user name.
-	// (GET /user/{username})
-	GetUserByName(w http.ResponseWriter, r *http.Request, username string)
-	// Update user resource.
-	// (PUT /user/{username})
-	UpdateUser(w http.ResponseWriter, r *http.Request, username string)
+	// (GET /users/{username})
+	GetUserByName(w http.ResponseWriter, r *http.Request, username UsernameParameter)
+	// Replace user resource.
+	// (PUT /users/{username})
+	ReplaceUser(w http.ResponseWriter, r *http.Request, username UsernameParameter)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -251,70 +412,37 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// AddPet operation middleware
-func (siw *ServerInterfaceWrapper) AddPet(w http.ResponseWriter, r *http.Request) {
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.AddPet(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// UpdatePet operation middleware
-func (siw *ServerInterfaceWrapper) UpdatePet(w http.ResponseWriter, r *http.Request) {
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UpdatePet(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// FindPetsByStatus operation middleware
-func (siw *ServerInterfaceWrapper) FindPetsByStatus(w http.ResponseWriter, r *http.Request) {
+// FindAnimalCategory operation middleware
+func (siw *ServerInterfaceWrapper) FindAnimalCategory(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
 
 	r = r.WithContext(ctx)
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params FindPetsByStatusParams
+	var params FindAnimalCategoryParams
 
-	// ------------- Optional query parameter "status" -------------
+	// ------------- Required query parameter "name" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
+	if paramValue := r.URL.Query().Get("name"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "name"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "name", r.URL.Query(), &params.Name)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.FindPetsByStatus(w, r, params)
+		siw.Handler.FindAnimalCategory(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -324,149 +452,101 @@ func (siw *ServerInterfaceWrapper) FindPetsByStatus(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
-// FindPetsByTags operation middleware
-func (siw *ServerInterfaceWrapper) FindPetsByTags(w http.ResponseWriter, r *http.Request) {
+// AddAnimalCategory operation middleware
+func (siw *ServerInterfaceWrapper) AddAnimalCategory(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AddAnimalCategory(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteAnimalCategory operation middleware
+func (siw *ServerInterfaceWrapper) DeleteAnimalCategory(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "animalCategoryId" -------------
+	var animalCategoryId AnimalCategoryIdParameter
+
+	err = runtime.BindStyledParameterWithOptions("simple", "animalCategoryId", r.PathValue("animalCategoryId"), &animalCategoryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "animalCategoryId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteAnimalCategory(w, r, animalCategoryId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ReplaceAnimalCategory operation middleware
+func (siw *ServerInterfaceWrapper) ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "animalCategoryId" -------------
+	var animalCategoryId AnimalCategoryIdParameter
+
+	err = runtime.BindStyledParameterWithOptions("simple", "animalCategoryId", r.PathValue("animalCategoryId"), &animalCategoryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "animalCategoryId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ReplaceAnimalCategory(w, r, animalCategoryId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// FindPets operation middleware
+func (siw *ServerInterfaceWrapper) FindPets(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
 
 	r = r.WithContext(ctx)
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params FindPetsByTagsParams
-
-	// ------------- Optional query parameter "tags" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "tags", r.URL.Query(), &params.Tags)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tags", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.FindPetsByTags(w, r, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// DeletePet operation middleware
-func (siw *ServerInterfaceWrapper) DeletePet(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "petId" -------------
-	var petId int64
-
-	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params DeletePetParams
-
-	headers := r.Header
-
-	// ------------- Optional header parameter "api_key" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("api_key")]; found {
-		var ApiKey string
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "api_key", Count: n})
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "api_key", valueList[0], &ApiKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "api_key", Err: err})
-			return
-		}
-
-		params.ApiKey = &ApiKey
-
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeletePet(w, r, petId, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// GetPetById operation middleware
-func (siw *ServerInterfaceWrapper) GetPetById(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "petId" -------------
-	var petId int64
-
-	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Api_keyScopes, []string{})
-
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetPetById(w, r, petId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// UpdatePetWithForm operation middleware
-func (siw *ServerInterfaceWrapper) UpdatePetWithForm(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "petId" -------------
-	var petId int64
-
-	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params UpdatePetWithFormParams
+	var params FindPetsParams
 
 	// ------------- Optional query parameter "name" -------------
 
@@ -484,8 +564,32 @@ func (siw *ServerInterfaceWrapper) UpdatePetWithForm(w http.ResponseWriter, r *h
 		return
 	}
 
+	// ------------- Optional query parameter "tags" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "tags", r.URL.Query(), &params.Tags)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tags", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UpdatePetWithForm(w, r, petId, params)
+		siw.Handler.FindPets(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -495,13 +599,33 @@ func (siw *ServerInterfaceWrapper) UpdatePetWithForm(w http.ResponseWriter, r *h
 	handler.ServeHTTP(w, r)
 }
 
-// UploadFile operation middleware
-func (siw *ServerInterfaceWrapper) UploadFile(w http.ResponseWriter, r *http.Request) {
+// AddPet operation middleware
+func (siw *ServerInterfaceWrapper) AddPet(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.AddPet(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeletePet operation middleware
+func (siw *ServerInterfaceWrapper) DeletePet(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
 	// ------------- Path parameter "petId" -------------
-	var petId int64
+	var petId PetIdParameter
 
 	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -511,23 +635,242 @@ func (siw *ServerInterfaceWrapper) UploadFile(w http.ResponseWriter, r *http.Req
 
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeletePet(w, r, petId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetPetById operation middleware
+func (siw *ServerInterfaceWrapper) GetPetById(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "petId" -------------
+	var petId PetIdParameter
+
+	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetPetById(w, r, petId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ReplacePet operation middleware
+func (siw *ServerInterfaceWrapper) ReplacePet(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "petId" -------------
+	var petId PetIdParameter
+
+	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ReplacePet(w, r, petId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UploadPetImage operation middleware
+func (siw *ServerInterfaceWrapper) UploadPetImage(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "petId" -------------
+	var petId PetIdParameter
+
+	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UploadPetImage(w, r, petId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeletePetImage operation middleware
+func (siw *ServerInterfaceWrapper) DeletePetImage(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "petId" -------------
+	var petId PetIdParameter
+
+	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "imageId" -------------
+	var imageId ImageIdParameter
+
+	err = runtime.BindStyledParameterWithOptions("simple", "imageId", r.PathValue("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "imageId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeletePetImage(w, r, petId, imageId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetImageByPetId operation middleware
+func (siw *ServerInterfaceWrapper) GetImageByPetId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "petId" -------------
+	var petId PetIdParameter
+
+	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "imageId" -------------
+	var imageId ImageIdParameter
+
+	err = runtime.BindStyledParameterWithOptions("simple", "imageId", r.PathValue("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "imageId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetImageByPetId(w, r, petId, imageId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// FindOrders operation middleware
+func (siw *ServerInterfaceWrapper) FindOrders(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
 
 	r = r.WithContext(ctx)
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params UploadFileParams
+	var params FindOrdersParams
 
-	// ------------- Optional query parameter "additionalMetadata" -------------
+	// ------------- Optional query parameter "status" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "additionalMetadata", r.URL.Query(), &params.AdditionalMetadata)
+	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "additionalMetadata", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "afterDate" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "afterDate", r.URL.Query(), &params.AfterDate)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "afterDate", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "cursor" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "cursor", r.URL.Query(), &params.Cursor)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "cursor", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UploadFile(w, r, petId, params)
+		siw.Handler.FindOrders(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -537,31 +880,17 @@ func (siw *ServerInterfaceWrapper) UploadFile(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
-// GetInventory operation middleware
-func (siw *ServerInterfaceWrapper) GetInventory(w http.ResponseWriter, r *http.Request) {
+// PlaceOrders operation middleware
+func (siw *ServerInterfaceWrapper) PlaceOrders(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, Api_keyScopes, []string{})
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
 
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetInventory(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// PlaceOrder operation middleware
-func (siw *ServerInterfaceWrapper) PlaceOrder(w http.ResponseWriter, r *http.Request) {
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PlaceOrder(w, r)
+		siw.Handler.PlaceOrders(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -577,13 +906,19 @@ func (siw *ServerInterfaceWrapper) DeleteOrder(w http.ResponseWriter, r *http.Re
 	var err error
 
 	// ------------- Path parameter "orderId" -------------
-	var orderId int64
+	var orderId OrderIdParameter
 
 	err = runtime.BindStyledParameterWithOptions("simple", "orderId", r.PathValue("orderId"), &orderId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "orderId", Err: err})
 		return
 	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.DeleteOrder(w, r, orderId)
@@ -602,13 +937,19 @@ func (siw *ServerInterfaceWrapper) GetOrderById(w http.ResponseWriter, r *http.R
 	var err error
 
 	// ------------- Path parameter "orderId" -------------
-	var orderId int64
+	var orderId OrderIdParameter
 
 	err = runtime.BindStyledParameterWithOptions("simple", "orderId", r.PathValue("orderId"), &orderId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "orderId", Err: err})
 		return
 	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetOrderById(w, r, orderId)
@@ -635,82 +976,25 @@ func (siw *ServerInterfaceWrapper) CreateUser(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
-// CreateUsersWithListInput operation middleware
-func (siw *ServerInterfaceWrapper) CreateUsersWithListInput(w http.ResponseWriter, r *http.Request) {
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateUsersWithListInput(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// LoginUser operation middleware
-func (siw *ServerInterfaceWrapper) LoginUser(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params LoginUserParams
-
-	// ------------- Optional query parameter "username" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "username", r.URL.Query(), &params.Username)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "username", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "password" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "password", r.URL.Query(), &params.Password)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "password", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.LoginUser(w, r, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// LogoutUser operation middleware
-func (siw *ServerInterfaceWrapper) LogoutUser(w http.ResponseWriter, r *http.Request) {
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.LogoutUser(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // DeleteUser operation middleware
 func (siw *ServerInterfaceWrapper) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
 	// ------------- Path parameter "username" -------------
-	var username string
+	var username UsernameParameter
 
 	err = runtime.BindStyledParameterWithOptions("simple", "username", r.PathValue("username"), &username, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "username", Err: err})
 		return
 	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.DeleteUser(w, r, username)
@@ -729,13 +1013,19 @@ func (siw *ServerInterfaceWrapper) GetUserByName(w http.ResponseWriter, r *http.
 	var err error
 
 	// ------------- Path parameter "username" -------------
-	var username string
+	var username UsernameParameter
 
 	err = runtime.BindStyledParameterWithOptions("simple", "username", r.PathValue("username"), &username, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "username", Err: err})
 		return
 	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetUserByName(w, r, username)
@@ -748,13 +1038,13 @@ func (siw *ServerInterfaceWrapper) GetUserByName(w http.ResponseWriter, r *http.
 	handler.ServeHTTP(w, r)
 }
 
-// UpdateUser operation middleware
-func (siw *ServerInterfaceWrapper) UpdateUser(w http.ResponseWriter, r *http.Request) {
+// ReplaceUser operation middleware
+func (siw *ServerInterfaceWrapper) ReplaceUser(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
 	// ------------- Path parameter "username" -------------
-	var username string
+	var username UsernameParameter
 
 	err = runtime.BindStyledParameterWithOptions("simple", "username", r.PathValue("username"), &username, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -762,8 +1052,14 @@ func (siw *ServerInterfaceWrapper) UpdateUser(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UpdateUser(w, r, username)
+		siw.Handler.ReplaceUser(w, r, username)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -893,492 +1189,739 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
-	m.HandleFunc("POST "+options.BaseURL+"/pet", wrapper.AddPet)
-	m.HandleFunc("PUT "+options.BaseURL+"/pet", wrapper.UpdatePet)
-	m.HandleFunc("GET "+options.BaseURL+"/pet/findByStatus", wrapper.FindPetsByStatus)
-	m.HandleFunc("GET "+options.BaseURL+"/pet/findByTags", wrapper.FindPetsByTags)
-	m.HandleFunc("DELETE "+options.BaseURL+"/pet/{petId}", wrapper.DeletePet)
-	m.HandleFunc("GET "+options.BaseURL+"/pet/{petId}", wrapper.GetPetById)
-	m.HandleFunc("POST "+options.BaseURL+"/pet/{petId}", wrapper.UpdatePetWithForm)
-	m.HandleFunc("POST "+options.BaseURL+"/pet/{petId}/uploadImage", wrapper.UploadFile)
-	m.HandleFunc("GET "+options.BaseURL+"/store/inventory", wrapper.GetInventory)
-	m.HandleFunc("POST "+options.BaseURL+"/store/order", wrapper.PlaceOrder)
-	m.HandleFunc("DELETE "+options.BaseURL+"/store/order/{orderId}", wrapper.DeleteOrder)
-	m.HandleFunc("GET "+options.BaseURL+"/store/order/{orderId}", wrapper.GetOrderById)
-	m.HandleFunc("POST "+options.BaseURL+"/user", wrapper.CreateUser)
-	m.HandleFunc("POST "+options.BaseURL+"/user/createWithList", wrapper.CreateUsersWithListInput)
-	m.HandleFunc("GET "+options.BaseURL+"/user/login", wrapper.LoginUser)
-	m.HandleFunc("GET "+options.BaseURL+"/user/logout", wrapper.LogoutUser)
-	m.HandleFunc("DELETE "+options.BaseURL+"/user/{username}", wrapper.DeleteUser)
-	m.HandleFunc("GET "+options.BaseURL+"/user/{username}", wrapper.GetUserByName)
-	m.HandleFunc("PUT "+options.BaseURL+"/user/{username}", wrapper.UpdateUser)
+	m.HandleFunc("GET "+options.BaseURL+"/animal-categories", wrapper.FindAnimalCategory)
+	m.HandleFunc("POST "+options.BaseURL+"/animal-categories", wrapper.AddAnimalCategory)
+	m.HandleFunc("DELETE "+options.BaseURL+"/animal-categories/{animalCategoryId}", wrapper.DeleteAnimalCategory)
+	m.HandleFunc("PUT "+options.BaseURL+"/animal-categories/{animalCategoryId}", wrapper.ReplaceAnimalCategory)
+	m.HandleFunc("GET "+options.BaseURL+"/pets", wrapper.FindPets)
+	m.HandleFunc("POST "+options.BaseURL+"/pets", wrapper.AddPet)
+	m.HandleFunc("DELETE "+options.BaseURL+"/pets/{petId}", wrapper.DeletePet)
+	m.HandleFunc("GET "+options.BaseURL+"/pets/{petId}", wrapper.GetPetById)
+	m.HandleFunc("PUT "+options.BaseURL+"/pets/{petId}", wrapper.ReplacePet)
+	m.HandleFunc("POST "+options.BaseURL+"/pets/{petId}/images", wrapper.UploadPetImage)
+	m.HandleFunc("DELETE "+options.BaseURL+"/pets/{petId}/images/{imageId}", wrapper.DeletePetImage)
+	m.HandleFunc("GET "+options.BaseURL+"/pets/{petId}/images/{imageId}", wrapper.GetImageByPetId)
+	m.HandleFunc("GET "+options.BaseURL+"/store/orders", wrapper.FindOrders)
+	m.HandleFunc("POST "+options.BaseURL+"/store/orders", wrapper.PlaceOrders)
+	m.HandleFunc("DELETE "+options.BaseURL+"/store/orders/{orderId}", wrapper.DeleteOrder)
+	m.HandleFunc("GET "+options.BaseURL+"/store/orders/{orderId}", wrapper.GetOrderById)
+	m.HandleFunc("POST "+options.BaseURL+"/users", wrapper.CreateUser)
+	m.HandleFunc("DELETE "+options.BaseURL+"/users/{username}", wrapper.DeleteUser)
+	m.HandleFunc("GET "+options.BaseURL+"/users/{username}", wrapper.GetUserByName)
+	m.HandleFunc("PUT "+options.BaseURL+"/users/{username}", wrapper.ReplaceUser)
 
 	return m
 }
 
+type AnimalCategoryResponseResponseHeaders struct {
+	XRequestId string
+}
+type AnimalCategoryResponseJSONResponse struct {
+	Body struct {
+		// CreatedAt Date when the pet was created in the store
+		CreatedAt *time.Time          `json:"created_at,omitempty"`
+		Id        *Id                 `json:"id,omitempty"`
+		Name      *AnimalCategoryName `json:"name,omitempty"`
+
+		// UpdatedAt Date when the pet was last updated
+		UpdatedAt *time.Time `json:"updated_at"`
+	}
+
+	Headers AnimalCategoryResponseResponseHeaders
+}
+
+type ApiResponseResponseHeaders struct {
+	XRequestId string
+}
+type ApiResponseJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+
+	Headers ApiResponseResponseHeaders
+}
+
+type OrderResponseResponseHeaders struct {
+	XRequestId string
+}
+type OrderResponseJSONResponse struct {
+	Body OrderResp
+
+	Headers OrderResponseResponseHeaders
+}
+
+type OrderResponseArrayResponseHeaders struct {
+	XNextCursor string
+	XRequestId  string
+}
+type OrderResponseArrayJSONResponse struct {
+	Body struct {
+		// Count Total number of pets
+		Count *int         `json:"count,omitempty"`
+		Pets  *[]OrderResp `json:"pets,omitempty"`
+	}
+
+	Headers OrderResponseArrayResponseHeaders
+}
+
+type PetResponseResponseHeaders struct {
+	XRequestId string
+}
+type PetResponseJSONResponse struct {
+	Body PetResp
+
+	Headers PetResponseResponseHeaders
+}
+
+type PetResponseArrayResponseHeaders struct {
+	XNextCursor string
+	XRequestId  string
+}
+type PetResponseArrayJSONResponse struct {
+	Body struct {
+		// Count Total number of pets
+		Count *int       `json:"count,omitempty"`
+		Pets  *[]PetResp `json:"pets,omitempty"`
+	}
+
+	Headers PetResponseArrayResponseHeaders
+}
+
+type UserResponseResponseHeaders struct {
+	XRequestId string
+}
+type UserResponseJSONResponse struct {
+	Body struct {
+		// CreatedAt Date when the pet was created in the store
+		CreatedAt   *time.Time `json:"created_at,omitempty"`
+		Email       string     `json:"email"`
+		FullName    string     `json:"full_name"`
+		PhoneNumber string     `json:"phone_number"`
+
+		// UpdatedAt Date when the pet was last updated
+		UpdatedAt *time.Time `json:"updated_at"`
+		Username  Username   `json:"username"`
+	}
+
+	Headers UserResponseResponseHeaders
+}
+
+type FindAnimalCategoryRequestObject struct {
+	Params FindAnimalCategoryParams
+}
+
+type FindAnimalCategoryResponseObject interface {
+	VisitFindAnimalCategoryResponse(w http.ResponseWriter) error
+}
+
+type FindAnimalCategory200JSONResponse struct {
+	AnimalCategoryResponseJSONResponse
+}
+
+func (response FindAnimalCategory200JSONResponse) VisitFindAnimalCategoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type FindAnimalCategorydefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
+	StatusCode int
+}
+
+func (response FindAnimalCategorydefaultJSONResponse) VisitFindAnimalCategoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type AddAnimalCategoryRequestObject struct {
+	Body *AddAnimalCategoryJSONRequestBody
+}
+
+type AddAnimalCategoryResponseObject interface {
+	VisitAddAnimalCategoryResponse(w http.ResponseWriter) error
+}
+
+type AddAnimalCategory201JSONResponse struct {
+	AnimalCategoryResponseJSONResponse
+}
+
+func (response AddAnimalCategory201JSONResponse) VisitAddAnimalCategoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type AddAnimalCategorydefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
+	StatusCode int
+}
+
+func (response AddAnimalCategorydefaultJSONResponse) VisitAddAnimalCategoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteAnimalCategoryRequestObject struct {
+	AnimalCategoryId AnimalCategoryIdParameter `json:"animalCategoryId"`
+}
+
+type DeleteAnimalCategoryResponseObject interface {
+	VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error
+}
+
+type DeleteAnimalCategory200ResponseHeaders struct {
+	XRequestId string
+}
+
+type DeleteAnimalCategory200Response struct {
+	Headers DeleteAnimalCategory200ResponseHeaders
+}
+
+func (response DeleteAnimalCategory200Response) VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(200)
+	return nil
+}
+
+type DeleteAnimalCategorydefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
+	StatusCode int
+}
+
+func (response DeleteAnimalCategorydefaultJSONResponse) VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type ReplaceAnimalCategoryRequestObject struct {
+	AnimalCategoryId AnimalCategoryIdParameter `json:"animalCategoryId"`
+	Body             *ReplaceAnimalCategoryJSONRequestBody
+}
+
+type ReplaceAnimalCategoryResponseObject interface {
+	VisitReplaceAnimalCategoryResponse(w http.ResponseWriter) error
+}
+
+type ReplaceAnimalCategory200JSONResponse struct {
+	AnimalCategoryResponseJSONResponse
+}
+
+func (response ReplaceAnimalCategory200JSONResponse) VisitReplaceAnimalCategoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type ReplaceAnimalCategorydefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
+	StatusCode int
+}
+
+func (response ReplaceAnimalCategorydefaultJSONResponse) VisitReplaceAnimalCategoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type FindPetsRequestObject struct {
+	Params FindPetsParams
+}
+
+type FindPetsResponseObject interface {
+	VisitFindPetsResponse(w http.ResponseWriter) error
+}
+
+type FindPets200JSONResponse struct{ PetResponseArrayJSONResponse }
+
+func (response FindPets200JSONResponse) VisitFindPetsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Next-Cursor", fmt.Sprint(response.Headers.XNextCursor))
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type FindPetsdefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
+	StatusCode int
+}
+
+func (response FindPetsdefaultJSONResponse) VisitFindPetsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
 type AddPetRequestObject struct {
-	Body *AddPetJSONRequestBody
+	Body *multipart.Reader
 }
 
 type AddPetResponseObject interface {
 	VisitAddPetResponse(w http.ResponseWriter) error
 }
 
-type AddPet200JSONResponse Pet
-
-func (response AddPet200JSONResponse) VisitAddPetResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
+type AddPet202ResponseHeaders struct {
+	XRequestId string
 }
 
-type AddPet400Response struct {
+type AddPet202Response struct {
+	Headers AddPet202ResponseHeaders
 }
 
-func (response AddPet400Response) VisitAddPetResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
+func (response AddPet202Response) VisitAddPetResponse(w http.ResponseWriter) error {
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(202)
 	return nil
 }
 
-type AddPet422Response struct {
-}
-
-func (response AddPet422Response) VisitAddPetResponse(w http.ResponseWriter) error {
-	w.WriteHeader(422)
-	return nil
-}
-
-type AddPetdefaultResponse struct {
+type AddPetdefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
-func (response AddPetdefaultResponse) VisitAddPetResponse(w http.ResponseWriter) error {
-	w.WriteHeader(response.StatusCode)
-	return nil
-}
-
-type UpdatePetRequestObject struct {
-	Body *UpdatePetJSONRequestBody
-}
-
-type UpdatePetResponseObject interface {
-	VisitUpdatePetResponse(w http.ResponseWriter) error
-}
-
-type UpdatePet200JSONResponse Pet
-
-func (response UpdatePet200JSONResponse) VisitUpdatePetResponse(w http.ResponseWriter) error {
+func (response AddPetdefaultJSONResponse) VisitAddPetResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type UpdatePet400Response struct {
-}
-
-func (response UpdatePet400Response) VisitUpdatePetResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
-}
-
-type UpdatePet404Response struct {
-}
-
-func (response UpdatePet404Response) VisitUpdatePetResponse(w http.ResponseWriter) error {
-	w.WriteHeader(404)
-	return nil
-}
-
-type UpdatePet422Response struct {
-}
-
-func (response UpdatePet422Response) VisitUpdatePetResponse(w http.ResponseWriter) error {
-	w.WriteHeader(422)
-	return nil
-}
-
-type UpdatePetdefaultResponse struct {
-	StatusCode int
-}
-
-func (response UpdatePetdefaultResponse) VisitUpdatePetResponse(w http.ResponseWriter) error {
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
-	return nil
-}
 
-type FindPetsByStatusRequestObject struct {
-	Params FindPetsByStatusParams
-}
-
-type FindPetsByStatusResponseObject interface {
-	VisitFindPetsByStatusResponse(w http.ResponseWriter) error
-}
-
-type FindPetsByStatus200JSONResponse []Pet
-
-func (response FindPetsByStatus200JSONResponse) VisitFindPetsByStatusResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type FindPetsByStatus400Response struct {
-}
-
-func (response FindPetsByStatus400Response) VisitFindPetsByStatusResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
-}
-
-type FindPetsByStatusdefaultResponse struct {
-	StatusCode int
-}
-
-func (response FindPetsByStatusdefaultResponse) VisitFindPetsByStatusResponse(w http.ResponseWriter) error {
-	w.WriteHeader(response.StatusCode)
-	return nil
-}
-
-type FindPetsByTagsRequestObject struct {
-	Params FindPetsByTagsParams
-}
-
-type FindPetsByTagsResponseObject interface {
-	VisitFindPetsByTagsResponse(w http.ResponseWriter) error
-}
-
-type FindPetsByTags200JSONResponse []Pet
-
-func (response FindPetsByTags200JSONResponse) VisitFindPetsByTagsResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type FindPetsByTags400Response struct {
-}
-
-func (response FindPetsByTags400Response) VisitFindPetsByTagsResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
-}
-
-type FindPetsByTagsdefaultResponse struct {
-	StatusCode int
-}
-
-func (response FindPetsByTagsdefaultResponse) VisitFindPetsByTagsResponse(w http.ResponseWriter) error {
-	w.WriteHeader(response.StatusCode)
-	return nil
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 type DeletePetRequestObject struct {
-	PetId  int64 `json:"petId"`
-	Params DeletePetParams
+	PetId PetIdParameter `json:"petId"`
 }
 
 type DeletePetResponseObject interface {
 	VisitDeletePetResponse(w http.ResponseWriter) error
 }
 
+type DeletePet200ResponseHeaders struct {
+	XRequestId string
+}
+
 type DeletePet200Response struct {
+	Headers DeletePet200ResponseHeaders
 }
 
 func (response DeletePet200Response) VisitDeletePetResponse(w http.ResponseWriter) error {
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 	return nil
 }
 
-type DeletePet400Response struct {
-}
-
-func (response DeletePet400Response) VisitDeletePetResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
-}
-
-type DeletePetdefaultResponse struct {
+type DeletePetdefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
-func (response DeletePetdefaultResponse) VisitDeletePetResponse(w http.ResponseWriter) error {
+func (response DeletePetdefaultJSONResponse) VisitDeletePetResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
-	return nil
+
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 type GetPetByIdRequestObject struct {
-	PetId int64 `json:"petId"`
+	PetId PetIdParameter `json:"petId"`
 }
 
 type GetPetByIdResponseObject interface {
 	VisitGetPetByIdResponse(w http.ResponseWriter) error
 }
 
-type GetPetById200JSONResponse Pet
+type GetPetById200JSONResponse struct{ PetResponseJSONResponse }
 
 func (response GetPetById200JSONResponse) VisitGetPetByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
-	return json.NewEncoder(w).Encode(response)
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type GetPetById400Response struct {
-}
-
-func (response GetPetById400Response) VisitGetPetByIdResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
-}
-
-type GetPetById404Response struct {
-}
-
-func (response GetPetById404Response) VisitGetPetByIdResponse(w http.ResponseWriter) error {
-	w.WriteHeader(404)
-	return nil
-}
-
-type GetPetByIddefaultResponse struct {
+type GetPetByIddefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
-func (response GetPetByIddefaultResponse) VisitGetPetByIdResponse(w http.ResponseWriter) error {
-	w.WriteHeader(response.StatusCode)
-	return nil
-}
-
-type UpdatePetWithFormRequestObject struct {
-	PetId  int64 `json:"petId"`
-	Params UpdatePetWithFormParams
-}
-
-type UpdatePetWithFormResponseObject interface {
-	VisitUpdatePetWithFormResponse(w http.ResponseWriter) error
-}
-
-type UpdatePetWithForm200JSONResponse Pet
-
-func (response UpdatePetWithForm200JSONResponse) VisitUpdatePetWithFormResponse(w http.ResponseWriter) error {
+func (response GetPetByIddefaultJSONResponse) VisitGetPetByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(response.StatusCode)
 
-	return json.NewEncoder(w).Encode(response)
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type UpdatePetWithForm400Response struct {
+type ReplacePetRequestObject struct {
+	PetId PetIdParameter `json:"petId"`
+	Body  *multipart.Reader
 }
 
-func (response UpdatePetWithForm400Response) VisitUpdatePetWithFormResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
+type ReplacePetResponseObject interface {
+	VisitReplacePetResponse(w http.ResponseWriter) error
+}
+
+type ReplacePet202ResponseHeaders struct {
+	XRequestId string
+}
+
+type ReplacePet202Response struct {
+	Headers ReplacePet202ResponseHeaders
+}
+
+func (response ReplacePet202Response) VisitReplacePetResponse(w http.ResponseWriter) error {
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(202)
 	return nil
 }
 
-type UpdatePetWithFormdefaultResponse struct {
+type ReplacePetdefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
-func (response UpdatePetWithFormdefaultResponse) VisitUpdatePetWithFormResponse(w http.ResponseWriter) error {
-	w.WriteHeader(response.StatusCode)
-	return nil
-}
-
-type UploadFileRequestObject struct {
-	PetId  int64 `json:"petId"`
-	Params UploadFileParams
-	Body   io.Reader
-}
-
-type UploadFileResponseObject interface {
-	VisitUploadFileResponse(w http.ResponseWriter) error
-}
-
-type UploadFile200JSONResponse ApiResponse
-
-func (response UploadFile200JSONResponse) VisitUploadFileResponse(w http.ResponseWriter) error {
+func (response ReplacePetdefaultJSONResponse) VisitReplacePetResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(response.StatusCode)
 
-	return json.NewEncoder(w).Encode(response)
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type UploadFile400Response struct {
+type UploadPetImageRequestObject struct {
+	PetId PetIdParameter `json:"petId"`
+	Body  *multipart.Reader
 }
 
-func (response UploadFile400Response) VisitUploadFileResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
+type UploadPetImageResponseObject interface {
+	VisitUploadPetImageResponse(w http.ResponseWriter) error
+}
+
+type UploadPetImage202ResponseHeaders struct {
+	XRequestId string
+}
+
+type UploadPetImage202Response struct {
+	Headers UploadPetImage202ResponseHeaders
+}
+
+func (response UploadPetImage202Response) VisitUploadPetImageResponse(w http.ResponseWriter) error {
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(202)
 	return nil
 }
 
-type UploadFile404Response struct {
-}
-
-func (response UploadFile404Response) VisitUploadFileResponse(w http.ResponseWriter) error {
-	w.WriteHeader(404)
-	return nil
-}
-
-type UploadFiledefaultResponse struct {
+type UploadPetImagedefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
-func (response UploadFiledefaultResponse) VisitUploadFileResponse(w http.ResponseWriter) error {
-	w.WriteHeader(response.StatusCode)
-	return nil
-}
-
-type GetInventoryRequestObject struct {
-}
-
-type GetInventoryResponseObject interface {
-	VisitGetInventoryResponse(w http.ResponseWriter) error
-}
-
-type GetInventory200JSONResponse map[string]int32
-
-func (response GetInventory200JSONResponse) VisitGetInventoryResponse(w http.ResponseWriter) error {
+func (response UploadPetImagedefaultJSONResponse) VisitUploadPetImageResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetInventorydefaultResponse struct {
-	StatusCode int
-}
-
-func (response GetInventorydefaultResponse) VisitGetInventoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeletePetImageRequestObject struct {
+	PetId   PetIdParameter   `json:"petId"`
+	ImageId ImageIdParameter `json:"imageId"`
+}
+
+type DeletePetImageResponseObject interface {
+	VisitDeletePetImageResponse(w http.ResponseWriter) error
+}
+
+type DeletePetImage200ResponseHeaders struct {
+	XRequestId string
+}
+
+type DeletePetImage200Response struct {
+	Headers DeletePetImage200ResponseHeaders
+}
+
+func (response DeletePetImage200Response) VisitDeletePetImageResponse(w http.ResponseWriter) error {
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(200)
 	return nil
 }
 
-type PlaceOrderRequestObject struct {
-	Body *PlaceOrderJSONRequestBody
+type DeletePetImagedefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
+	StatusCode int
 }
 
-type PlaceOrderResponseObject interface {
-	VisitPlaceOrderResponse(w http.ResponseWriter) error
-}
-
-type PlaceOrder200JSONResponse Order
-
-func (response PlaceOrder200JSONResponse) VisitPlaceOrderResponse(w http.ResponseWriter) error {
+func (response DeletePetImagedefaultJSONResponse) VisitDeletePetImageResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetImageByPetIdRequestObject struct {
+	PetId   PetIdParameter   `json:"petId"`
+	ImageId ImageIdParameter `json:"imageId"`
+}
+
+type GetImageByPetIdResponseObject interface {
+	VisitGetImageByPetIdResponse(w http.ResponseWriter) error
+}
+
+type GetImageByPetId200ResponseHeaders struct {
+	XRequestId string
+}
+
+type GetImageByPetId200ImagejpegResponse struct {
+	Body          io.Reader
+	Headers       GetImageByPetId200ResponseHeaders
+	ContentLength int64
+}
+
+func (response GetImageByPetId200ImagejpegResponse) VisitGetImageByPetIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "image/jpeg")
+	if response.ContentLength != 0 {
+		w.Header().Set("Content-Length", fmt.Sprint(response.ContentLength))
+	}
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
-	return json.NewEncoder(w).Encode(response)
+	if closer, ok := response.Body.(io.ReadCloser); ok {
+		defer closer.Close()
+	}
+	_, err := io.Copy(w, response.Body)
+	return err
 }
 
-type PlaceOrder400Response struct {
-}
-
-func (response PlaceOrder400Response) VisitPlaceOrderResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
-}
-
-type PlaceOrder422Response struct {
-}
-
-func (response PlaceOrder422Response) VisitPlaceOrderResponse(w http.ResponseWriter) error {
-	w.WriteHeader(422)
-	return nil
-}
-
-type PlaceOrderdefaultResponse struct {
+type GetImageByPetIddefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
-func (response PlaceOrderdefaultResponse) VisitPlaceOrderResponse(w http.ResponseWriter) error {
+func (response GetImageByPetIddefaultJSONResponse) VisitGetImageByPetIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
-	return nil
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type FindOrdersRequestObject struct {
+	Params FindOrdersParams
+}
+
+type FindOrdersResponseObject interface {
+	VisitFindOrdersResponse(w http.ResponseWriter) error
+}
+
+type FindOrders200JSONResponse struct{ OrderResponseArrayJSONResponse }
+
+func (response FindOrders200JSONResponse) VisitFindOrdersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Next-Cursor", fmt.Sprint(response.Headers.XNextCursor))
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type FindOrdersdefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
+	StatusCode int
+}
+
+func (response FindOrdersdefaultJSONResponse) VisitFindOrdersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type PlaceOrdersRequestObject struct {
+	Body *PlaceOrdersJSONRequestBody
+}
+
+type PlaceOrdersResponseObject interface {
+	VisitPlaceOrdersResponse(w http.ResponseWriter) error
+}
+
+type PlaceOrders201JSONResponse struct{ OrderResponseArrayJSONResponse }
+
+func (response PlaceOrders201JSONResponse) VisitPlaceOrdersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Next-Cursor", fmt.Sprint(response.Headers.XNextCursor))
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type PlaceOrdersdefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
+	StatusCode int
+}
+
+func (response PlaceOrdersdefaultJSONResponse) VisitPlaceOrdersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 type DeleteOrderRequestObject struct {
-	OrderId int64 `json:"orderId"`
+	OrderId OrderIdParameter `json:"orderId"`
 }
 
 type DeleteOrderResponseObject interface {
 	VisitDeleteOrderResponse(w http.ResponseWriter) error
 }
 
+type DeleteOrder200ResponseHeaders struct {
+	XRequestId string
+}
+
 type DeleteOrder200Response struct {
+	Headers DeleteOrder200ResponseHeaders
 }
 
 func (response DeleteOrder200Response) VisitDeleteOrderResponse(w http.ResponseWriter) error {
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 	return nil
 }
 
-type DeleteOrder400Response struct {
-}
-
-func (response DeleteOrder400Response) VisitDeleteOrderResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
-}
-
-type DeleteOrder404Response struct {
-}
-
-func (response DeleteOrder404Response) VisitDeleteOrderResponse(w http.ResponseWriter) error {
-	w.WriteHeader(404)
-	return nil
-}
-
-type DeleteOrderdefaultResponse struct {
+type DeleteOrderdefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
-func (response DeleteOrderdefaultResponse) VisitDeleteOrderResponse(w http.ResponseWriter) error {
+func (response DeleteOrderdefaultJSONResponse) VisitDeleteOrderResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
-	return nil
+
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 type GetOrderByIdRequestObject struct {
-	OrderId int64 `json:"orderId"`
+	OrderId OrderIdParameter `json:"orderId"`
 }
 
 type GetOrderByIdResponseObject interface {
 	VisitGetOrderByIdResponse(w http.ResponseWriter) error
 }
 
-type GetOrderById200JSONResponse Order
+type GetOrderById200JSONResponse struct{ OrderResponseJSONResponse }
 
 func (response GetOrderById200JSONResponse) VisitGetOrderByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
-	return json.NewEncoder(w).Encode(response)
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type GetOrderById400Response struct {
-}
-
-func (response GetOrderById400Response) VisitGetOrderByIdResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
-}
-
-type GetOrderById404Response struct {
-}
-
-func (response GetOrderById404Response) VisitGetOrderByIdResponse(w http.ResponseWriter) error {
-	w.WriteHeader(404)
-	return nil
-}
-
-type GetOrderByIddefaultResponse struct {
+type GetOrderByIddefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
-func (response GetOrderByIddefaultResponse) VisitGetOrderByIdResponse(w http.ResponseWriter) error {
+func (response GetOrderByIddefaultJSONResponse) VisitGetOrderByIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
-	return nil
+
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 type CreateUserRequestObject struct {
@@ -1389,302 +1932,205 @@ type CreateUserResponseObject interface {
 	VisitCreateUserResponse(w http.ResponseWriter) error
 }
 
-type CreateUser200JSONResponse User
+type CreateUser201JSONResponse struct{ UserResponseJSONResponse }
 
-func (response CreateUser200JSONResponse) VisitCreateUserResponse(w http.ResponseWriter) error {
+func (response CreateUser201JSONResponse) VisitCreateUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type CreateUserdefaultResponse struct {
-	StatusCode int
-}
-
-func (response CreateUserdefaultResponse) VisitCreateUserResponse(w http.ResponseWriter) error {
-	w.WriteHeader(response.StatusCode)
-	return nil
-}
-
-type CreateUsersWithListInputRequestObject struct {
-	Body *CreateUsersWithListInputJSONRequestBody
-}
-
-type CreateUsersWithListInputResponseObject interface {
-	VisitCreateUsersWithListInputResponse(w http.ResponseWriter) error
-}
-
-type CreateUsersWithListInput200JSONResponse User
-
-func (response CreateUsersWithListInput200JSONResponse) VisitCreateUsersWithListInputResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type CreateUsersWithListInputdefaultResponse struct {
-	StatusCode int
-}
-
-func (response CreateUsersWithListInputdefaultResponse) VisitCreateUsersWithListInputResponse(w http.ResponseWriter) error {
-	w.WriteHeader(response.StatusCode)
-	return nil
-}
-
-type LoginUserRequestObject struct {
-	Params LoginUserParams
-}
-
-type LoginUserResponseObject interface {
-	VisitLoginUserResponse(w http.ResponseWriter) error
-}
-
-type LoginUser200ResponseHeaders struct {
-	XExpiresAfter time.Time
-	XRateLimit    int32
-}
-
-type LoginUser200JSONResponse struct {
-	Body    string
-	Headers LoginUser200ResponseHeaders
-}
-
-func (response LoginUser200JSONResponse) VisitLoginUserResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Expires-After", fmt.Sprint(response.Headers.XExpiresAfter))
-	w.Header().Set("X-Rate-Limit", fmt.Sprint(response.Headers.XRateLimit))
-	w.WriteHeader(200)
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
+	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type LoginUser400Response struct {
-}
-
-func (response LoginUser400Response) VisitLoginUserResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
-}
-
-type LoginUserdefaultResponse struct {
+type CreateUserdefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
-func (response LoginUserdefaultResponse) VisitLoginUserResponse(w http.ResponseWriter) error {
+func (response CreateUserdefaultJSONResponse) VisitCreateUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
-	return nil
-}
 
-type LogoutUserRequestObject struct {
-}
-
-type LogoutUserResponseObject interface {
-	VisitLogoutUserResponse(w http.ResponseWriter) error
-}
-
-type LogoutUser200Response struct {
-}
-
-func (response LogoutUser200Response) VisitLogoutUserResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
-	return nil
-}
-
-type LogoutUserdefaultResponse struct {
-	StatusCode int
-}
-
-func (response LogoutUserdefaultResponse) VisitLogoutUserResponse(w http.ResponseWriter) error {
-	w.WriteHeader(response.StatusCode)
-	return nil
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 type DeleteUserRequestObject struct {
-	Username string `json:"username"`
+	Username UsernameParameter `json:"username"`
 }
 
 type DeleteUserResponseObject interface {
 	VisitDeleteUserResponse(w http.ResponseWriter) error
 }
 
+type DeleteUser200ResponseHeaders struct {
+	XRequestId string
+}
+
 type DeleteUser200Response struct {
+	Headers DeleteUser200ResponseHeaders
 }
 
 func (response DeleteUser200Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 	return nil
 }
 
-type DeleteUser400Response struct {
-}
-
-func (response DeleteUser400Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
-}
-
-type DeleteUser404Response struct {
-}
-
-func (response DeleteUser404Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
-	w.WriteHeader(404)
-	return nil
-}
-
-type DeleteUserdefaultResponse struct {
+type DeleteUserdefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
-func (response DeleteUserdefaultResponse) VisitDeleteUserResponse(w http.ResponseWriter) error {
+func (response DeleteUserdefaultJSONResponse) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
-	return nil
+
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 type GetUserByNameRequestObject struct {
-	Username string `json:"username"`
+	Username UsernameParameter `json:"username"`
 }
 
 type GetUserByNameResponseObject interface {
 	VisitGetUserByNameResponse(w http.ResponseWriter) error
 }
 
-type GetUserByName200JSONResponse User
+type GetUserByName200JSONResponse struct{ UserResponseJSONResponse }
 
 func (response GetUserByName200JSONResponse) VisitGetUserByNameResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
-	return json.NewEncoder(w).Encode(response)
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type GetUserByName400Response struct {
-}
-
-func (response GetUserByName400Response) VisitGetUserByNameResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
-}
-
-type GetUserByName404Response struct {
-}
-
-func (response GetUserByName404Response) VisitGetUserByNameResponse(w http.ResponseWriter) error {
-	w.WriteHeader(404)
-	return nil
-}
-
-type GetUserByNamedefaultResponse struct {
+type GetUserByNamedefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
-func (response GetUserByNamedefaultResponse) VisitGetUserByNameResponse(w http.ResponseWriter) error {
+func (response GetUserByNamedefaultJSONResponse) VisitGetUserByNameResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
-	return nil
+
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type UpdateUserRequestObject struct {
-	Username string `json:"username"`
-	Body     *UpdateUserJSONRequestBody
+type ReplaceUserRequestObject struct {
+	Username UsernameParameter `json:"username"`
+	Body     *ReplaceUserJSONRequestBody
 }
 
-type UpdateUserResponseObject interface {
-	VisitUpdateUserResponse(w http.ResponseWriter) error
+type ReplaceUserResponseObject interface {
+	VisitReplaceUserResponse(w http.ResponseWriter) error
 }
 
-type UpdateUser200Response struct {
-}
+type ReplaceUser200JSONResponse struct{ UserResponseJSONResponse }
 
-func (response UpdateUser200Response) VisitUpdateUserResponse(w http.ResponseWriter) error {
+func (response ReplaceUser200JSONResponse) VisitReplaceUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
-	return nil
+
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type UpdateUser400Response struct {
-}
-
-func (response UpdateUser400Response) VisitUpdateUserResponse(w http.ResponseWriter) error {
-	w.WriteHeader(400)
-	return nil
-}
-
-type UpdateUser404Response struct {
-}
-
-func (response UpdateUser404Response) VisitUpdateUserResponse(w http.ResponseWriter) error {
-	w.WriteHeader(404)
-	return nil
-}
-
-type UpdateUserdefaultResponse struct {
+type ReplaceUserdefaultJSONResponse struct {
+	Body struct {
+		Action  *string `json:"action,omitempty"`
+		Message *string `json:"message,omitempty"`
+	}
+	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
-func (response UpdateUserdefaultResponse) VisitUpdateUserResponse(w http.ResponseWriter) error {
+func (response ReplaceUserdefaultJSONResponse) VisitReplaceUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
-	return nil
+
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
-	// Add a new pet to the store.
-	// (POST /pet)
+	// Find animal-category using name
+	// (GET /animal-categories)
+	FindAnimalCategory(ctx context.Context, request FindAnimalCategoryRequestObject) (FindAnimalCategoryResponseObject, error)
+	// Add new animal-category to the store.
+	// (POST /animal-categories)
+	AddAnimalCategory(ctx context.Context, request AddAnimalCategoryRequestObject) (AddAnimalCategoryResponseObject, error)
+	// Delete an animal-category.
+	// (DELETE /animal-categories/{animalCategoryId})
+	DeleteAnimalCategory(ctx context.Context, request DeleteAnimalCategoryRequestObject) (DeleteAnimalCategoryResponseObject, error)
+	// Replace existing animal-category data using Id.
+	// (PUT /animal-categories/{animalCategoryId})
+	ReplaceAnimalCategory(ctx context.Context, request ReplaceAnimalCategoryRequestObject) (ReplaceAnimalCategoryResponseObject, error)
+	// Find Pets using name, status, tags.
+	// (GET /pets)
+	FindPets(ctx context.Context, request FindPetsRequestObject) (FindPetsResponseObject, error)
+	// Add new pet to the store.
+	// (POST /pets)
 	AddPet(ctx context.Context, request AddPetRequestObject) (AddPetResponseObject, error)
-	// Update an existing pet.
-	// (PUT /pet)
-	UpdatePet(ctx context.Context, request UpdatePetRequestObject) (UpdatePetResponseObject, error)
-	// Finds Pets by status.
-	// (GET /pet/findByStatus)
-	FindPetsByStatus(ctx context.Context, request FindPetsByStatusRequestObject) (FindPetsByStatusResponseObject, error)
-	// Finds Pets by tags.
-	// (GET /pet/findByTags)
-	FindPetsByTags(ctx context.Context, request FindPetsByTagsRequestObject) (FindPetsByTagsResponseObject, error)
-	// Deletes a pet.
-	// (DELETE /pet/{petId})
+	// Delete a pet.
+	// (DELETE /pets/{petId})
 	DeletePet(ctx context.Context, request DeletePetRequestObject) (DeletePetResponseObject, error)
 	// Find pet by ID.
-	// (GET /pet/{petId})
+	// (GET /pets/{petId})
 	GetPetById(ctx context.Context, request GetPetByIdRequestObject) (GetPetByIdResponseObject, error)
-	// Updates a pet in the store with form data.
-	// (POST /pet/{petId})
-	UpdatePetWithForm(ctx context.Context, request UpdatePetWithFormRequestObject) (UpdatePetWithFormResponseObject, error)
-	// Uploads an image.
-	// (POST /pet/{petId}/uploadImage)
-	UploadFile(ctx context.Context, request UploadFileRequestObject) (UploadFileResponseObject, error)
-	// Returns pet inventories by status.
-	// (GET /store/inventory)
-	GetInventory(ctx context.Context, request GetInventoryRequestObject) (GetInventoryResponseObject, error)
-	// Place an order for a pet.
-	// (POST /store/order)
-	PlaceOrder(ctx context.Context, request PlaceOrderRequestObject) (PlaceOrderResponseObject, error)
+	// Replace existing pet data using Id.
+	// (PUT /pets/{petId})
+	ReplacePet(ctx context.Context, request ReplacePetRequestObject) (ReplacePetResponseObject, error)
+	// Upload a new image for a pet.
+	// (POST /pets/{petId}/images)
+	UploadPetImage(ctx context.Context, request UploadPetImageRequestObject) (UploadPetImageResponseObject, error)
+	// Delete a pet image.
+	// (DELETE /pets/{petId}/images/{imageId})
+	DeletePetImage(ctx context.Context, request DeletePetImageRequestObject) (DeletePetImageResponseObject, error)
+	// Get a pet image using ID.
+	// (GET /pets/{petId}/images/{imageId})
+	GetImageByPetId(ctx context.Context, request GetImageByPetIdRequestObject) (GetImageByPetIdResponseObject, error)
+	// Find user Orders using status.
+	// (GET /store/orders)
+	FindOrders(ctx context.Context, request FindOrdersRequestObject) (FindOrdersResponseObject, error)
+	// Place orders for pets.
+	// (POST /store/orders)
+	PlaceOrders(ctx context.Context, request PlaceOrdersRequestObject) (PlaceOrdersResponseObject, error)
 	// Delete purchase order by identifier.
-	// (DELETE /store/order/{orderId})
+	// (DELETE /store/orders/{orderId})
 	DeleteOrder(ctx context.Context, request DeleteOrderRequestObject) (DeleteOrderResponseObject, error)
 	// Find purchase order by ID.
-	// (GET /store/order/{orderId})
+	// (GET /store/orders/{orderId})
 	GetOrderById(ctx context.Context, request GetOrderByIdRequestObject) (GetOrderByIdResponseObject, error)
 	// Create user.
-	// (POST /user)
+	// (POST /users)
 	CreateUser(ctx context.Context, request CreateUserRequestObject) (CreateUserResponseObject, error)
-	// Creates list of users with given input array.
-	// (POST /user/createWithList)
-	CreateUsersWithListInput(ctx context.Context, request CreateUsersWithListInputRequestObject) (CreateUsersWithListInputResponseObject, error)
-	// Logs user into the system.
-	// (GET /user/login)
-	LoginUser(ctx context.Context, request LoginUserRequestObject) (LoginUserResponseObject, error)
-	// Logs out current logged in user session.
-	// (GET /user/logout)
-	LogoutUser(ctx context.Context, request LogoutUserRequestObject) (LogoutUserResponseObject, error)
 	// Delete user resource.
-	// (DELETE /user/{username})
+	// (DELETE /users/{username})
 	DeleteUser(ctx context.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error)
 	// Get user by user name.
-	// (GET /user/{username})
+	// (GET /users/{username})
 	GetUserByName(ctx context.Context, request GetUserByNameRequestObject) (GetUserByNameResponseObject, error)
-	// Update user resource.
-	// (PUT /user/{username})
-	UpdateUser(ctx context.Context, request UpdateUserRequestObject) (UpdateUserResponseObject, error)
+	// Replace user resource.
+	// (PUT /users/{username})
+	ReplaceUser(ctx context.Context, request ReplaceUserRequestObject) (ReplaceUserResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -1716,16 +2162,158 @@ type strictHandler struct {
 	options     StrictHTTPServerOptions
 }
 
-// AddPet operation middleware
-func (sh *strictHandler) AddPet(w http.ResponseWriter, r *http.Request) {
-	var request AddPetRequestObject
+// FindAnimalCategory operation middleware
+func (sh *strictHandler) FindAnimalCategory(w http.ResponseWriter, r *http.Request, params FindAnimalCategoryParams) {
+	var request FindAnimalCategoryRequestObject
 
-	var body AddPetJSONRequestBody
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.FindAnimalCategory(ctx, request.(FindAnimalCategoryRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "FindAnimalCategory")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(FindAnimalCategoryResponseObject); ok {
+		if err := validResponse.VisitFindAnimalCategoryResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// AddAnimalCategory operation middleware
+func (sh *strictHandler) AddAnimalCategory(w http.ResponseWriter, r *http.Request) {
+	var request AddAnimalCategoryRequestObject
+
+	var body AddAnimalCategoryJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
 		return
 	}
 	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.AddAnimalCategory(ctx, request.(AddAnimalCategoryRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "AddAnimalCategory")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(AddAnimalCategoryResponseObject); ok {
+		if err := validResponse.VisitAddAnimalCategoryResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteAnimalCategory operation middleware
+func (sh *strictHandler) DeleteAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryIdParameter) {
+	var request DeleteAnimalCategoryRequestObject
+
+	request.AnimalCategoryId = animalCategoryId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteAnimalCategory(ctx, request.(DeleteAnimalCategoryRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteAnimalCategory")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteAnimalCategoryResponseObject); ok {
+		if err := validResponse.VisitDeleteAnimalCategoryResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// ReplaceAnimalCategory operation middleware
+func (sh *strictHandler) ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryIdParameter) {
+	var request ReplaceAnimalCategoryRequestObject
+
+	request.AnimalCategoryId = animalCategoryId
+
+	var body ReplaceAnimalCategoryJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ReplaceAnimalCategory(ctx, request.(ReplaceAnimalCategoryRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ReplaceAnimalCategory")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ReplaceAnimalCategoryResponseObject); ok {
+		if err := validResponse.VisitReplaceAnimalCategoryResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// FindPets operation middleware
+func (sh *strictHandler) FindPets(w http.ResponseWriter, r *http.Request, params FindPetsParams) {
+	var request FindPetsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.FindPets(ctx, request.(FindPetsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "FindPets")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(FindPetsResponseObject); ok {
+		if err := validResponse.VisitFindPetsResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// AddPet operation middleware
+func (sh *strictHandler) AddPet(w http.ResponseWriter, r *http.Request) {
+	var request AddPetRequestObject
+
+	if reader, err := r.MultipartReader(); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode multipart body: %w", err))
+		return
+	} else {
+		request.Body = reader
+	}
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
 		return sh.ssi.AddPet(ctx, request.(AddPetRequestObject))
@@ -1747,95 +2335,11 @@ func (sh *strictHandler) AddPet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// UpdatePet operation middleware
-func (sh *strictHandler) UpdatePet(w http.ResponseWriter, r *http.Request) {
-	var request UpdatePetRequestObject
-
-	var body UpdatePetJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.UpdatePet(ctx, request.(UpdatePetRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "UpdatePet")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(UpdatePetResponseObject); ok {
-		if err := validResponse.VisitUpdatePetResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// FindPetsByStatus operation middleware
-func (sh *strictHandler) FindPetsByStatus(w http.ResponseWriter, r *http.Request, params FindPetsByStatusParams) {
-	var request FindPetsByStatusRequestObject
-
-	request.Params = params
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.FindPetsByStatus(ctx, request.(FindPetsByStatusRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "FindPetsByStatus")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(FindPetsByStatusResponseObject); ok {
-		if err := validResponse.VisitFindPetsByStatusResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// FindPetsByTags operation middleware
-func (sh *strictHandler) FindPetsByTags(w http.ResponseWriter, r *http.Request, params FindPetsByTagsParams) {
-	var request FindPetsByTagsRequestObject
-
-	request.Params = params
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.FindPetsByTags(ctx, request.(FindPetsByTagsRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "FindPetsByTags")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(FindPetsByTagsResponseObject); ok {
-		if err := validResponse.VisitFindPetsByTagsResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
 // DeletePet operation middleware
-func (sh *strictHandler) DeletePet(w http.ResponseWriter, r *http.Request, petId int64, params DeletePetParams) {
+func (sh *strictHandler) DeletePet(w http.ResponseWriter, r *http.Request, petId PetIdParameter) {
 	var request DeletePetRequestObject
 
 	request.PetId = petId
-	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
 		return sh.ssi.DeletePet(ctx, request.(DeletePetRequestObject))
@@ -1858,7 +2362,7 @@ func (sh *strictHandler) DeletePet(w http.ResponseWriter, r *http.Request, petId
 }
 
 // GetPetById operation middleware
-func (sh *strictHandler) GetPetById(w http.ResponseWriter, r *http.Request, petId int64) {
+func (sh *strictHandler) GetPetById(w http.ResponseWriter, r *http.Request, petId PetIdParameter) {
 	var request GetPetByIdRequestObject
 
 	request.PetId = petId
@@ -1883,26 +2387,145 @@ func (sh *strictHandler) GetPetById(w http.ResponseWriter, r *http.Request, petI
 	}
 }
 
-// UpdatePetWithForm operation middleware
-func (sh *strictHandler) UpdatePetWithForm(w http.ResponseWriter, r *http.Request, petId int64, params UpdatePetWithFormParams) {
-	var request UpdatePetWithFormRequestObject
+// ReplacePet operation middleware
+func (sh *strictHandler) ReplacePet(w http.ResponseWriter, r *http.Request, petId PetIdParameter) {
+	var request ReplacePetRequestObject
 
 	request.PetId = petId
+
+	if reader, err := r.MultipartReader(); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode multipart body: %w", err))
+		return
+	} else {
+		request.Body = reader
+	}
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.ReplacePet(ctx, request.(ReplacePetRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "ReplacePet")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(ReplacePetResponseObject); ok {
+		if err := validResponse.VisitReplacePetResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UploadPetImage operation middleware
+func (sh *strictHandler) UploadPetImage(w http.ResponseWriter, r *http.Request, petId PetIdParameter) {
+	var request UploadPetImageRequestObject
+
+	request.PetId = petId
+
+	if reader, err := r.MultipartReader(); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode multipart body: %w", err))
+		return
+	} else {
+		request.Body = reader
+	}
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.UploadPetImage(ctx, request.(UploadPetImageRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UploadPetImage")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(UploadPetImageResponseObject); ok {
+		if err := validResponse.VisitUploadPetImageResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeletePetImage operation middleware
+func (sh *strictHandler) DeletePetImage(w http.ResponseWriter, r *http.Request, petId PetIdParameter, imageId ImageIdParameter) {
+	var request DeletePetImageRequestObject
+
+	request.PetId = petId
+	request.ImageId = imageId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeletePetImage(ctx, request.(DeletePetImageRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeletePetImage")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeletePetImageResponseObject); ok {
+		if err := validResponse.VisitDeletePetImageResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetImageByPetId operation middleware
+func (sh *strictHandler) GetImageByPetId(w http.ResponseWriter, r *http.Request, petId PetIdParameter, imageId ImageIdParameter) {
+	var request GetImageByPetIdRequestObject
+
+	request.PetId = petId
+	request.ImageId = imageId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetImageByPetId(ctx, request.(GetImageByPetIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetImageByPetId")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetImageByPetIdResponseObject); ok {
+		if err := validResponse.VisitGetImageByPetIdResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// FindOrders operation middleware
+func (sh *strictHandler) FindOrders(w http.ResponseWriter, r *http.Request, params FindOrdersParams) {
+	var request FindOrdersRequestObject
+
 	request.Params = params
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.UpdatePetWithForm(ctx, request.(UpdatePetWithFormRequestObject))
+		return sh.ssi.FindOrders(ctx, request.(FindOrdersRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "UpdatePetWithForm")
+		handler = middleware(handler, "FindOrders")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(UpdatePetWithFormResponseObject); ok {
-		if err := validResponse.VisitUpdatePetWithFormResponse(w); err != nil {
+	} else if validResponse, ok := response.(FindOrdersResponseObject); ok {
+		if err := validResponse.VisitFindOrdersResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -1910,64 +2533,11 @@ func (sh *strictHandler) UpdatePetWithForm(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// UploadFile operation middleware
-func (sh *strictHandler) UploadFile(w http.ResponseWriter, r *http.Request, petId int64, params UploadFileParams) {
-	var request UploadFileRequestObject
+// PlaceOrders operation middleware
+func (sh *strictHandler) PlaceOrders(w http.ResponseWriter, r *http.Request) {
+	var request PlaceOrdersRequestObject
 
-	request.PetId = petId
-	request.Params = params
-
-	request.Body = r.Body
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.UploadFile(ctx, request.(UploadFileRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "UploadFile")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(UploadFileResponseObject); ok {
-		if err := validResponse.VisitUploadFileResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetInventory operation middleware
-func (sh *strictHandler) GetInventory(w http.ResponseWriter, r *http.Request) {
-	var request GetInventoryRequestObject
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.GetInventory(ctx, request.(GetInventoryRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetInventory")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(GetInventoryResponseObject); ok {
-		if err := validResponse.VisitGetInventoryResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// PlaceOrder operation middleware
-func (sh *strictHandler) PlaceOrder(w http.ResponseWriter, r *http.Request) {
-	var request PlaceOrderRequestObject
-
-	var body PlaceOrderJSONRequestBody
+	var body PlaceOrdersJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
 		return
@@ -1975,18 +2545,18 @@ func (sh *strictHandler) PlaceOrder(w http.ResponseWriter, r *http.Request) {
 	request.Body = &body
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.PlaceOrder(ctx, request.(PlaceOrderRequestObject))
+		return sh.ssi.PlaceOrders(ctx, request.(PlaceOrdersRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PlaceOrder")
+		handler = middleware(handler, "PlaceOrders")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(PlaceOrderResponseObject); ok {
-		if err := validResponse.VisitPlaceOrderResponse(w); err != nil {
+	} else if validResponse, ok := response.(PlaceOrdersResponseObject); ok {
+		if err := validResponse.VisitPlaceOrdersResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -1995,7 +2565,7 @@ func (sh *strictHandler) PlaceOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteOrder operation middleware
-func (sh *strictHandler) DeleteOrder(w http.ResponseWriter, r *http.Request, orderId int64) {
+func (sh *strictHandler) DeleteOrder(w http.ResponseWriter, r *http.Request, orderId OrderIdParameter) {
 	var request DeleteOrderRequestObject
 
 	request.OrderId = orderId
@@ -2021,7 +2591,7 @@ func (sh *strictHandler) DeleteOrder(w http.ResponseWriter, r *http.Request, ord
 }
 
 // GetOrderById operation middleware
-func (sh *strictHandler) GetOrderById(w http.ResponseWriter, r *http.Request, orderId int64) {
+func (sh *strictHandler) GetOrderById(w http.ResponseWriter, r *http.Request, orderId OrderIdParameter) {
 	var request GetOrderByIdRequestObject
 
 	request.OrderId = orderId
@@ -2077,89 +2647,8 @@ func (sh *strictHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// CreateUsersWithListInput operation middleware
-func (sh *strictHandler) CreateUsersWithListInput(w http.ResponseWriter, r *http.Request) {
-	var request CreateUsersWithListInputRequestObject
-
-	var body CreateUsersWithListInputJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.CreateUsersWithListInput(ctx, request.(CreateUsersWithListInputRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "CreateUsersWithListInput")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(CreateUsersWithListInputResponseObject); ok {
-		if err := validResponse.VisitCreateUsersWithListInputResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// LoginUser operation middleware
-func (sh *strictHandler) LoginUser(w http.ResponseWriter, r *http.Request, params LoginUserParams) {
-	var request LoginUserRequestObject
-
-	request.Params = params
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.LoginUser(ctx, request.(LoginUserRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "LoginUser")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(LoginUserResponseObject); ok {
-		if err := validResponse.VisitLoginUserResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// LogoutUser operation middleware
-func (sh *strictHandler) LogoutUser(w http.ResponseWriter, r *http.Request) {
-	var request LogoutUserRequestObject
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.LogoutUser(ctx, request.(LogoutUserRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "LogoutUser")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(LogoutUserResponseObject); ok {
-		if err := validResponse.VisitLogoutUserResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
 // DeleteUser operation middleware
-func (sh *strictHandler) DeleteUser(w http.ResponseWriter, r *http.Request, username string) {
+func (sh *strictHandler) DeleteUser(w http.ResponseWriter, r *http.Request, username UsernameParameter) {
 	var request DeleteUserRequestObject
 
 	request.Username = username
@@ -2185,7 +2674,7 @@ func (sh *strictHandler) DeleteUser(w http.ResponseWriter, r *http.Request, user
 }
 
 // GetUserByName operation middleware
-func (sh *strictHandler) GetUserByName(w http.ResponseWriter, r *http.Request, username string) {
+func (sh *strictHandler) GetUserByName(w http.ResponseWriter, r *http.Request, username UsernameParameter) {
 	var request GetUserByNameRequestObject
 
 	request.Username = username
@@ -2210,13 +2699,13 @@ func (sh *strictHandler) GetUserByName(w http.ResponseWriter, r *http.Request, u
 	}
 }
 
-// UpdateUser operation middleware
-func (sh *strictHandler) UpdateUser(w http.ResponseWriter, r *http.Request, username string) {
-	var request UpdateUserRequestObject
+// ReplaceUser operation middleware
+func (sh *strictHandler) ReplaceUser(w http.ResponseWriter, r *http.Request, username UsernameParameter) {
+	var request ReplaceUserRequestObject
 
 	request.Username = username
 
-	var body UpdateUserJSONRequestBody
+	var body ReplaceUserJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
 		return
@@ -2224,18 +2713,18 @@ func (sh *strictHandler) UpdateUser(w http.ResponseWriter, r *http.Request, user
 	request.Body = &body
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.UpdateUser(ctx, request.(UpdateUserRequestObject))
+		return sh.ssi.ReplaceUser(ctx, request.(ReplaceUserRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "UpdateUser")
+		handler = middleware(handler, "ReplaceUser")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(UpdateUserResponseObject); ok {
-		if err := validResponse.VisitUpdateUserResponse(w); err != nil {
+	} else if validResponse, ok := response.(ReplaceUserResponseObject); ok {
+		if err := validResponse.VisitReplaceUserResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -2246,56 +2735,54 @@ func (sh *strictHandler) UpdateUser(w http.ResponseWriter, r *http.Request, user
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"5dZ1OV3DQLzb69v/BQAA//+fJrjqazsAAA==",
+	"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",
+	"QQAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
