@@ -304,11 +304,7 @@ paths:
         "$ref": "#/components/requestBodies/OrderRequest"
       responses:
         "201":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/responses/OrderResponseArray"
+          "$ref": "#/components/responses/OrderResponseArray"
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/store/orders/{orderId}":
@@ -322,11 +318,7 @@ paths:
           "$ref": "#/components/parameters/OrderIdParameter"
       responses:
         "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/responses/OrderResponse"
+          "$ref": "#/components/responses/OrderResponse"
         default:
           "$ref": "#/components/responses/ApiResponse"
     delete:
@@ -355,11 +347,7 @@ paths:
         "$ref": "#/components/requestBodies/UserRequest"
       responses:
         "201":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/responses/UserResponse"
+          "$ref": "#/components/responses/UserResponse"
         default:
           "$ref": "#/components/responses/ApiResponse"
       security: []
@@ -375,11 +363,7 @@ paths:
           "$ref": "#/components/parameters/UsernameParameter"
       responses:
         "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/responses/UserResponse"
+          "$ref": "#/components/responses/UserResponse"
         default:
           "$ref": "#/components/responses/ApiResponse"
     put:
@@ -394,11 +378,7 @@ paths:
         "$ref": "#/components/requestBodies/UserRequest"
       responses:
         "200":
-          description: successful operation
-          content:
-            application/json:
-              schema:
-                "$ref": "#/components/responses/UserResponse"
+          "$ref": "#/components/responses/UserResponse"
         default:
           "$ref": "#/components/responses/ApiResponse"
     delete:
