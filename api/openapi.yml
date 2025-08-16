@@ -13,7 +13,7 @@ paths:
     get:
       tags:
         - pet
-      summary: Find Pets using name, status, tags. **Atleast one of the parameters is required**
+      summary: Find Pets using name, status, tags.
       description: Find Pets using name, status, tags. **Atleast one of the parameters is required**
       operationId: findPets
       parameters:
@@ -49,8 +49,8 @@ paths:
     post:
       tags:
         - pet
-      summary: Add a new pet to the store.
-      description: Add a new pet to the store.
+      summary: Add new pet to the store.
+      description: Add new pet to the store.
       operationId: addPet
       requestBody:
         required: true
@@ -73,6 +73,7 @@ paths:
                     type: string
                     description: "Min size: 1B, Max size: 10MB"
                     format: binary
+                    example: binary string representation of jpeg image
             encoding:
               pet:
                 contentType: application/json
@@ -102,8 +103,8 @@ paths:
     put:
       tags:
         - pet
-      summary: Replace existing pet data using id.
-      description: Replace existing pet data using id.
+      summary: Replace existing pet data using Id.
+      description: Replace existing pet data using Id.
       operationId: replacePet
       parameters:
         - description: ID of pet that needs to be replaced
@@ -142,7 +143,7 @@ paths:
     delete:
       tags:
         - pet
-      summary: Deletes a pet.
+      summary: Delete a pet.
       description: Delete a pet.
       operationId: deletePet
       parameters:
@@ -160,8 +161,8 @@ paths:
     get:
       tags:
         - pet
-      summary: Gets a pet image using ID.
-      description: Gets a pet image using ID.
+      summary: Get a pet image using ID.
+      description: Get a pet image using ID.
       operationId: getImageByPetId
       parameters:
         - description: ID of pet
@@ -183,12 +184,9 @@ paths:
               schema:
                 type: string
                 format: binary
+                example: binary string representation of jpeg image
         default:
           "$ref": "#/components/responses/ApiResponse"
-      security:
-        - petstore_auth:
-            - write:pets
-            - read:pets
   # "/store/inventory":
   #   get:
   #     tags:
@@ -640,9 +638,15 @@ components:
       content:
         application/json:
           schema:
-            type: array
-            items:
-              "$ref": "#/components/schemas/PetResponse"
+            type: object
+            properties:
+              count:
+                type: integer
+                description: Total number of pets
+              pets:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/PetResponse"
     ApiResponse:
       description: "Generic API Response"
       headers:
