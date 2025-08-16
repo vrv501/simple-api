@@ -117,3 +117,19 @@ type order struct {
 	CreatedOn   time.Time     `bson:"created_on"`   // "bsonType": "date"
 	DeletedOn   *time.Time    `bson:"deleted_on"`   // "bsonType": ["date", "null"]
 }
+
+type fsFile struct {
+	ID         bson.ObjectID `bson:"_id,omitempty"`
+	Length     int64         `bson:"length"`     // "bsonType": "long"
+	ChunkSize  int32         `bson:"chunkSize"`  // "bsonType": "int"
+	UploadDate time.Time     `bson:"uploadDate"` // "bsonType": "date"
+	Filename   string        `bson:"filename"`   // "bsonType": "string"
+	Metadata   bson.M        `bson:"metadata"`   // "bsonType": "object"
+}
+
+type fsChunk struct {
+	ID      bson.ObjectID `bson:"_id,omitempty"`
+	FilesID bson.ObjectID `bson:"files_id"` // "bsonType": "objectId"
+	Length  int32         `bson:"n"`        // "bsonType": "int"
+	Data    []byte        `bson:"data"`     // "bsonType": "binData"
+}
