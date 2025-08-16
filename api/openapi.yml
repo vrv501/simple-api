@@ -8,6 +8,22 @@ servers:
   - url: "/api/v1"
 security:
   - bearerAuth: []
+x-headers:
+  reqIdHeader: &reqIdHeader
+    X-Request-Id: 
+      description: "Unique request identifier for tracing"
+      schema:
+        type: string
+  paginationHeaders: &paginationHeaders
+    X-Request-Id: 
+      description: "Unique request identifier for tracing"
+      schema:
+        type: string
+    X-Next-Cursor: 
+      description: "Cursor for the next page (null if no more pages)"
+      schema:
+        type: string
+        nullable: true
 paths:
   "/animal-categories":
     get:
@@ -49,8 +65,7 @@ paths:
       description: Replace existing animal-category data using Id.
       operationId: replaceAnimalCategory
       parameters:
-        - description: ID of animal-category that needs to be replaced
-          "$ref": "#/components/parameters/AnimalCategoryIdParameter"
+        - "$ref": "#/components/parameters/AnimalCategoryIdParameter"
       requestBody:
         "$ref": "#/components/requestBodies/AnimalCategoryRequest"
       responses:
@@ -65,14 +80,11 @@ paths:
       description: Delete an animal-category.
       operationId: deleteAnimalCategory
       parameters:
-        - description: Animal-category id to delete
-          "$ref": "#/components/parameters/AnimalCategoryIdParameter"
+        - "$ref": "#/components/parameters/AnimalCategoryIdParameter"
       responses:
         "200":
           description: Animal-category deleted
-          headers:
-            X-Request-Id:
-              "$ref": "#/components/headers/X-Request-Id"
+          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/pets":
@@ -123,9 +135,7 @@ paths:
       responses:
         "202":
           description: "Request Accepted"
-          headers:
-            X-Request-Id:
-              "$ref": "#/components/headers/X-Request-Id"
+          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/pets/{petId}":
@@ -136,8 +146,7 @@ paths:
       description: Returns a single pet.
       operationId: getPetById
       parameters:
-        - description: ID of pet to return
-          "$ref": "#/components/parameters/PetIdParameter"
+        - "$ref": "#/components/parameters/PetIdParameter"
       responses:
         "200":
           "$ref": "#/components/responses/PetResponse"                
@@ -150,16 +159,13 @@ paths:
       description: Replace existing pet data using Id.
       operationId: replacePet
       parameters:
-        - description: ID of pet that needs to be replaced
-          "$ref": "#/components/parameters/PetIdParameter"
+        - "$ref": "#/components/parameters/PetIdParameter"
       requestBody:
         "$ref": "#/components/requestBodies/PetRequest"
       responses:
         "202":
           description: "Request Accepted"
-          headers:
-            X-Request-Id:
-              "$ref": "#/components/headers/X-Request-Id"
+          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
     delete:
@@ -169,14 +175,11 @@ paths:
       description: Delete a pet.
       operationId: deletePet
       parameters:
-        - description: Pet id to delete
-          "$ref": "#/components/parameters/PetIdParameter"
+        - "$ref": "#/components/parameters/PetIdParameter"
       responses:
         "200":
           description: Pet deleted
-          headers:
-            X-Request-Id:
-              "$ref": "#/components/headers/X-Request-Id"
+          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/pets/{petId}/images":
@@ -187,8 +190,7 @@ paths:
       description: Upload a new image for a pet.
       operationId: uploadPetImage
       parameters:
-        - description: ID of pet to upload image for
-          "$ref": "#/components/parameters/PetIdParameter"
+        - "$ref": "#/components/parameters/PetIdParameter"
       requestBody:
         content:
           multipart/form-data:
@@ -200,6 +202,7 @@ paths:
                 photos: 
                   type: array
                   description: Pet images (up to 10)
+                  minItems: 1
                   maxItems: 10
                   items:
                     type: string
@@ -213,9 +216,7 @@ paths:
       responses:
         "202":
           description: "Accepted Request"
-          headers:
-            X-Request-Id:
-              "$ref": "#/components/headers/X-Request-Id"
+          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/pets/{petId}/images/{imageId}":
@@ -226,16 +227,12 @@ paths:
       description: Get a pet image using ID.
       operationId: getImageByPetId
       parameters:
-        - description: ID of pet
-          "$ref": "#/components/parameters/PetIdParameter"
-        - description: ID of image
-          "$ref": "#/components/parameters/ImageIdParameter"
+        - "$ref": "#/components/parameters/PetIdParameter"
+        - "$ref": "#/components/parameters/ImageIdParameter"
       responses:
         "200":
           description: Successful response
-          headers:
-            X-Request-Id:
-              "$ref": "#/components/headers/X-Request-Id"
+          headers: *reqIdHeader
           content:
             image/jpeg:
               schema:
@@ -251,16 +248,12 @@ paths:
       description: Delete a pet image.
       operationId: deletePetImage
       parameters:
-        - description: ID of pet
-          "$ref": "#/components/parameters/PetIdParameter"
-        - description: ID of image
-          "$ref": "#/components/parameters/ImageIdParameter"
+        - "$ref": "#/components/parameters/PetIdParameter"
+        - "$ref": "#/components/parameters/ImageIdParameter"
       responses:
         "200":
           description: Pet image deleted
-          headers:
-            X-Request-Id:
-              "$ref": "#/components/headers/X-Request-Id"
+          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/store/orders":
@@ -314,8 +307,7 @@ paths:
       summary: Find purchase order by ID.
       operationId: getOrderById
       parameters: 
-        - description: ID of order that needs to be fetched
-          "$ref": "#/components/parameters/OrderIdParameter"
+        - "$ref": "#/components/parameters/OrderIdParameter"
       responses:
         "200":
           "$ref": "#/components/responses/OrderResponse"
@@ -327,14 +319,11 @@ paths:
       summary: Delete purchase order by identifier.
       operationId: deleteOrder
       parameters:
-        - description: ID of the order that needs to be deleted
-          "$ref": "#/components/parameters/OrderIdParameter"
+        - "$ref": "#/components/parameters/OrderIdParameter"
       responses:
         "200":
           description: Order deleted
-          headers:
-            X-Request-Id:
-              "$ref": "#/components/headers/X-Request-Id"
+          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/users":
@@ -359,8 +348,7 @@ paths:
       description: Get user detail based on username.
       operationId: getUserByName
       parameters:
-        - description: The name that needs to be fetched. Use user1 for testing
-          "$ref": "#/components/parameters/UsernameParameter"
+        - "$ref": "#/components/parameters/UsernameParameter"
       responses:
         "200":
           "$ref": "#/components/responses/UserResponse"
@@ -372,8 +360,7 @@ paths:
       summary: Replace user resource.
       operationId: replaceUser
       parameters:
-        - description: username to be replaced
-          "$ref": "#/components/parameters/UsernameParameter"
+        - "$ref": "#/components/parameters/UsernameParameter"
       requestBody:
         "$ref": "#/components/requestBodies/UserRequest"
       responses:
@@ -387,14 +374,11 @@ paths:
       summary: Delete user resource.
       operationId: deleteUser
       parameters:
-        - description: The name that needs to be deleted
-          "$ref": "#/components/parameters/UsernameParameter"
+        - "$ref": "#/components/parameters/UsernameParameter"
       responses:
         "200":
           description: Order deleted
-          headers:
-            X-Request-Id:
-              "$ref": "#/components/headers/X-Request-Id"
+          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
 components:
@@ -429,7 +413,6 @@ components:
       default: available
       enum:
         - available
-        - pending
         - sold      
     Pet:
       required:
@@ -467,7 +450,7 @@ components:
                 description: URI of pet image
                 type: string
                 format: uri
-                example: /pet/{petId}/image/{imageId}
+                example: /pet/{petId}/images/{imageId}
         - "$ref": "#/components/schemas/Pet"
         - "$ref": "#/components/schemas/DateTimeMetadata"
     OrderStatus:
@@ -476,7 +459,7 @@ components:
       default: placed
       enum:
         - placed
-        - cancelled
+        - in-progress
         - delivered 
     OrderResp: 
       allOf:
@@ -551,7 +534,6 @@ components:
               - name
             properties: 
               name:
-                description: Name of the animal category
                 "$ref": "#/components/schemas/AnimalCategoryName"
     PetRequest:
       required: true
@@ -563,11 +545,11 @@ components:
               - pet
             properties: 
               pet:
-                description: Pet data 
                 "$ref": "#/components/schemas/Pet"
               photos: 
                 type: array
                 description: Pet images (up to 10)
+                minItems: 1
                 maxItems: 10
                 items:
                   type: string
@@ -614,9 +596,7 @@ components:
   responses:
     AnimalCategoryResponse: 
       description: "Successful Animal Category response"
-      headers:
-        X-Request-Id:
-          "$ref": "#/components/headers/X-Request-Id"
+      headers: *reqIdHeader
       content:
         application/json:
           schema: 
@@ -630,20 +610,14 @@ components:
               - "$ref": "#/components/schemas/DateTimeMetadata"
     PetResponse: 
       description: "Successful Pet object response"
-      headers:
-        X-Request-Id:
-          "$ref": "#/components/headers/X-Request-Id"
+      headers: *reqIdHeader
       content:
         application/json:
           schema: 
             "$ref": "#/components/schemas/PetResp"
     PetResponseArray:
       description: "Successful Pet array response"
-      headers:
-        X-Request-Id:
-          "$ref": "#/components/headers/X-Request-Id"
-        X-Next-Cursor:
-          "$ref": "#/components/headers/X-Next-Cursor"
+      headers: *paginationHeaders
       content:
         application/json:
           schema:
@@ -658,20 +632,14 @@ components:
                   "$ref": "#/components/schemas/PetResp"
     OrderResponse:
       description: "Successful Order response"
-      headers:
-        X-Request-Id:
-          "$ref": "#/components/headers/X-Request-Id"
+      headers: *reqIdHeader
       content:
         application/json:
           schema:
             "$ref": "#/components/schemas/OrderResp"
     OrderResponseArray:
       description: "Successful Order array response"
-      headers:
-        X-Request-Id:
-          "$ref": "#/components/headers/X-Request-Id"
-        X-Next-Cursor:
-          "$ref": "#/components/headers/X-Next-Cursor"
+      headers: *paginationHeaders
       content:
         application/json:
           schema:
@@ -679,16 +647,14 @@ components:
             properties:
               count:
                 type: integer
-                description: Total number of pets
-              pets:
+                description: Total number of orders
+              orders:
                 type: array
                 items:
                   "$ref": "#/components/schemas/OrderResp"
     UserResponse:
       description: "Successful User object response"
-      headers:
-        X-Request-Id:
-          "$ref": "#/components/headers/X-Request-Id"
+      headers: *reqIdHeader
       content:
         application/json:
           schema:
@@ -697,9 +663,7 @@ components:
               - "$ref": "#/components/schemas/DateTimeMetadata"
     ApiResponse:
       description: "Generic API Response"
-      headers:
-        X-Request-Id:
-          "$ref": "#/components/headers/X-Request-Id"
+      headers: *reqIdHeader
       content:
         application/json:
           schema:
@@ -759,16 +723,6 @@ components:
         minimum: 10
         maximum: 50
         default: 20
-  headers:
-    X-Next-Cursor:
-      description: "Cursor for the next page (null if no more pages)"
-      schema:
-        type: string
-        nullable: true
-    X-Request-Id:
-      description: "Unique request identifier for tracing"
-      schema:
-        type: string
   securitySchemes:
     bearerAuth:
       type: http

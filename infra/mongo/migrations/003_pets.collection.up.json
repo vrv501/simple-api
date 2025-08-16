@@ -38,7 +38,6 @@
                     "status": {
                         "enum": [
                             "available",
-                            "pending",
                             "sold"
                         ],
                         "description": "purchase status of pet"
