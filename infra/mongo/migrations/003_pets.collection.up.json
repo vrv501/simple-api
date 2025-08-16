@@ -7,7 +7,7 @@
                 "required": [
                     "name",
                     "category_id",
-                    "photo_urls",
+                    "photo_uris",
                     "status",
                     "tags",
                     "created_on",
@@ -17,23 +17,16 @@
                 "properties": {
                     "name": {
                         "bsonType": "string",
-                        "minLength": 1,
-                        "maxLength": 150,
-                        "description": "pet name",
-                        "pattern": "^[a-z\\s-]+$"
+                        "description": "pet name"
                     },
                     "category_id": {
                         "bsonType": "objectId",
                         "description": "Reference to animal_categories collection _id"
                     },
-                    "photo_urls": {
+                    "photo_uris": {
                         "bsonType": ["array", "null"],
-                        "minItems": 1,
-                        "maxItems": 10,
                         "items": {
-                            "bsonType": "string",
-                            "minLength": 1,
-                            "maxLength": 2000
+                            "bsonType": "string"
                         },
                         "description": "photo urls of the pet"
                     },
@@ -47,12 +40,8 @@
                     },
                     "tags": {
                         "bsonType": ["array", "null"],
-                        "minItems": 1,
-                        "maxItems": 50,
                         "items": {
-                            "bsonType": "string",
-                            "minLength": 1,
-                            "maxLength": 20
+                            "bsonType": "string"
                         },
                         "description": "array of keys for tagging & metadata"
                     },

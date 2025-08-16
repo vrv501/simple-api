@@ -13,10 +13,7 @@
                 "properties": {
                     "name": {
                         "bsonType": "string",
-                        "minLength": 1,
-                        "maxLength": 150,
-                        "description": "animal category",
-                        "pattern": "^[a-z0-9\\s-]+$"
+                        "description": "animal category"
                     },
                     "created_on": {
                         "bsonType": "date",
