@@ -31,7 +31,6 @@
                     "status": {
                         "enum": [
                             "placed",
-                            "cancelled",
                             "in-progress",
                             "delivered"
                         ],

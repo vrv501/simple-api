@@ -16,34 +16,20 @@
                 ],
                 "properties": {
                     "username": {
-                        "bsonType": "string",
-                        "minLength": 1,
-                        "maxLength": 150,
-                        "pattern": "^[a-z0-9-]+$"
+                        "bsonType": "string"
                     },
                     "full_name": {
-                        "bsonType": "string",
-                        "minLength": 1,
-                        "maxLength": 150,
-                        "pattern": "^[a-z\\s-]+$"
+                        "bsonType": "string"
                     },
                     "email": {
-                        "bsonType": "string",
-                        "minLength": 1,
-                        "maxLength": 320,
-                        "pattern": "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+                        "bsonType": "string"
                     },
                     "password": {
                         "bsonType": "string",
-                        "minLength": 1,
-                        "maxLength": 320,
                         "description": "hashed password"
                     },
                     "phone_number": {
-                        "bsonType": "string",
-                        "minLength": 1,
-                        "maxLength": 16,
-                        "pattern": "^\\+?[0-9-]{7,15}$"
+                        "bsonType": "string"
                     },
                     "created_on": {
                         "bsonType": "date",

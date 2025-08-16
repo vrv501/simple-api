@@ -348,105 +348,86 @@ paths:
               "$ref": "#/components/headers/X-Request-Id"
         default:
           "$ref": "#/components/responses/ApiResponse"
-  # "/user":
-  #   post:
-  #     tags:
-  #     - user
-  #     summary: Create user.
-  #     description: This can only be done by the logged in user.
-  #     operationId: createUser
-  #     requestBody:
-  #       description: Created user object
-  #       content:
-  #         application/json:
-  #           schema:
-  #             "$ref": "#/components/schemas/User"
-  #     responses:
-  #       "200":
-  #         description: successful operation
-  #         content:
-  #           application/json:
-  #             schema:
-  #               "$ref": "#/components/schemas/User"
-  #       default:
-  #         description: Unexpected error
-  # "/user/{username}":
-  #   get:
-  #     tags:
-  #     - user
-  #     summary: Get user by user name.
-  #     description: Get user detail based on username.
-  #     operationId: getUserByName
-  #     parameters:
-  #     - name: username
-  #       in: path
-  #       description: The name that needs to be fetched. Use user1 for testing
-  #       required: true
-  #       schema:
-  #         type: string
-  #     responses:
-  #       "200":
-  #         description: successful operation
-  #         content:
-  #           application/json:
-  #             schema:
-  #               "$ref": "#/components/schemas/User"
-  #       "400":
-  #         description: Invalid username supplied
-  #       "404":
-  #         description: User not found
-  #       default:
-  #         description: Unexpected error
-  #   put:
-  #     tags:
-  #     - user
-  #     summary: Update user resource.
-  #     description: This can only be done by the logged in user.
-  #     operationId: updateUser
-  #     parameters:
-  #     - name: username
-  #       in: path
-  #       description: name that need to be deleted
-  #       required: true
-  #       schema:
-  #         type: string
-  #     requestBody:
-  #       description: Update an existent user in the store
-  #       content:
-  #         application/json:
-  #           schema:
-  #             "$ref": "#/components/schemas/User"
-  #     responses:
-  #       "200":
-  #         description: successful operation
-  #       "400":
-  #         description: bad request
-  #       "404":
-  #         description: user not found
-  #       default:
-  #         description: Unexpected error
-  #   delete:
-  #     tags:
-  #     - user
-  #     summary: Delete user resource.
-  #     description: This can only be done by the logged in user.
-  #     operationId: deleteUser
-  #     parameters:
-  #     - name: username
-  #       in: path
-  #       description: The name that needs to be deleted
-  #       required: true
-  #       schema:
-  #         type: string
-  #     responses:
-  #       "200":
-  #         description: User deleted
-  #       "400":
-  #         description: Invalid username supplied
-  #       "404":
-  #         description: User not found
-  #       default:
-  #         description: Unexpected error
+  "/users":
+    post:
+      tags:
+        - users
+      summary: Create user.
+      operationId: createUser
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/requestBodies/UserRequest"
+      responses:
+        "201":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/responses/UserResponse"
+        default:
+          "$ref": "#/components/responses/ApiResponse"
+      security: []
+  "/users/{username}":
+    get:
+      tags:
+        - users
+      summary: Get user by user name.
+      description: Get user detail based on username.
+      operationId: getUserByName
+      parameters:
+        - description: The name that needs to be fetched. Use user1 for testing
+          "$ref": "#/components/parameters/UsernameParameter"
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/responses/UserResponse"
+        default:
+          "$ref": "#/components/responses/ApiResponse"
+    put:
+      tags:
+        - users
+      summary: Replace user resource.
+      operationId: replaceUser
+      parameters:
+        - description: username to be replaced
+          "$ref": "#/components/parameters/UsernameParameter"
+      requestBody:
+        description: Replace an existing user in the store
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/requestBodies/UserRequest"
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/responses/UserResponse"
+        default:
+          "$ref": "#/components/responses/ApiResponse"
+    delete:
+      tags:
+        - users
+      summary: Delete user resource.
+      operationId: deleteUser
+      parameters:
+        - description: The name that needs to be deleted
+          "$ref": "#/components/parameters/UsernameParameter"
+      responses:
+        "200":
+          description: Order deleted
+          headers:
+            X-Request-Id:
+              "$ref": "#/components/headers/X-Request-Id"
+        default:
+          "$ref": "#/components/responses/ApiResponse"
 components:
   schemas:
     Id: 
@@ -522,12 +503,11 @@ components:
         - "$ref": "#/components/schemas/DateTimeMetadata"
     OrderStatus:
       type: string
-      description: order status
+      description: order status.
       default: placed
       enum:
         - placed
         - cancelled
-        - approved
         - delivered 
     OrderResp: 
       allOf:
@@ -556,36 +536,40 @@ components:
           format: date-time
           nullable: true
           description: Date when the pet was last updated
-    # User:
-    #   type: object
-    #   properties:
-    #     id:
-    #       type: integer
-    #       format: int64
-    #       example: 10
-    #     username:
-    #       type: string
-    #       example: theUser
-    #     firstName:
-    #       type: string
-    #       example: John
-    #     lastName:
-    #       type: string
-    #       example: James
-    #     email:
-    #       type: string
-    #       example: john@email.com
-    #     password:
-    #       type: string
-    #       example: "12345"
-    #     phone:
-    #       type: string
-    #       example: "12345"
-    #     userStatus:
-    #       type: integer
-    #       description: User Status
-    #       format: int32
-    #       example: 1
+    Username:
+      type: string
+      example: okagrmin123
+      pattern: "^[a-z0-9\\-_. ]+$"
+      minLength: 1
+      maxLength: 150
+    User:
+      type: object
+      required:
+        - username
+        - full_name
+        - email
+        - phone_number
+      properties:
+        username:
+          "$ref": "#/components/schemas/Username"
+        full_name:
+          type: string
+          example: Tony Stark
+          pattern: "^[a-z\\- ]+$"
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          example: john@email.com
+          pattern: "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+          minLength: 1
+          maxLength: 320
+        phone_number:
+          type: string
+          pattern: "^\\+?[0-9-]{7,15}$"
+          minLength: 1
+          maxLength: 16
+          example: "+1-555-123-4567"
   requestBodies:
     AnimalCategoryRequest:
       description: Animal Category object that needs to be added to the store
@@ -642,6 +626,22 @@ components:
               properties:
                 petId:
                   "$ref": "#/components/schemas/Id"
+    UserRequest:
+      required: true
+      content:
+        application/json:
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/User"
+              - type: object
+                required:
+                  - password
+                properties:
+                  password:
+                    type: string
+                    example: "wr34^44gz4$4r"
+                    minLength: 1
+                    maxLength: 320         
   responses:
     AnimalCategoryResponse: 
       description: "Successful Animal Category response"
@@ -715,6 +715,17 @@ components:
                 type: array
                 items:
                   "$ref": "#/components/schemas/OrderResp"
+    UserResponse:
+      description: "Successful User object response"
+      headers:
+        X-Request-Id:
+          "$ref": "#/components/headers/X-Request-Id"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/User"
+              - "$ref": "#/components/schemas/DateTimeMetadata"
     ApiResponse:
       description: "Generic API Response"
       headers:
@@ -754,6 +765,12 @@ components:
       required: true
       schema:
         "$ref": "#/components/schemas/Id"
+    UsernameParameter:
+      name: username
+      in: path
+      required: true
+      schema:
+        "$ref": "#/components/schemas/Username"
     Cursor:
       name: cursor
       in: query
