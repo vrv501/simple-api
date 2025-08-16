@@ -3,55 +3,79 @@ package apihandler
 import (
 	"context"
 
+	"github.com/rs/zerolog/log"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 )
 
-// Add a new pet to the store.
-// (POST /pet)
-func (h *ApiHandler) AddPet(ctx context.Context, request genRouter.AddPetRequestObject) (genRouter.AddPetResponseObject, error) {
-	//logger := log.Ctx(ctx)
-
+// Find animal-category using name
+// (GET /animal-categories)
+func (a *ApiHandler) FindAnimalCategory(ctx context.Context, request genRouter.FindAnimalCategoryRequestObject) (genRouter.FindAnimalCategoryResponseObject, error) {
+	logger := log.Ctx(ctx)
 	panic("not implemented") // TODO: Implement
 }
 
-// Update an existing pet.
-// (PUT /pet)
-func (h *ApiHandler) UpdatePet(ctx context.Context, request genRouter.UpdatePetRequestObject) (genRouter.UpdatePetResponseObject, error) {
+// Add new animal-category to the store.
+// (POST /animal-categories)
+func (a *ApiHandler) AddAnimalCategory(ctx context.Context, request genRouter.AddAnimalCategoryRequestObject) (genRouter.AddAnimalCategoryResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
-// Finds Pets by status.
-// (GET /pet/findByStatus)
-func (h *ApiHandler) FindPetsByStatus(ctx context.Context, request genRouter.FindPetsByStatusRequestObject) (genRouter.FindPetsByStatusResponseObject, error) {
+// Delete an animal-category.
+// (DELETE /animal-categories/{animalCategoryId})
+func (a *ApiHandler) DeleteAnimalCategory(ctx context.Context, request genRouter.DeleteAnimalCategoryRequestObject) (genRouter.DeleteAnimalCategoryResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
-// Finds Pets by tags.
-// (GET /pet/findByTags)
-func (h *ApiHandler) FindPetsByTags(ctx context.Context, request genRouter.FindPetsByTagsRequestObject) (genRouter.FindPetsByTagsResponseObject, error) {
+// Replace existing animal-category data using Id.
+// (PUT /animal-categories/{animalCategoryId})
+func (a *ApiHandler) ReplaceAnimalCategory(ctx context.Context, request genRouter.ReplaceAnimalCategoryRequestObject) (genRouter.ReplaceAnimalCategoryResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
-// Deletes a pet.
-// (DELETE /pet/{petId})
-func (h *ApiHandler) DeletePet(ctx context.Context, request genRouter.DeletePetRequestObject) (genRouter.DeletePetResponseObject, error) {
+// Find Pets using name, status, tags.
+// (GET /pets)
+func (a *ApiHandler) FindPets(ctx context.Context, request genRouter.FindPetsRequestObject) (genRouter.FindPetsResponseObject, error) {
+	panic("not implemented") // TODO: Implement
+}
+
+// Add new pet to the store.
+// (POST /pets)
+func (a *ApiHandler) AddPet(ctx context.Context, request genRouter.AddPetRequestObject) (genRouter.AddPetResponseObject, error) {
+	panic("not implemented") // TODO: Implement
+}
+
+// Delete a pet.
+// (DELETE /pets/{petId})
+func (a *ApiHandler) DeletePet(ctx context.Context, request genRouter.DeletePetRequestObject) (genRouter.DeletePetResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
 // Find pet by ID.
-// (GET /pet/{petId})
-func (h *ApiHandler) GetPetById(ctx context.Context, request genRouter.GetPetByIdRequestObject) (genRouter.GetPetByIdResponseObject, error) {
+// (GET /pets/{petId})
+func (a *ApiHandler) GetPetById(ctx context.Context, request genRouter.GetPetByIdRequestObject) (genRouter.GetPetByIdResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
-// Updates a pet in the store with form data.
-// (POST /pet/{petId})
-func (h *ApiHandler) UpdatePetWithForm(ctx context.Context, request genRouter.UpdatePetWithFormRequestObject) (genRouter.UpdatePetWithFormResponseObject, error) {
+// Replace existing pet data using Id.
+// (PUT /pets/{petId})
+func (a *ApiHandler) ReplacePet(ctx context.Context, request genRouter.ReplacePetRequestObject) (genRouter.ReplacePetResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
-// Uploads an image.
-// (POST /pet/{petId}/uploadImage)
-func (h *ApiHandler) UploadFile(ctx context.Context, request genRouter.UploadFileRequestObject) (genRouter.UploadFileResponseObject, error) {
+// Upload a new image for a pet.
+// (POST /pets/{petId}/images)
+func (a *ApiHandler) UploadPetImage(ctx context.Context, request genRouter.UploadPetImageRequestObject) (genRouter.UploadPetImageResponseObject, error) {
+	panic("not implemented") // TODO: Implement
+}
+
+// Delete a pet image.
+// (DELETE /pets/{petId}/images/{imageId})
+func (a *ApiHandler) DeletePetImage(ctx context.Context, request genRouter.DeletePetImageRequestObject) (genRouter.DeletePetImageResponseObject, error) {
+	panic("not implemented") // TODO: Implement
+}
+
+// Get a pet image using ID.
+// (GET /pets/{petId}/images/{imageId})
+func (a *ApiHandler) GetImageByPetId(ctx context.Context, request genRouter.GetImageByPetIdRequestObject) (genRouter.GetImageByPetIdResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
