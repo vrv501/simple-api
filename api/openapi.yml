@@ -260,8 +260,8 @@ paths:
     get:
       tags:
         - orders
-      summary: Find user Orders using status.
-      description: Find user Orders using status.
+      summary: Find user orders using status.
+      description: Find user orders using status.
       operationId: findOrders
       parameters:
         - name: status
@@ -304,7 +304,7 @@ paths:
     get:
       tags:
         - orders
-      summary: Find purchase order by ID.
+      summary: Find user order by ID.
       operationId: getOrderById
       parameters: 
         - "$ref": "#/components/parameters/OrderIdParameter"
@@ -316,7 +316,7 @@ paths:
     delete:
       tags:
         - orders
-      summary: Delete purchase order by identifier.
+      summary: Delete user order by identifier.
       operationId: deleteOrder
       parameters:
         - "$ref": "#/components/parameters/OrderIdParameter"
@@ -387,6 +387,7 @@ components:
       type: string
       minLength: 1
       maxLength: 45
+      example: "aasd66tdhc632t5"
     PetName:
       type: string
       example: max
@@ -405,6 +406,7 @@ components:
       maxItems: 50
       items:
         type: string
+        example: labrador
         minLength: 1
         maxLength: 20
     PetStatus:
@@ -432,6 +434,7 @@ components:
           description: "Price in USD. Must be positive with max 2 decimal places."
         category_id:
           type: string
+          example: "x3274y237d63276"
           minLength: 1
           maxLength: 45
         tags:
@@ -471,7 +474,7 @@ components:
               "$ref": "#/components/schemas/Id"
             status:
               "$ref": "#/components/schemas/OrderStatus"
-            shippedDate:
+            shipped_date:
               type: string
               format: date-time
               nullable: true
@@ -626,6 +629,7 @@ components:
               count:
                 type: integer
                 description: Total number of pets
+                example: 1
               pets:
                 type: array
                 items:
@@ -648,6 +652,7 @@ components:
               count:
                 type: integer
                 description: Total number of orders
+                example: 1
               orders:
                 type: array
                 items:
