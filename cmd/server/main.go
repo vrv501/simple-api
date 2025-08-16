@@ -64,7 +64,7 @@ func main() {
 					middleware.EntryAudit,
 					hlog.RequestHandler(constants.LogFieldMethodAndURL),
 					hlog.RemoteAddrHandler(constants.LogFieldClientIP),
-					hlog.RequestIDHandler(constants.LogFieldRequestID, constants.HeaderRequestID),
+					hlog.RequestIDHandler(constants.LogFieldRequestID, ""),
 					hlog.AccessHandler(
 						// The below function is a deferred call
 						func(r *http.Request, status, _ int, duration time.Duration) {
