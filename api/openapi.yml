@@ -200,15 +200,7 @@ paths:
                 - photos
               properties:
                 photos: 
-                  type: array
-                  description: Pet images (up to 10)
-                  minItems: 1
-                  maxItems: 10
-                  items:
-                    type: string
-                    description: "Min size: 1B, Max size: 10MB"
-                    format: binary
-                    example: binary string representation of jpeg image
+                  "$ref": "#/components/schemas/PetPhotos"
             encoding:
               photos:
                 contentType: image/jpeg
@@ -441,6 +433,16 @@ components:
           "$ref": "#/components/schemas/PetTags"
         status:
           "$ref": "#/components/schemas/PetStatus"
+    PetPhotos:
+      type: array
+      description: Pet images (up to 10)
+      minItems: 1
+      maxItems: 10
+      items:
+        type: string
+        description: "Min size: 1B, Max size: 256KB"
+        format: binary
+        example: binary string representation of jpeg image
     PetResp:
       allOf:
         - type: object
@@ -550,15 +552,7 @@ components:
               pet:
                 "$ref": "#/components/schemas/Pet"
               photos: 
-                type: array
-                description: Pet images (up to 10)
-                minItems: 1
-                maxItems: 10
-                items:
-                  type: string
-                  description: "Min size: 1B, Max size: 10MB"
-                  format: binary
-                  example: binary string representation of jpeg image
+                "$ref": "#/components/schemas/PetPhotos"
           encoding:
             pet:
               contentType: application/json

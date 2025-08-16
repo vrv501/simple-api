@@ -32,7 +32,7 @@
                         "description": "photo urls of the pet"
                     },
                     "price": {
-                        "bsonType": "decimal128",
+                        "bsonType": "decimal",
                         "description": "price of the pet in decimal128 format"
                     },
                     "status": {
