@@ -8,6 +8,11 @@ const (
 	DBPassword = "DB_PASSWORD"
 )
 
+// Headers
+const (
+	HeaderRequestID = "X-Request-ID"
+)
+
 // Logging Vars
 const (
 	LogFieldRequestID    = "request_id"

@@ -1215,47 +1215,25 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	return m
 }
 
-type AnimalCategoryResponseResponseHeaders struct {
-	XRequestId string
-}
 type AnimalCategoryResponseJSONResponse struct {
-	Body struct {
-		// CreatedAt Date when the pet was created in the store
-		CreatedAt *time.Time          `json:"created_at,omitempty"`
-		Id        *Id                 `json:"id,omitempty"`
-		Name      *AnimalCategoryName `json:"name,omitempty"`
+	// CreatedAt Date when the pet was created in the store
+	CreatedAt *time.Time          `json:"created_at,omitempty"`
+	Id        *Id                 `json:"id,omitempty"`
+	Name      *AnimalCategoryName `json:"name,omitempty"`
 
-		// UpdatedAt Date when the pet was last updated
-		UpdatedAt *time.Time `json:"updated_at"`
-	}
-
-	Headers AnimalCategoryResponseResponseHeaders
+	// UpdatedAt Date when the pet was last updated
+	UpdatedAt *time.Time `json:"updated_at"`
 }
 
-type ApiResponseResponseHeaders struct {
-	XRequestId string
-}
 type ApiResponseJSONResponse struct {
-	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
-	}
-
-	Headers ApiResponseResponseHeaders
+	Action  *string `json:"action,omitempty"`
+	Message *string `json:"message,omitempty"`
 }
 
-type OrderResponseResponseHeaders struct {
-	XRequestId string
-}
-type OrderResponseJSONResponse struct {
-	Body OrderResp
-
-	Headers OrderResponseResponseHeaders
-}
+type OrderResponseJSONResponse OrderResp
 
 type OrderResponseArrayResponseHeaders struct {
 	XNextCursor string
-	XRequestId  string
 }
 type OrderResponseArrayJSONResponse struct {
 	Body struct {
@@ -1267,18 +1245,10 @@ type OrderResponseArrayJSONResponse struct {
 	Headers OrderResponseArrayResponseHeaders
 }
 
-type PetResponseResponseHeaders struct {
-	XRequestId string
-}
-type PetResponseJSONResponse struct {
-	Body PetResp
-
-	Headers PetResponseResponseHeaders
-}
+type PetResponseJSONResponse PetResp
 
 type PetResponseArrayResponseHeaders struct {
 	XNextCursor string
-	XRequestId  string
 }
 type PetResponseArrayJSONResponse struct {
 	Body struct {
@@ -1290,23 +1260,16 @@ type PetResponseArrayJSONResponse struct {
 	Headers PetResponseArrayResponseHeaders
 }
 
-type UserResponseResponseHeaders struct {
-	XRequestId string
-}
 type UserResponseJSONResponse struct {
-	Body struct {
-		// CreatedAt Date when the pet was created in the store
-		CreatedAt   *time.Time `json:"created_at,omitempty"`
-		Email       string     `json:"email"`
-		FullName    string     `json:"full_name"`
-		PhoneNumber string     `json:"phone_number"`
+	// CreatedAt Date when the pet was created in the store
+	CreatedAt   *time.Time `json:"created_at,omitempty"`
+	Email       string     `json:"email"`
+	FullName    string     `json:"full_name"`
+	PhoneNumber string     `json:"phone_number"`
 
-		// UpdatedAt Date when the pet was last updated
-		UpdatedAt *time.Time `json:"updated_at"`
-		Username  Username   `json:"username"`
-	}
-
-	Headers UserResponseResponseHeaders
+	// UpdatedAt Date when the pet was last updated
+	UpdatedAt *time.Time `json:"updated_at"`
+	Username  Username   `json:"username"`
 }
 
 type FindAnimalCategoryRequestObject struct {
@@ -1323,10 +1286,9 @@ type FindAnimalCategory200JSONResponse struct {
 
 func (response FindAnimalCategory200JSONResponse) VisitFindAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
-	return json.NewEncoder(w).Encode(response.Body)
+	return json.NewEncoder(w).Encode(response)
 }
 
 type FindAnimalCategorydefaultJSONResponse struct {
@@ -1334,13 +1296,11 @@ type FindAnimalCategorydefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response FindAnimalCategorydefaultJSONResponse) VisitFindAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1360,10 +1320,9 @@ type AddAnimalCategory201JSONResponse struct {
 
 func (response AddAnimalCategory201JSONResponse) VisitAddAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(201)
 
-	return json.NewEncoder(w).Encode(response.Body)
+	return json.NewEncoder(w).Encode(response)
 }
 
 type AddAnimalCategorydefaultJSONResponse struct {
@@ -1371,13 +1330,11 @@ type AddAnimalCategorydefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response AddAnimalCategorydefaultJSONResponse) VisitAddAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1391,16 +1348,10 @@ type DeleteAnimalCategoryResponseObject interface {
 	VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error
 }
 
-type DeleteAnimalCategory200ResponseHeaders struct {
-	XRequestId string
-}
-
 type DeleteAnimalCategory200Response struct {
-	Headers DeleteAnimalCategory200ResponseHeaders
 }
 
 func (response DeleteAnimalCategory200Response) VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error {
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 	return nil
 }
@@ -1410,13 +1361,11 @@ type DeleteAnimalCategorydefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response DeleteAnimalCategorydefaultJSONResponse) VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1437,10 +1386,9 @@ type ReplaceAnimalCategory200JSONResponse struct {
 
 func (response ReplaceAnimalCategory200JSONResponse) VisitReplaceAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
-	return json.NewEncoder(w).Encode(response.Body)
+	return json.NewEncoder(w).Encode(response)
 }
 
 type ReplaceAnimalCategorydefaultJSONResponse struct {
@@ -1448,13 +1396,11 @@ type ReplaceAnimalCategorydefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response ReplaceAnimalCategorydefaultJSONResponse) VisitReplaceAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1473,7 +1419,6 @@ type FindPets200JSONResponse struct{ PetResponseArrayJSONResponse }
 func (response FindPets200JSONResponse) VisitFindPetsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Next-Cursor", fmt.Sprint(response.Headers.XNextCursor))
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1484,13 +1429,11 @@ type FindPetsdefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response FindPetsdefaultJSONResponse) VisitFindPetsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1504,16 +1447,10 @@ type AddPetResponseObject interface {
 	VisitAddPetResponse(w http.ResponseWriter) error
 }
 
-type AddPet202ResponseHeaders struct {
-	XRequestId string
-}
-
 type AddPet202Response struct {
-	Headers AddPet202ResponseHeaders
 }
 
 func (response AddPet202Response) VisitAddPetResponse(w http.ResponseWriter) error {
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(202)
 	return nil
 }
@@ -1523,13 +1460,11 @@ type AddPetdefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response AddPetdefaultJSONResponse) VisitAddPetResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1543,16 +1478,10 @@ type DeletePetResponseObject interface {
 	VisitDeletePetResponse(w http.ResponseWriter) error
 }
 
-type DeletePet200ResponseHeaders struct {
-	XRequestId string
-}
-
 type DeletePet200Response struct {
-	Headers DeletePet200ResponseHeaders
 }
 
 func (response DeletePet200Response) VisitDeletePetResponse(w http.ResponseWriter) error {
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 	return nil
 }
@@ -1562,13 +1491,11 @@ type DeletePetdefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response DeletePetdefaultJSONResponse) VisitDeletePetResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1586,10 +1513,9 @@ type GetPetById200JSONResponse struct{ PetResponseJSONResponse }
 
 func (response GetPetById200JSONResponse) VisitGetPetByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
-	return json.NewEncoder(w).Encode(response.Body)
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetPetByIddefaultJSONResponse struct {
@@ -1597,13 +1523,11 @@ type GetPetByIddefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response GetPetByIddefaultJSONResponse) VisitGetPetByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1618,16 +1542,10 @@ type ReplacePetResponseObject interface {
 	VisitReplacePetResponse(w http.ResponseWriter) error
 }
 
-type ReplacePet202ResponseHeaders struct {
-	XRequestId string
-}
-
 type ReplacePet202Response struct {
-	Headers ReplacePet202ResponseHeaders
 }
 
 func (response ReplacePet202Response) VisitReplacePetResponse(w http.ResponseWriter) error {
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(202)
 	return nil
 }
@@ -1637,13 +1555,11 @@ type ReplacePetdefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response ReplacePetdefaultJSONResponse) VisitReplacePetResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1658,16 +1574,10 @@ type UploadPetImageResponseObject interface {
 	VisitUploadPetImageResponse(w http.ResponseWriter) error
 }
 
-type UploadPetImage202ResponseHeaders struct {
-	XRequestId string
-}
-
 type UploadPetImage202Response struct {
-	Headers UploadPetImage202ResponseHeaders
 }
 
 func (response UploadPetImage202Response) VisitUploadPetImageResponse(w http.ResponseWriter) error {
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(202)
 	return nil
 }
@@ -1677,13 +1587,11 @@ type UploadPetImagedefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response UploadPetImagedefaultJSONResponse) VisitUploadPetImageResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1698,16 +1606,10 @@ type DeletePetImageResponseObject interface {
 	VisitDeletePetImageResponse(w http.ResponseWriter) error
 }
 
-type DeletePetImage200ResponseHeaders struct {
-	XRequestId string
-}
-
 type DeletePetImage200Response struct {
-	Headers DeletePetImage200ResponseHeaders
 }
 
 func (response DeletePetImage200Response) VisitDeletePetImageResponse(w http.ResponseWriter) error {
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 	return nil
 }
@@ -1717,13 +1619,11 @@ type DeletePetImagedefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response DeletePetImagedefaultJSONResponse) VisitDeletePetImageResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1738,13 +1638,8 @@ type GetImageByPetIdResponseObject interface {
 	VisitGetImageByPetIdResponse(w http.ResponseWriter) error
 }
 
-type GetImageByPetId200ResponseHeaders struct {
-	XRequestId string
-}
-
 type GetImageByPetId200ImagejpegResponse struct {
 	Body          io.Reader
-	Headers       GetImageByPetId200ResponseHeaders
 	ContentLength int64
 }
 
@@ -1753,7 +1648,6 @@ func (response GetImageByPetId200ImagejpegResponse) VisitGetImageByPetIdResponse
 	if response.ContentLength != 0 {
 		w.Header().Set("Content-Length", fmt.Sprint(response.ContentLength))
 	}
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
 	if closer, ok := response.Body.(io.ReadCloser); ok {
@@ -1768,13 +1662,11 @@ type GetImageByPetIddefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response GetImageByPetIddefaultJSONResponse) VisitGetImageByPetIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1793,7 +1685,6 @@ type FindOrders200JSONResponse struct{ OrderResponseArrayJSONResponse }
 func (response FindOrders200JSONResponse) VisitFindOrdersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Next-Cursor", fmt.Sprint(response.Headers.XNextCursor))
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1804,13 +1695,11 @@ type FindOrdersdefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response FindOrdersdefaultJSONResponse) VisitFindOrdersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1829,7 +1718,6 @@ type PlaceOrders201JSONResponse struct{ OrderResponseArrayJSONResponse }
 func (response PlaceOrders201JSONResponse) VisitPlaceOrdersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.Header().Set("X-Next-Cursor", fmt.Sprint(response.Headers.XNextCursor))
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1840,13 +1728,11 @@ type PlaceOrdersdefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response PlaceOrdersdefaultJSONResponse) VisitPlaceOrdersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1860,16 +1746,10 @@ type DeleteOrderResponseObject interface {
 	VisitDeleteOrderResponse(w http.ResponseWriter) error
 }
 
-type DeleteOrder200ResponseHeaders struct {
-	XRequestId string
-}
-
 type DeleteOrder200Response struct {
-	Headers DeleteOrder200ResponseHeaders
 }
 
 func (response DeleteOrder200Response) VisitDeleteOrderResponse(w http.ResponseWriter) error {
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 	return nil
 }
@@ -1879,13 +1759,11 @@ type DeleteOrderdefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response DeleteOrderdefaultJSONResponse) VisitDeleteOrderResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1903,10 +1781,9 @@ type GetOrderById200JSONResponse struct{ OrderResponseJSONResponse }
 
 func (response GetOrderById200JSONResponse) VisitGetOrderByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
-	return json.NewEncoder(w).Encode(response.Body)
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetOrderByIddefaultJSONResponse struct {
@@ -1914,13 +1791,11 @@ type GetOrderByIddefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response GetOrderByIddefaultJSONResponse) VisitGetOrderByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1938,10 +1813,9 @@ type CreateUser201JSONResponse struct{ UserResponseJSONResponse }
 
 func (response CreateUser201JSONResponse) VisitCreateUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(201)
 
-	return json.NewEncoder(w).Encode(response.Body)
+	return json.NewEncoder(w).Encode(response)
 }
 
 type CreateUserdefaultJSONResponse struct {
@@ -1949,13 +1823,11 @@ type CreateUserdefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response CreateUserdefaultJSONResponse) VisitCreateUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -1969,16 +1841,10 @@ type DeleteUserResponseObject interface {
 	VisitDeleteUserResponse(w http.ResponseWriter) error
 }
 
-type DeleteUser200ResponseHeaders struct {
-	XRequestId string
-}
-
 type DeleteUser200Response struct {
-	Headers DeleteUser200ResponseHeaders
 }
 
 func (response DeleteUser200Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 	return nil
 }
@@ -1988,13 +1854,11 @@ type DeleteUserdefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response DeleteUserdefaultJSONResponse) VisitDeleteUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -2012,10 +1876,9 @@ type GetUserByName200JSONResponse struct{ UserResponseJSONResponse }
 
 func (response GetUserByName200JSONResponse) VisitGetUserByNameResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
-	return json.NewEncoder(w).Encode(response.Body)
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetUserByNamedefaultJSONResponse struct {
@@ -2023,13 +1886,11 @@ type GetUserByNamedefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response GetUserByNamedefaultJSONResponse) VisitGetUserByNameResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -2048,10 +1909,9 @@ type ReplaceUser200JSONResponse struct{ UserResponseJSONResponse }
 
 func (response ReplaceUser200JSONResponse) VisitReplaceUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(200)
 
-	return json.NewEncoder(w).Encode(response.Body)
+	return json.NewEncoder(w).Encode(response)
 }
 
 type ReplaceUserdefaultJSONResponse struct {
@@ -2059,13 +1919,11 @@ type ReplaceUserdefaultJSONResponse struct {
 		Action  *string `json:"action,omitempty"`
 		Message *string `json:"message,omitempty"`
 	}
-	Headers    ApiResponseResponseHeaders
 	StatusCode int
 }
 
 func (response ReplaceUserdefaultJSONResponse) VisitReplaceUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Request-Id", fmt.Sprint(response.Headers.XRequestId))
 	w.WriteHeader(response.StatusCode)
 
 	return json.NewEncoder(w).Encode(response.Body)
@@ -2737,54 +2595,53 @@ func (sh *strictHandler) ReplaceUser(w http.ResponseWriter, r *http.Request, use
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

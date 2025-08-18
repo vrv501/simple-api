@@ -9,16 +9,7 @@ servers:
 security:
   - bearerAuth: []
 x-headers:
-  reqIdHeader: &reqIdHeader
-    X-Request-Id: 
-      description: "Unique request identifier for tracing"
-      schema:
-        type: string
-  paginationHeaders: &paginationHeaders
-    X-Request-Id: 
-      description: "Unique request identifier for tracing"
-      schema:
-        type: string
+  paginationHeader: &paginationHeader
     X-Next-Cursor: 
       description: "Cursor for the next page (null if no more pages)"
       schema:
@@ -84,7 +75,6 @@ paths:
       responses:
         "200":
           description: Animal-category deleted
-          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/pets":
@@ -135,7 +125,6 @@ paths:
       responses:
         "202":
           description: "Request Accepted"
-          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/pets/{petId}":
@@ -165,7 +154,6 @@ paths:
       responses:
         "202":
           description: "Request Accepted"
-          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
     delete:
@@ -179,7 +167,6 @@ paths:
       responses:
         "200":
           description: Pet deleted
-          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/pets/{petId}/images":
@@ -208,7 +195,6 @@ paths:
       responses:
         "202":
           description: "Accepted Request"
-          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/pets/{petId}/images/{imageId}":
@@ -224,7 +210,6 @@ paths:
       responses:
         "200":
           description: Successful response
-          headers: *reqIdHeader
           content:
             image/jpeg:
               schema:
@@ -245,7 +230,6 @@ paths:
       responses:
         "200":
           description: Pet image deleted
-          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/store/orders":
@@ -315,7 +299,6 @@ paths:
       responses:
         "200":
           description: Order deleted
-          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
   "/users":
@@ -370,7 +353,6 @@ paths:
       responses:
         "200":
           description: Order deleted
-          headers: *reqIdHeader
         default:
           "$ref": "#/components/responses/ApiResponse"
 components:
@@ -593,7 +575,6 @@ components:
   responses:
     AnimalCategoryResponse: 
       description: "Successful Animal Category response"
-      headers: *reqIdHeader
       content:
         application/json:
           schema: 
@@ -607,14 +588,13 @@ components:
               - "$ref": "#/components/schemas/DateTimeMetadata"
     PetResponse: 
       description: "Successful Pet object response"
-      headers: *reqIdHeader
       content:
         application/json:
           schema: 
             "$ref": "#/components/schemas/PetResp"
     PetResponseArray:
       description: "Successful Pet array response"
-      headers: *paginationHeaders
+      headers: *paginationHeader
       content:
         application/json:
           schema:
@@ -630,14 +610,13 @@ components:
                   "$ref": "#/components/schemas/PetResp"
     OrderResponse:
       description: "Successful Order response"
-      headers: *reqIdHeader
       content:
         application/json:
           schema:
             "$ref": "#/components/schemas/OrderResp"
     OrderResponseArray:
       description: "Successful Order array response"
-      headers: *paginationHeaders
+      headers: *paginationHeader
       content:
         application/json:
           schema:
@@ -653,7 +632,6 @@ components:
                   "$ref": "#/components/schemas/OrderResp"
     UserResponse:
       description: "Successful User object response"
-      headers: *reqIdHeader
       content:
         application/json:
           schema:
@@ -662,7 +640,6 @@ components:
               - "$ref": "#/components/schemas/DateTimeMetadata"
     ApiResponse:
       description: "Generic API Response"
-      headers: *reqIdHeader
       content:
         application/json:
           schema:
