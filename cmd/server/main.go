@@ -77,7 +77,7 @@ func main() {
 			},
 		},
 	)
-	routerWithCors = middleware.WithCORS(routerWithCors, port)
+	routerWithCors = middleware.WithCORS(routerWithCors)
 
 	server := http.Server{
 		Addr:         fmt.Sprintf("0.0.0.0:%d", port),

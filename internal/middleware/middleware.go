@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"runtime"
 
@@ -44,18 +43,17 @@ func PanicRecovery(h http.Handler) http.Handler {
 	})
 }
 
-func WithCORS(h http.Handler, port int) http.Handler {
-	requestHost := fmt.Sprintf("localhost:%d", port)
+func WithCORS(h http.Handler) http.Handler {
+	allowedOrigin := "http://localhost:8080"
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Host == requestHost {
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-			if r.Method == http.MethodOptions {
-				w.WriteHeader(http.StatusNoContent)
-				return
-			}
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		if r.Header.Get("Origin") == allowedOrigin {
+			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
+		}
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
 		}
 
 		h.ServeHTTP(w, r)
