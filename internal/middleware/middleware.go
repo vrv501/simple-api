@@ -44,7 +44,7 @@ func PanicRecovery(h http.Handler) http.Handler {
 	})
 }
 
-func WithCORS(next http.Handler, port int) http.Handler {
+func WithCORS(h http.Handler, port int) http.Handler {
 	requestHost := fmt.Sprintf("localhost:%d", port)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Host == requestHost {
@@ -58,6 +58,6 @@ func WithCORS(next http.Handler, port int) http.Handler {
 			}
 		}
 
-		next.ServeHTTP(w, r)
+		h.ServeHTTP(w, r)
 	})
 }
