@@ -22,3 +22,13 @@ services:
       - type: bind
         source: ./migrations
         target: /migrations
+  swagger-ui:
+    image: swaggerapi/swagger-ui:v5.27.1
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      - SWAGGER_JSON=/api/openapi.yml
+    volumes:
+      - type: bind
+        source: ../../api
+        target: /api

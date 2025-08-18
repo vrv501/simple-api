@@ -5,7 +5,9 @@ info:
   description: This is a sample Pet Store Server based on the OpenAPI 3.0 specification.
   version: 1.0.26
 servers:
-  - url: "/api/v1"
+  - url: "http://localhost:8300/api/v1"
+    description: local-dev
+      
 security:
   - bearerAuth: []
 x-headers:

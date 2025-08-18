@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -25,61 +24,64 @@ import (
 func main() {
 	ctx := signals.SetupSignalHandler()
 	spec, _ := genRouter.GetSwagger()
-	spec.Servers = nil
 	ogenMw := ogenMiddleware.OapiRequestValidatorWithOptions(spec, &ogenMiddleware.Options{
 		Options: openapi3filter.Options{
-			AuthenticationFunc: func(_ context.Context, _ *openapi3filter.AuthenticationInput) error {
-				return nil
-			},
+			AuthenticationFunc: openapi3filter.NoopAuthenticationFunc, // Update once authnz is implemented
 		},
+		SilenceServersWarning: true,
 	})
-
 	logger := configLogger()
+
+	basePath, err := spec.Servers.BasePath()
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Failed to get base path from OpenAPI spec")
+	}
+
 	port := getPort(logger)
 	router := http.NewServeMux()
 	router.HandleFunc(http.MethodGet+" "+constants.StatusPath,
 		func(w http.ResponseWriter, _ *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			byteArr, _ := json.Marshal(map[string]string{"status": "healthy"})
-			w.Write(byteArr)
-			w.Write([]byte("\n"))
 		},
 	)
 
 	apiHandler := apihandler.NewAPIHandler(ctx)
 	defer apiHandler.Close()
 
-	server := http.Server{
-		Addr: fmt.Sprintf("0.0.0.0:%d", port),
-		Handler: genRouter.HandlerWithOptions(
-			genRouter.NewStrictHandler(apiHandler, nil),
-			genRouter.StdHTTPServerOptions{
-				BaseRouter: router,
-				Middlewares: []genRouter.MiddlewareFunc{
-					/*
-						Order matters here.
-						Middleware is executed in order from reverse
-					*/
-					middleware.EntryAudit,
-					hlog.RequestHandler(constants.LogFieldMethodAndURL),
-					hlog.RemoteAddrHandler(constants.LogFieldClientIP),
-					hlog.RequestIDHandler(constants.LogFieldRequestID, constants.HeaderRequestID),
-					hlog.AccessHandler(
-						// The below function is a deferred call
-						func(r *http.Request, status, _ int, duration time.Duration) {
-							hlog.FromRequest(r).Info().
-								Int(constants.LogFieldStatus, status).
-								Str(constants.LogFieldLatency, duration.String()).
-								Msg("Exit Audit")
-						},
-					),
-					ogenMw,
-					middleware.PanicRecovery,
-					hlog.NewHandler(logger),
-				},
+	routerWithCors := genRouter.HandlerWithOptions(
+		genRouter.NewStrictHandler(apiHandler, nil),
+		genRouter.StdHTTPServerOptions{
+			BaseURL:    basePath,
+			BaseRouter: router,
+			Middlewares: []genRouter.MiddlewareFunc{
+				/*
+					Order matters here.
+					Middleware is executed in order from reverse
+				*/
+				middleware.EntryAudit,
+				hlog.RequestHandler(constants.LogFieldMethodAndURL),
+				hlog.RemoteAddrHandler(constants.LogFieldClientIP),
+				hlog.RequestIDHandler(constants.LogFieldRequestID, constants.HeaderRequestID),
+				hlog.AccessHandler(
+					// The below function is a deferred call
+					func(r *http.Request, status, _ int, duration time.Duration) {
+						hlog.FromRequest(r).Info().
+							Int(constants.LogFieldStatus, status).
+							Str(constants.LogFieldLatency, duration.String()).
+							Msg("Exit Audit")
+					},
+				),
+				ogenMw,
+				middleware.PanicRecovery,
+				hlog.NewHandler(logger),
 			},
-		),
+		},
+	)
+	routerWithCors = middleware.WithCORS(routerWithCors, port)
+
+	server := http.Server{
+		Addr:         fmt.Sprintf("0.0.0.0:%d", port),
+		Handler:      routerWithCors,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 90 * time.Second,
 		IdleTimeout:  2 * time.Minute,
