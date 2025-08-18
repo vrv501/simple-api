@@ -9,9 +9,15 @@ import (
 )
 
 type DBHandler interface {
-	AddPet(ctx context.Context)
+	animalCategoryHandler
+
+	IsConflictErr(err error) bool
 
 	Close(ctx context.Context) error
+}
+
+type animalCategoryHandler interface {
+	AddAnimalCategory(ctx context.Context, name string) (string, error)
 }
 
 func NewDBHandler(ctx context.Context) DBHandler {

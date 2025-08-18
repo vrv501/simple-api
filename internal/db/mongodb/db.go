@@ -20,12 +20,12 @@ const (
 	dbName string = "shop"
 )
 
-type MongoClient struct {
+type mongoClient struct {
 	client         *mongo.Client
 	mongoDbHandler *mongo.Database
 }
 
-func NewInstance(ctx context.Context) *MongoClient {
+func NewInstance(ctx context.Context) *mongoClient {
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	serverAPI.SetStrict(true)
@@ -66,22 +66,18 @@ func NewInstance(ctx context.Context) *MongoClient {
 		panic(fmt.Sprintf("failed to ping db %v", err))
 	}
 
-	return &MongoClient{
+	return &mongoClient{
 		client:         client,
 		mongoDbHandler: client.Database(dbName),
 	}
 }
 
-func (m *MongoClient) Close(ctx context.Context) error {
-	return m.client.Disconnect(ctx)
+func (m *mongoClient) IsConflictErr(err error) bool {
+	return mongo.IsDuplicateKeyError(err)
 }
 
-type animalCategory struct {
-	ID        bson.ObjectID `bson:"_id,omitempty"`
-	Name      string        `bson:"name"`       // "bsonType": "string"
-	CreatedOn time.Time     `bson:"created_on"` // "bsonType": "date"
-	UpdatedOn *time.Time    `bson:"updated_on"` // "bsonType": ["date", "null"]
-	DeletedOn *time.Time    `bson:"deleted_on"` // "bsonType": ["date", "null"]
+func (m *mongoClient) Close(ctx context.Context) error {
+	return m.client.Disconnect(ctx)
 }
 
 type pet struct {
