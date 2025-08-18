@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/vrv501/simple-api/internal/constants"
 	"github.com/vrv501/simple-api/internal/db/mongodb"
@@ -11,13 +12,13 @@ import (
 type DBHandler interface {
 	animalCategoryHandler
 
-	IsConflictErr(err error) bool
-
 	Close(ctx context.Context) error
 }
 
 type animalCategoryHandler interface {
-	AddAnimalCategory(ctx context.Context, name string) (string, error)
+	AddAnimalCategory(ctx context.Context, name string) (string, time.Time, error)
+
+	DeleteAnimalCategory(ctx context.Context, id string) error
 }
 
 func NewDBHandler(ctx context.Context) DBHandler {

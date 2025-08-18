@@ -25,6 +25,11 @@ const (
 	defaultAPIUser       string = "apiUser"
 	defaultMongoPassword string = "mongo"
 	defaultMongoUri      string = "localhost:27017"
+
+	idField        string = "_id"
+	deletedOnField string = "deleted_on"
+
+	setOperator string = "$set"
 )
 
 type mongoClient struct {
@@ -86,10 +91,6 @@ func NewInstance(ctx context.Context) *mongoClient {
 		client:         client,
 		mongoDbHandler: client.Database(dbName),
 	}
-}
-
-func (m *mongoClient) IsConflictErr(err error) bool {
-	return mongo.IsDuplicateKeyError(err)
 }
 
 func (m *mongoClient) Close(ctx context.Context) error {
