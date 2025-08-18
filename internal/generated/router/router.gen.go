@@ -49,7 +49,7 @@ type AnimalCategoryName = string
 // DateTimeMetadata defines model for DateTimeMetadata.
 type DateTimeMetadata struct {
 	// CreatedAt Date when the pet was created in the store
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
 
 	// UpdatedAt Date when the pet was last updated
 	UpdatedAt *time.Time `json:"updated_at"`
@@ -61,13 +61,13 @@ type Id = string
 // OrderResp defines model for OrderResp.
 type OrderResp struct {
 	// CreatedAt Date when the pet was created in the store
-	CreatedAt   *time.Time `json:"created_at,omitempty"`
-	Id          *Id        `json:"id,omitempty"`
-	PetId       *Id        `json:"pet_id,omitempty"`
+	CreatedAt   time.Time  `json:"created_at"`
+	Id          Id         `json:"id"`
+	PetId       Id         `json:"pet_id"`
 	ShippedDate *time.Time `json:"shipped_date"`
 
 	// Status order status.
-	Status *OrderStatus `json:"status,omitempty"`
+	Status OrderStatus `json:"status"`
 
 	// UpdatedAt Date when the pet was last updated
 	UpdatedAt *time.Time `json:"updated_at"`
@@ -100,10 +100,10 @@ type PetResp struct {
 	CategoryId string `json:"category_id"`
 
 	// CreatedAt Date when the pet was created in the store
-	CreatedAt *time.Time `json:"created_at,omitempty"`
-	Id        *Id        `json:"id,omitempty"`
-	Name      PetName    `json:"name"`
-	PhotoUris *[]string  `json:"photo_uris,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	Id        Id        `json:"id"`
+	Name      PetName   `json:"name"`
+	PhotoUris *[]string `json:"photo_uris,omitempty"`
 
 	// Price Price in USD. Must be positive with max 2 decimal places.
 	Price string `json:"price"`
@@ -157,9 +157,9 @@ type UsernameParameter = Username
 // AnimalCategoryResponse defines model for AnimalCategoryResponse.
 type AnimalCategoryResponse struct {
 	// CreatedAt Date when the pet was created in the store
-	CreatedAt *time.Time          `json:"created_at,omitempty"`
-	Id        *Id                 `json:"id,omitempty"`
-	Name      *AnimalCategoryName `json:"name,omitempty"`
+	CreatedAt time.Time          `json:"created_at"`
+	Id        Id                 `json:"id"`
+	Name      AnimalCategoryName `json:"name"`
 
 	// UpdatedAt Date when the pet was last updated
 	UpdatedAt *time.Time `json:"updated_at"`
@@ -167,8 +167,7 @@ type AnimalCategoryResponse struct {
 
 // ApiResponse defines model for ApiResponse.
 type ApiResponse struct {
-	Action  *string `json:"action,omitempty"`
-	Message *string `json:"message,omitempty"`
+	Message string `json:"message"`
 }
 
 // OrderResponse defines model for OrderResponse.
@@ -177,8 +176,8 @@ type OrderResponse = OrderResp
 // OrderResponseArray defines model for OrderResponseArray.
 type OrderResponseArray struct {
 	// Count Total number of orders
-	Count  *int         `json:"count,omitempty"`
-	Orders *[]OrderResp `json:"orders,omitempty"`
+	Count  int         `json:"count"`
+	Orders []OrderResp `json:"orders"`
 }
 
 // PetResponse defines model for PetResponse.
@@ -187,17 +186,17 @@ type PetResponse = PetResp
 // PetResponseArray defines model for PetResponseArray.
 type PetResponseArray struct {
 	// Count Total number of pets
-	Count *int       `json:"count,omitempty"`
-	Pets  *[]PetResp `json:"pets,omitempty"`
+	Count int       `json:"count"`
+	Pets  []PetResp `json:"pets"`
 }
 
 // UserResponse defines model for UserResponse.
 type UserResponse struct {
 	// CreatedAt Date when the pet was created in the store
-	CreatedAt   *time.Time `json:"created_at,omitempty"`
-	Email       string     `json:"email"`
-	FullName    string     `json:"full_name"`
-	PhoneNumber string     `json:"phone_number"`
+	CreatedAt   time.Time `json:"created_at"`
+	Email       string    `json:"email"`
+	FullName    string    `json:"full_name"`
+	PhoneNumber string    `json:"phone_number"`
 
 	// UpdatedAt Date when the pet was last updated
 	UpdatedAt *time.Time `json:"updated_at"`
@@ -1217,17 +1216,16 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 
 type AnimalCategoryResponseJSONResponse struct {
 	// CreatedAt Date when the pet was created in the store
-	CreatedAt *time.Time          `json:"created_at,omitempty"`
-	Id        *Id                 `json:"id,omitempty"`
-	Name      *AnimalCategoryName `json:"name,omitempty"`
+	CreatedAt time.Time          `json:"created_at"`
+	Id        Id                 `json:"id"`
+	Name      AnimalCategoryName `json:"name"`
 
 	// UpdatedAt Date when the pet was last updated
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
 type ApiResponseJSONResponse struct {
-	Action  *string `json:"action,omitempty"`
-	Message *string `json:"message,omitempty"`
+	Message string `json:"message"`
 }
 
 type OrderResponseJSONResponse OrderResp
@@ -1238,8 +1236,8 @@ type OrderResponseArrayResponseHeaders struct {
 type OrderResponseArrayJSONResponse struct {
 	Body struct {
 		// Count Total number of orders
-		Count  *int         `json:"count,omitempty"`
-		Orders *[]OrderResp `json:"orders,omitempty"`
+		Count  int         `json:"count"`
+		Orders []OrderResp `json:"orders"`
 	}
 
 	Headers OrderResponseArrayResponseHeaders
@@ -1253,8 +1251,8 @@ type PetResponseArrayResponseHeaders struct {
 type PetResponseArrayJSONResponse struct {
 	Body struct {
 		// Count Total number of pets
-		Count *int       `json:"count,omitempty"`
-		Pets  *[]PetResp `json:"pets,omitempty"`
+		Count int       `json:"count"`
+		Pets  []PetResp `json:"pets"`
 	}
 
 	Headers PetResponseArrayResponseHeaders
@@ -1262,10 +1260,10 @@ type PetResponseArrayJSONResponse struct {
 
 type UserResponseJSONResponse struct {
 	// CreatedAt Date when the pet was created in the store
-	CreatedAt   *time.Time `json:"created_at,omitempty"`
-	Email       string     `json:"email"`
-	FullName    string     `json:"full_name"`
-	PhoneNumber string     `json:"phone_number"`
+	CreatedAt   time.Time `json:"created_at"`
+	Email       string    `json:"email"`
+	FullName    string    `json:"full_name"`
+	PhoneNumber string    `json:"phone_number"`
 
 	// UpdatedAt Date when the pet was last updated
 	UpdatedAt *time.Time `json:"updated_at"`
@@ -1293,8 +1291,7 @@ func (response FindAnimalCategory200JSONResponse) VisitFindAnimalCategoryRespons
 
 type FindAnimalCategorydefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1327,8 +1324,7 @@ func (response AddAnimalCategory201JSONResponse) VisitAddAnimalCategoryResponse(
 
 type AddAnimalCategorydefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1358,8 +1354,7 @@ func (response DeleteAnimalCategory200Response) VisitDeleteAnimalCategoryRespons
 
 type DeleteAnimalCategorydefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1393,8 +1388,7 @@ func (response ReplaceAnimalCategory200JSONResponse) VisitReplaceAnimalCategoryR
 
 type ReplaceAnimalCategorydefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1426,8 +1420,7 @@ func (response FindPets200JSONResponse) VisitFindPetsResponse(w http.ResponseWri
 
 type FindPetsdefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1457,8 +1450,7 @@ func (response AddPet202Response) VisitAddPetResponse(w http.ResponseWriter) err
 
 type AddPetdefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1488,8 +1480,7 @@ func (response DeletePet200Response) VisitDeletePetResponse(w http.ResponseWrite
 
 type DeletePetdefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1520,8 +1511,7 @@ func (response GetPetById200JSONResponse) VisitGetPetByIdResponse(w http.Respons
 
 type GetPetByIddefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1552,8 +1542,7 @@ func (response ReplacePet202Response) VisitReplacePetResponse(w http.ResponseWri
 
 type ReplacePetdefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1584,8 +1573,7 @@ func (response UploadPetImage202Response) VisitUploadPetImageResponse(w http.Res
 
 type UploadPetImagedefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1616,8 +1604,7 @@ func (response DeletePetImage200Response) VisitDeletePetImageResponse(w http.Res
 
 type DeletePetImagedefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1659,8 +1646,7 @@ func (response GetImageByPetId200ImagejpegResponse) VisitGetImageByPetIdResponse
 
 type GetImageByPetIddefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1692,8 +1678,7 @@ func (response FindOrders200JSONResponse) VisitFindOrdersResponse(w http.Respons
 
 type FindOrdersdefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1725,8 +1710,7 @@ func (response PlaceOrders201JSONResponse) VisitPlaceOrdersResponse(w http.Respo
 
 type PlaceOrdersdefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1756,8 +1740,7 @@ func (response DeleteOrder200Response) VisitDeleteOrderResponse(w http.ResponseW
 
 type DeleteOrderdefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1788,8 +1771,7 @@ func (response GetOrderById200JSONResponse) VisitGetOrderByIdResponse(w http.Res
 
 type GetOrderByIddefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1820,8 +1802,7 @@ func (response CreateUser201JSONResponse) VisitCreateUserResponse(w http.Respons
 
 type CreateUserdefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1851,8 +1832,7 @@ func (response DeleteUser200Response) VisitDeleteUserResponse(w http.ResponseWri
 
 type DeleteUserdefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1883,8 +1863,7 @@ func (response GetUserByName200JSONResponse) VisitGetUserByNameResponse(w http.R
 
 type GetUserByNamedefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -1916,8 +1895,7 @@ func (response ReplaceUser200JSONResponse) VisitReplaceUserResponse(w http.Respo
 
 type ReplaceUserdefaultJSONResponse struct {
 	Body struct {
-		Action  *string `json:"action,omitempty"`
-		Message *string `json:"message,omitempty"`
+		Message string `json:"message"`
 	}
 	StatusCode int
 }
@@ -2595,53 +2573,54 @@ func (sh *strictHandler) ReplaceUser(w http.ResponseWriter, r *http.Request, use
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"4vhf+uHXn4tf/i8AAP//+oBXscY9AAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

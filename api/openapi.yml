@@ -428,6 +428,8 @@ components:
     PetResp:
       allOf:
         - type: object
+          required:
+            - id 
           properties:
             id:
               "$ref": "#/components/schemas/Id"
@@ -451,6 +453,11 @@ components:
     OrderResp: 
       allOf:
         - type: object
+          required:
+            - id 
+            - pet_id
+            - status
+            - shipped_date
           properties:
             id:
               "$ref": "#/components/schemas/Id"
@@ -465,6 +472,9 @@ components:
         - "$ref": "#/components/schemas/DateTimeMetadata"
     DateTimeMetadata:
       type: object 
+      required:
+        - created_at
+        - updated_at
       properties:
         created_at:
           type: string
@@ -580,6 +590,9 @@ components:
           schema: 
             allOf:
               - type: object
+                required:
+                  - id 
+                  - name
                 properties:
                   id:
                     "$ref": "#/components/schemas/Id"
@@ -599,6 +612,9 @@ components:
         application/json:
           schema:
             type: object
+            required:
+              - count 
+              - pets
             properties:
               count:
                 type: integer
@@ -621,6 +637,9 @@ components:
         application/json:
           schema:
             type: object
+            required:
+              - count 
+              - orders
             properties:
               count:
                 type: integer
@@ -644,9 +663,9 @@ components:
         application/json:
           schema:
             type: object
+            required:
+              - message
             properties:
-              action:
-                type: string
               message:
                 type: string
   parameters:
