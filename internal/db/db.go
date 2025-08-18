@@ -25,6 +25,6 @@ func NewDBHandler(ctx context.Context) DBHandler {
 	case constants.MongoDB:
 		return mongodb.NewInstance(ctx)
 	default:
-		panic("Unsupported DB_TYPE: " + dbEnv)
+		return mongodb.NewInstance(ctx)
 	}
 }

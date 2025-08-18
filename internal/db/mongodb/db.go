@@ -17,7 +17,14 @@ import (
 )
 
 const (
+	mongoURIEnvVar string = "MONGO_URI"       // Should be hostname:port
+	mongoApplyURI  string = "MONGO_APPLY_URI" // Should be mongodb+srv://{{ rest of the URI }}
+
 	dbName string = "shop"
+
+	defaultAPIUser       string = "apiUser"
+	defaultMongoPassword string = "mongo"
+	defaultMongoUri      string = "localhost:27017"
 )
 
 type mongoClient struct {
@@ -30,31 +37,40 @@ func NewInstance(ctx context.Context) *mongoClient {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	serverAPI.SetStrict(true)
 
-	username := os.Getenv(constants.DBUsername)
-	if username == "" {
-		username = "apiUser"
-	}
-	pswd := os.Getenv(constants.DBPassword)
-	if pswd == "" {
-		pswd = "mongo"
-	}
-
 	// Default Connect timeout, Server Selection Timeout: 30s
 	// Max PoolConnSize: 100
 	// Retries are default activated for all sorts of operations
 	c := options.Client()
+	if applyURI := os.Getenv(mongoApplyURI); applyURI != "" {
+		c = c.ApplyURI(applyURI)
+	} else {
+		mongoUri := os.Getenv(mongoURIEnvVar)
+		if mongoUri == "" {
+			mongoUri = defaultMongoUri
+		}
+		c.SetHosts([]string{mongoUri})
+
+		username := os.Getenv(constants.DBUsername)
+		if username == "" {
+			username = defaultAPIUser
+		}
+		pswd := os.Getenv(constants.DBPassword)
+		if pswd == "" {
+			pswd = defaultMongoPassword
+		}
+		c.SetAuth(options.Credential{
+			AuthMechanism: "SCRAM-SHA-256",
+			AuthSource:    dbName,
+			Username:      username,
+			Password:      pswd,
+		})
+	}
 	c.SetServerAPIOptions(serverAPI)
 	c.SetAppName("pet-store-api-server")
 	c.SetTimeout(5 * time.Minute) // Query timeout
 	c.SetReadConcern(readconcern.Majority())
 	c.SetReadPreference(readpref.PrimaryPreferred())
 	c.SetWriteConcern(writeconcern.Majority())
-	c.SetAuth(options.Credential{
-		AuthMechanism: "SCRAM-SHA-256",
-		AuthSource:    dbName,
-		Username:      username,
-		Password:      pswd,
-	})
 
 	client, err := mongo.Connect(c.SetServerAPIOptions(serverAPI))
 	if err != nil {

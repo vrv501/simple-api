@@ -91,6 +91,7 @@ func main() {
 		// [http.ErrServerClosed]. Shutdown() takes some-time to cleanup & gracefully close the server
 		// That being said, if server initiate itself failed with some error
 		// log.Fatal() will call os.Exit(1) which halts the entire program
+		logger.Info().Msgf("Started server on port %d", port)
 		if err := server.ListenAndServe(); err != nil &&
 			!errors.Is(err, http.ErrServerClosed) {
 			logger.Fatal().Err(err).Msg("Failed to start server")
