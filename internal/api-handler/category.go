@@ -69,7 +69,6 @@ func (a *ApiHandler) DeleteAnimalCategory(ctx context.Context, request genRouter
 			}, nil
 		}
 		if errors.Is(err, dbErr.ErrNotFound) {
-			logger.Warn().Msgf("Animal category with ID %s not found", id)
 			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
 				Body: genRouter.ApiResponse{
 					Message: fmt.Sprintf("Animal category not found for id %s", id),
