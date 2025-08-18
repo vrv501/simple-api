@@ -253,7 +253,7 @@ paths:
               "$ref": "#/components/schemas/OrderStatus"
         - name: afterDate
           in: query
-          description: Filter orders placed after this date
+          description: Filter orders placed after this date-time(UTC)
           required: false
           schema:
             type: string
@@ -470,6 +470,7 @@ components:
             shipped_date:
               type: string
               format: date-time
+              description: Shipped DateTime(UTC)
               nullable: true
         - "$ref": "#/components/schemas/DateTimeMetadata"
     DateTimeMetadata:
@@ -481,12 +482,12 @@ components:
         created_at:
           type: string
           format: date-time
-          description: Date when the pet was created in the store
+          description: DateTime(UTC) when the pet was created in the store
         updated_at:
           type: string
           format: date-time
           nullable: true
-          description: Date when the pet was last updated
+          description: DateTime(UTC) when the pet was last updated
     Username:
       type: string
       example: okagrmin123

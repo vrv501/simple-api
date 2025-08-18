@@ -37,6 +37,7 @@ type mongoClient struct {
 	mongoDbHandler *mongo.Database
 }
 
+// Note: Mongo By default stores date in UTC timezone only
 func NewInstance(ctx context.Context) *mongoClient {
 
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
