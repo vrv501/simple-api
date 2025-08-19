@@ -60,22 +60,30 @@ func (a *ApiHandler) DeleteAnimalCategory(ctx context.Context, request genRouter
 
 	err := a.dbClient.DeleteAnimalCategory(ctx, id)
 	if err != nil {
-		if errors.Is(err, dbErr.ErrInvalidId) {
+		switch {
+		case errors.Is(err, dbErr.ErrInvalidId):
 			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
 				Body: genRouter.ApiResponse{
 					Message: "Invalid animal category ID",
 				},
 				StatusCode: http.StatusBadRequest,
 			}, nil
-		}
-		if errors.Is(err, dbErr.ErrNotFound) {
+		case errors.Is(err, dbErr.ErrNotFound):
 			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
 				Body: genRouter.ApiResponse{
 					Message: fmt.Sprintf("Animal category not found for id %s", id),
 				},
 				StatusCode: http.StatusNotFound,
 			}, nil
+		case errors.Is(err, dbErr.ErrForeignKeyConstraint):
+			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
+				Body: genRouter.ApiResponse{
+					Message: fmt.Sprintf("Pets found for animal category %s", id),
+				},
+				StatusCode: http.StatusUnprocessableEntity,
+			}, nil
 		}
+
 		logger.Error().Err(err).Msg("Failed to delete animal category")
 		return genRouter.DeleteAnimalCategorydefaultJSONResponse{
 			Body: genRouter.ApiResponse{

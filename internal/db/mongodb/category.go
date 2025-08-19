@@ -2,25 +2,15 @@ package mongodb
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	dbErr "github.com/vrv501/simple-api/internal/db/errors"
 )
-
-const (
-	animalCategoryCollection string = "animal_categories"
-)
-
-type animalCategory struct {
-	ID        bson.ObjectID `bson:"_id,omitempty"`
-	Name      string        `bson:"name"`       // "bsonType": "string"
-	CreatedOn time.Time     `bson:"created_on"` // "bsonType": "date"
-	UpdatedOn *time.Time    `bson:"updated_on"` // "bsonType": ["date", "null"]
-	DeletedOn *time.Time    `bson:"deleted_on"` // "bsonType": ["date", "null"]
-}
 
 func (m *mongoClient) AddAnimalCategory(ctx context.Context, name string) (string, time.Time, error) {
 	currTime := time.Now().UTC()
@@ -43,10 +33,22 @@ func (m *mongoClient) DeleteAnimalCategory(ctx context.Context, id string) error
 		return dbErr.ErrInvalidId
 	}
 
+	err = m.mongoDbHandler.Collection(petsCollection).
+		FindOne(
+			ctx,
+			bson.M{categoryIdField: bsonID, deletedOnField: bson.Null{}},
+			options.FindOne().SetProjection(bson.M{idField: 1}),
+		).Err()
+	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+		return err
+	}
+	if err == nil { // No error if one document is found
+		return dbErr.ErrForeignKeyConstraint
+	}
+
 	res, err := m.mongoDbHandler.Collection(animalCategoryCollection).
-		UpdateOne(ctx, bson.M{idField: bsonID, deletedOnField: bson.Null{}}, bson.M{
-			setOperator: bson.M{deletedOnField: time.Now().UTC()},
-		})
+		UpdateOne(ctx, bson.M{idField: bsonID, deletedOnField: bson.Null{}},
+			bson.M{setOperator: bson.M{deletedOnField: time.Now().UTC()}})
 	if err != nil {
 		return err
 	}

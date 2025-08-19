@@ -17,17 +17,25 @@ import (
 )
 
 const (
+	//ENV vars
 	mongoURIEnvVar string = "MONGO_URI"       // Should be hostname:port
 	mongoApplyURI  string = "MONGO_APPLY_URI" // Should be mongodb+srv://{{ rest of the URI }}
-
-	dbName string = "shop"
 
 	defaultAPIUser       string = "apiUser"
 	defaultMongoPassword string = "mongo"
 	defaultMongoUri      string = "localhost:27017"
 
-	idField        string = "_id"
-	deletedOnField string = "deleted_on"
+	dbName                   string = "shop"
+	animalCategoryCollection string = "animal_categories"
+	petsCollection           string = "pets"
+	ordersCollection         string = "orders"
+	usersCollection          string = "users"
+	fsFilesCollection        string = "fs.files"
+	fsChunksCollection       string = "fs.chunks"
+
+	idField         string = "_id"
+	categoryIdField string = "category_id"
+	deletedOnField  string = "deleted_on"
 
 	setOperator string = "$set"
 )
@@ -96,6 +104,14 @@ func NewInstance(ctx context.Context) *mongoClient {
 
 func (m *mongoClient) Close(ctx context.Context) error {
 	return m.client.Disconnect(ctx)
+}
+
+type animalCategory struct {
+	ID        bson.ObjectID `bson:"_id,omitempty"`
+	Name      string        `bson:"name"`       // "bsonType": "string"
+	CreatedOn time.Time     `bson:"created_on"` // "bsonType": "date"
+	UpdatedOn *time.Time    `bson:"updated_on"` // "bsonType": ["date", "null"]
+	DeletedOn *time.Time    `bson:"deleted_on"` // "bsonType": ["date", "null"]
 }
 
 type pet struct {
