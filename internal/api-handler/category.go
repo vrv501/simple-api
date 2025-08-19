@@ -30,7 +30,7 @@ func (a *APIHandler) FindAnimalCategory(ctx context.Context,
 func (a *APIHandler) AddAnimalCategory(ctx context.Context,
 	request genRouter.AddAnimalCategoryRequestObject) (genRouter.AddAnimalCategoryResponseObject, error) {
 	logger := log.Ctx(ctx)
-	categoryName := string(request.Body.Name)
+	categoryName := request.Body.Name
 	res, err := a.dbClient.AddAnimalCategory(ctx, categoryName)
 	if err != nil {
 		if errors.Is(err, dbErr.ErrConflict) {
@@ -59,7 +59,7 @@ func (a *APIHandler) AddAnimalCategory(ctx context.Context,
 func (a *APIHandler) DeleteAnimalCategory(ctx context.Context,
 	request genRouter.DeleteAnimalCategoryRequestObject) (genRouter.DeleteAnimalCategoryResponseObject, error) {
 	logger := log.Ctx(ctx)
-	id := string(request.AnimalCategoryId)
+	id := request.AnimalCategoryId
 
 	err := a.dbClient.DeleteAnimalCategory(ctx, id)
 	if err != nil {
@@ -105,8 +105,9 @@ func (a *APIHandler) DeleteAnimalCategory(ctx context.Context,
 func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
 	request genRouter.ReplaceAnimalCategoryRequestObject) (genRouter.ReplaceAnimalCategoryResponseObject, error) {
 	logger := log.Ctx(ctx)
-	categoryName := string(request.Body.Name)
-	id := string(request.AnimalCategoryId)
+	categoryName := request.Body.Name
+	id := request.AnimalCategoryId
+
 	res, err := a.dbClient.UpdateAnimalCategory(ctx, id, categoryName)
 	if err != nil {
 		switch {
@@ -142,5 +143,6 @@ func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
 		}, nil
 	}
 
+	logger.Info().Msgf("Updated animal category with ID %s", id)
 	return genRouter.ReplaceAnimalCategory200JSONResponse{AnimalCategoryJSONResponse: *res}, nil
 }
