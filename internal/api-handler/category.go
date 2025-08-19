@@ -22,7 +22,29 @@ var (
 // (GET /animal-categories)
 func (a *APIHandler) FindAnimalCategory(ctx context.Context,
 	request genRouter.FindAnimalCategoryRequestObject) (genRouter.FindAnimalCategoryResponseObject, error) {
-	panic("not implemented") // TODO: Implement
+	logger := log.Ctx(ctx)
+	categoryName := request.Params.Name
+
+	res, err := a.dbClient.FindAnimalCategory(ctx, categoryName)
+	if err != nil {
+		if errors.Is(err, dbErr.ErrNotFound) {
+			return genRouter.FindAnimalCategorydefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: fmt.Sprintf("Animal category %s not found", categoryName),
+				},
+				StatusCode: http.StatusNotFound,
+			}, nil
+		}
+		logger.Error().Err(err).Msg("Failed to find animal category")
+		return genRouter.FindAnimalCategorydefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+
+	return genRouter.FindAnimalCategory200JSONResponse{AnimalCategoryJSONResponse: *res}, nil
 }
 
 // Add new animal-category to the store.

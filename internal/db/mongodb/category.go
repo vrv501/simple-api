@@ -13,6 +13,31 @@ import (
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 )
 
+func (m *mongoClient) FindAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error) {
+	res := m.mongoDbHandler.Collection(animalCategoryCollection).FindOne(ctx,
+		bson.M{nameField: name, deletedOnField: bson.Null{}},
+	)
+	err := res.Err()
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, dbErr.ErrNotFound
+		}
+		return nil, err
+	}
+
+	var animalCategoryRes animalCategory
+	err = res.Decode(&animalCategoryRes)
+	if err != nil {
+		return nil, err
+	}
+	return &genRouter.AnimalCategoryJSONResponse{
+		Id:        animalCategoryRes.ID.Hex(),
+		Name:      animalCategoryRes.Name,
+		CreatedAt: animalCategoryRes.CreatedOn,
+		UpdatedAt: animalCategoryRes.UpdatedOn,
+	}, nil
+}
+
 func (m *mongoClient) AddAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error) {
 	currTime := time.Now().UTC()
 	res, err := m.mongoDbHandler.Collection(animalCategoryCollection).InsertOne(ctx, animalCategory{

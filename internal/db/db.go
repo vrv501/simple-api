@@ -16,6 +16,8 @@ type Handler interface {
 }
 
 type animalCategoryHandler interface {
+	FindAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error)
+
 	AddAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error)
 
 	UpdateAnimalCategory(ctx context.Context, id, name string) (*genRouter.AnimalCategoryJSONResponse, error)
