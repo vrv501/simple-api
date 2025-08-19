@@ -8,10 +8,11 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"go.uber.org/mock/gomock"
+
 	"github.com/vrv501/simple-api/internal/db"
 	dbErr "github.com/vrv501/simple-api/internal/db/errors"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
-	"go.uber.org/mock/gomock"
 )
 
 func TestAPIHandler_FindAnimalCategory(t *testing.T) {

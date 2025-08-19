@@ -6,8 +6,9 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/vrv501/simple-api/internal/db"
 	"go.uber.org/mock/gomock"
+
+	"github.com/vrv501/simple-api/internal/db"
 )
 
 func TestNewAPIHandler(t *testing.T) {
