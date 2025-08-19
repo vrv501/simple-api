@@ -103,7 +103,7 @@ func (a *APIHandler) DeleteAnimalCategory(ctx context.Context,
 		case errors.Is(err, dbErr.ErrForeignKeyConstraint):
 			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: fmt.Sprintf("Pets found for animal category %s", id),
+					Message: "Pets found for animal category " + id,
 				},
 				StatusCode: http.StatusUnprocessableEntity,
 			}, nil
