@@ -1,5 +1,7 @@
 package db
 
+//go:generate go tool mockgen -package db -destination db_mock.go . Handler
+
 import (
 	"context"
 	"os"
@@ -30,6 +32,6 @@ func NewDBHandler(ctx context.Context) Handler {
 	case constants.MongoDB:
 		return mongodb.NewInstance(ctx)
 	default:
-		return mongodb.NewInstance(ctx)
+		return nil
 	}
 }
