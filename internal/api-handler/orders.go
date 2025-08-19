@@ -29,7 +29,7 @@ func (a *APIHandler) DeleteOrder(ctx context.Context,
 
 // Find user order by ID.
 // (GET /store/orders/{orderId})
-func (a *APIHandler) GetOrderById(ctx context.Context,
-	request genRouter.GetOrderByIdRequestObject) (genRouter.GetOrderByIdResponseObject, error) {
+func (a *APIHandler) GetOrderByID(ctx context.Context,
+	request genRouter.GetOrderByIDRequestObject) (genRouter.GetOrderByIDResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }

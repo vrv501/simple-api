@@ -58,7 +58,8 @@ func (m *mongoClient) AddAnimalCategory(ctx context.Context, name string) (*genR
 	}, nil
 }
 
-func (m *mongoClient) UpdateAnimalCategory(ctx context.Context, id, name string) (*genRouter.AnimalCategoryJSONResponse, error) {
+func (m *mongoClient) UpdateAnimalCategory(ctx context.Context, id,
+	name string) (*genRouter.AnimalCategoryJSONResponse, error) {
 	bsonID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, dbErr.ErrInvalidID

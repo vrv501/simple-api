@@ -346,7 +346,7 @@ type ServerInterface interface {
 	DeletePet(w http.ResponseWriter, r *http.Request, petId PetId)
 	// Find pet by ID.
 	// (GET /pets/{petId})
-	GetPetById(w http.ResponseWriter, r *http.Request, petId PetId)
+	GetPetByID(w http.ResponseWriter, r *http.Request, petId PetId)
 	// Replace existing pet data using Id.
 	// (PUT /pets/{petId})
 	ReplacePet(w http.ResponseWriter, r *http.Request, petId PetId)
@@ -370,7 +370,7 @@ type ServerInterface interface {
 	DeleteOrder(w http.ResponseWriter, r *http.Request, orderId OrderId)
 	// Find user order by ID.
 	// (GET /store/orders/{orderId})
-	GetOrderById(w http.ResponseWriter, r *http.Request, orderId OrderId)
+	GetOrderByID(w http.ResponseWriter, r *http.Request, orderId OrderId)
 	// Create user.
 	// (POST /users)
 	CreateUser(w http.ResponseWriter, r *http.Request)
@@ -632,8 +632,8 @@ func (siw *ServerInterfaceWrapper) DeletePet(w http.ResponseWriter, r *http.Requ
 	handler.ServeHTTP(w, r)
 }
 
-// GetPetById operation middleware
-func (siw *ServerInterfaceWrapper) GetPetById(w http.ResponseWriter, r *http.Request) {
+// GetPetByID operation middleware
+func (siw *ServerInterfaceWrapper) GetPetByID(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -653,7 +653,7 @@ func (siw *ServerInterfaceWrapper) GetPetById(w http.ResponseWriter, r *http.Req
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetPetById(w, r, petId)
+		siw.Handler.GetPetByID(w, r, petId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -913,8 +913,8 @@ func (siw *ServerInterfaceWrapper) DeleteOrder(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r)
 }
 
-// GetOrderById operation middleware
-func (siw *ServerInterfaceWrapper) GetOrderById(w http.ResponseWriter, r *http.Request) {
+// GetOrderByID operation middleware
+func (siw *ServerInterfaceWrapper) GetOrderByID(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -934,7 +934,7 @@ func (siw *ServerInterfaceWrapper) GetOrderById(w http.ResponseWriter, r *http.R
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetOrderById(w, r, orderId)
+		siw.Handler.GetOrderByID(w, r, orderId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1178,7 +1178,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/pets", wrapper.FindPets)
 	m.HandleFunc("POST "+options.BaseURL+"/pets", wrapper.AddPet)
 	m.HandleFunc("DELETE "+options.BaseURL+"/pets/{petId}", wrapper.DeletePet)
-	m.HandleFunc("GET "+options.BaseURL+"/pets/{petId}", wrapper.GetPetById)
+	m.HandleFunc("GET "+options.BaseURL+"/pets/{petId}", wrapper.GetPetByID)
 	m.HandleFunc("PUT "+options.BaseURL+"/pets/{petId}", wrapper.ReplacePet)
 	m.HandleFunc("POST "+options.BaseURL+"/pets/{petId}/images", wrapper.UploadPetImage)
 	m.HandleFunc("DELETE "+options.BaseURL+"/pets/{petId}/images/{imageId}", wrapper.DeletePetImage)
@@ -1186,7 +1186,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/store/orders", wrapper.FindOrders)
 	m.HandleFunc("POST "+options.BaseURL+"/store/orders", wrapper.PlaceOrders)
 	m.HandleFunc("DELETE "+options.BaseURL+"/store/orders/{orderId}", wrapper.DeleteOrder)
-	m.HandleFunc("GET "+options.BaseURL+"/store/orders/{orderId}", wrapper.GetOrderById)
+	m.HandleFunc("GET "+options.BaseURL+"/store/orders/{orderId}", wrapper.GetOrderByID)
 	m.HandleFunc("POST "+options.BaseURL+"/users", wrapper.CreateUser)
 	m.HandleFunc("DELETE "+options.BaseURL+"/users/{username}", wrapper.DeleteUser)
 	m.HandleFunc("GET "+options.BaseURL+"/users/{username}", wrapper.GetUserByName)
@@ -1461,31 +1461,31 @@ func (response DeletePetdefaultJSONResponse) VisitDeletePetResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type GetPetByIdRequestObject struct {
+type GetPetByIDRequestObject struct {
 	PetId PetId `json:"petId"`
 }
 
-type GetPetByIdResponseObject interface {
-	VisitGetPetByIdResponse(w http.ResponseWriter) error
+type GetPetByIDResponseObject interface {
+	VisitGetPetByIDResponse(w http.ResponseWriter) error
 }
 
-type GetPetById200JSONResponse PetWithMetadata
+type GetPetByID200JSONResponse PetWithMetadata
 
-func (response GetPetById200JSONResponse) VisitGetPetByIdResponse(w http.ResponseWriter) error {
+func (response GetPetByID200JSONResponse) VisitGetPetByIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetPetByIddefaultJSONResponse struct {
+type GetPetByIDdefaultJSONResponse struct {
 	Body struct {
 		Message string `json:"message"`
 	}
 	StatusCode int
 }
 
-func (response GetPetByIddefaultJSONResponse) VisitGetPetByIdResponse(w http.ResponseWriter) error {
+func (response GetPetByIDdefaultJSONResponse) VisitGetPetByIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.StatusCode)
 
@@ -1721,31 +1721,31 @@ func (response DeleteOrderdefaultJSONResponse) VisitDeleteOrderResponse(w http.R
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type GetOrderByIdRequestObject struct {
+type GetOrderByIDRequestObject struct {
 	OrderId OrderId `json:"orderId"`
 }
 
-type GetOrderByIdResponseObject interface {
-	VisitGetOrderByIdResponse(w http.ResponseWriter) error
+type GetOrderByIDResponseObject interface {
+	VisitGetOrderByIDResponse(w http.ResponseWriter) error
 }
 
-type GetOrderById200JSONResponse OrderWithMetadata
+type GetOrderByID200JSONResponse OrderWithMetadata
 
-func (response GetOrderById200JSONResponse) VisitGetOrderByIdResponse(w http.ResponseWriter) error {
+func (response GetOrderByID200JSONResponse) VisitGetOrderByIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetOrderByIddefaultJSONResponse struct {
+type GetOrderByIDdefaultJSONResponse struct {
 	Body struct {
 		Message string `json:"message"`
 	}
 	StatusCode int
 }
 
-func (response GetOrderByIddefaultJSONResponse) VisitGetOrderByIdResponse(w http.ResponseWriter) error {
+func (response GetOrderByIDdefaultJSONResponse) VisitGetOrderByIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.StatusCode)
 
@@ -1901,7 +1901,7 @@ type StrictServerInterface interface {
 	DeletePet(ctx context.Context, request DeletePetRequestObject) (DeletePetResponseObject, error)
 	// Find pet by ID.
 	// (GET /pets/{petId})
-	GetPetById(ctx context.Context, request GetPetByIdRequestObject) (GetPetByIdResponseObject, error)
+	GetPetByID(ctx context.Context, request GetPetByIDRequestObject) (GetPetByIDResponseObject, error)
 	// Replace existing pet data using Id.
 	// (PUT /pets/{petId})
 	ReplacePet(ctx context.Context, request ReplacePetRequestObject) (ReplacePetResponseObject, error)
@@ -1925,7 +1925,7 @@ type StrictServerInterface interface {
 	DeleteOrder(ctx context.Context, request DeleteOrderRequestObject) (DeleteOrderResponseObject, error)
 	// Find user order by ID.
 	// (GET /store/orders/{orderId})
-	GetOrderById(ctx context.Context, request GetOrderByIdRequestObject) (GetOrderByIdResponseObject, error)
+	GetOrderByID(ctx context.Context, request GetOrderByIDRequestObject) (GetOrderByIDResponseObject, error)
 	// Create user.
 	// (POST /users)
 	CreateUser(ctx context.Context, request CreateUserRequestObject) (CreateUserResponseObject, error)
@@ -2168,25 +2168,25 @@ func (sh *strictHandler) DeletePet(w http.ResponseWriter, r *http.Request, petId
 	}
 }
 
-// GetPetById operation middleware
-func (sh *strictHandler) GetPetById(w http.ResponseWriter, r *http.Request, petId PetId) {
-	var request GetPetByIdRequestObject
+// GetPetByID operation middleware
+func (sh *strictHandler) GetPetByID(w http.ResponseWriter, r *http.Request, petId PetId) {
+	var request GetPetByIDRequestObject
 
 	request.PetId = petId
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.GetPetById(ctx, request.(GetPetByIdRequestObject))
+		return sh.ssi.GetPetByID(ctx, request.(GetPetByIDRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetPetById")
+		handler = middleware(handler, "GetPetByID")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(GetPetByIdResponseObject); ok {
-		if err := validResponse.VisitGetPetByIdResponse(w); err != nil {
+	} else if validResponse, ok := response.(GetPetByIDResponseObject); ok {
+		if err := validResponse.VisitGetPetByIDResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -2397,25 +2397,25 @@ func (sh *strictHandler) DeleteOrder(w http.ResponseWriter, r *http.Request, ord
 	}
 }
 
-// GetOrderById operation middleware
-func (sh *strictHandler) GetOrderById(w http.ResponseWriter, r *http.Request, orderId OrderId) {
-	var request GetOrderByIdRequestObject
+// GetOrderByID operation middleware
+func (sh *strictHandler) GetOrderByID(w http.ResponseWriter, r *http.Request, orderId OrderId) {
+	var request GetOrderByIDRequestObject
 
 	request.OrderId = orderId
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.GetOrderById(ctx, request.(GetOrderByIdRequestObject))
+		return sh.ssi.GetOrderByID(ctx, request.(GetOrderByIDRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetOrderById")
+		handler = middleware(handler, "GetOrderByID")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(GetOrderByIdResponseObject); ok {
-		if err := validResponse.VisitGetOrderByIdResponse(w); err != nil {
+	} else if validResponse, ok := response.(GetOrderByIDResponseObject); ok {
+		if err := validResponse.VisitGetOrderByIDResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -2542,54 +2542,54 @@ func (sh *strictHandler) ReplaceUser(w http.ResponseWriter, r *http.Request, use
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -14,8 +14,8 @@ import (
 
 var (
 	errMsgInvalidAnimalCategoryID = "Invalid animal category ID"
-	errMsgAnimalCategoryNotFound  = "Animal category not found for id %s"
-	errMsgAnimalCategoryExists    = "Animal category already exists with name %s"
+	errMsgAnimalCategoryNotFound  = "Animal category not found for id"
+	errMsgAnimalCategoryExists    = "Animal category already exists with name "
 )
 
 // Find animal-category using name
@@ -58,7 +58,7 @@ func (a *APIHandler) AddAnimalCategory(ctx context.Context,
 		if errors.Is(err, dbErr.ErrConflict) {
 			return genRouter.AddAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: fmt.Sprintf(errMsgAnimalCategoryExists, categoryName),
+					Message: errMsgAnimalCategoryExists + " " + categoryName,
 				},
 				StatusCode: http.StatusConflict,
 			}, nil
@@ -96,7 +96,7 @@ func (a *APIHandler) DeleteAnimalCategory(ctx context.Context,
 		case errors.Is(err, dbErr.ErrNotFound):
 			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: fmt.Sprintf(errMsgAnimalCategoryNotFound, id),
+					Message: errMsgAnimalCategoryNotFound + " " + id,
 				},
 				StatusCode: http.StatusNotFound,
 			}, nil
@@ -143,14 +143,14 @@ func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
 		case errors.Is(err, dbErr.ErrNotFound):
 			return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: fmt.Sprintf(errMsgAnimalCategoryNotFound, id),
+					Message: errMsgAnimalCategoryNotFound + " " + id,
 				},
 				StatusCode: http.StatusNotFound,
 			}, nil
 		case errors.Is(err, dbErr.ErrConflict):
 			return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: fmt.Sprintf(errMsgAnimalCategoryExists, categoryName),
+					Message: errMsgAnimalCategoryExists + " " + categoryName,
 				},
 				StatusCode: http.StatusUnprocessableEntity,
 			}, nil

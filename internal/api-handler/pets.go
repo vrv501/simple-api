@@ -29,8 +29,8 @@ func (a *APIHandler) DeletePet(ctx context.Context,
 
 // Find pet by ID.
 // (GET /pets/{petId})
-func (a *APIHandler) GetPetById(ctx context.Context,
-	request genRouter.GetPetByIdRequestObject) (genRouter.GetPetByIdResponseObject, error) {
+func (a *APIHandler) GetPetByID(ctx context.Context,
+	request genRouter.GetPetByIDRequestObject) (genRouter.GetPetByIDResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 

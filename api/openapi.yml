@@ -152,7 +152,7 @@ paths:
         - pets
       summary: Find pet by ID.
       description: Returns a single pet.
-      operationId: getPetById
+      operationId: getPetByID
       parameters:
         - "$ref": "#/components/parameters/PetId"
       responses:
@@ -317,7 +317,7 @@ paths:
       tags:
         - orders
       summary: Find user order by ID.
-      operationId: getOrderById
+      operationId: getOrderByID
       parameters: 
         - "$ref": "#/components/parameters/OrderId"
       responses:
