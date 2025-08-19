@@ -23,7 +23,7 @@ const (
 
 	defaultAPIUser       string = "apiUser"
 	defaultMongoPassword string = "mongo"
-	defaultMongoUri      string = "localhost:27017"
+	defaultMongoURI      string = "localhost:27017"
 
 	dbName                   string = "shop"
 	animalCategoryCollection string = "animal_categories"
@@ -33,9 +33,9 @@ const (
 	fsFilesCollection        string = "fs.files"
 	fsChunksCollection       string = "fs.chunks"
 
-	idField         string = "_id"
+	iDField         string = "_id"
 	nameField       string = "name"
-	categoryIdField string = "category_id"
+	categoryIDField string = "category_id"
 	updatedOnField  string = "updated_on"
 	deletedOnField  string = "deleted_on"
 
@@ -61,11 +61,11 @@ func NewInstance(ctx context.Context) *mongoClient {
 	if applyURI := os.Getenv(mongoApplyURI); applyURI != "" {
 		c = c.ApplyURI(applyURI)
 	} else {
-		mongoUri := os.Getenv(mongoURIEnvVar)
-		if mongoUri == "" {
-			mongoUri = defaultMongoUri
+		mongoURI := os.Getenv(mongoURIEnvVar)
+		if mongoURI == "" {
+			mongoURI = defaultMongoURI
 		}
-		c.SetHosts([]string{mongoUri})
+		c.SetHosts([]string{mongoURI})
 
 		username := os.Getenv(constants.DBUsername)
 		if username == "" {

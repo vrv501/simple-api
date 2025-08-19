@@ -64,7 +64,7 @@ func (a *APIHandler) DeleteAnimalCategory(ctx context.Context,
 	err := a.dbClient.DeleteAnimalCategory(ctx, id)
 	if err != nil {
 		switch {
-		case errors.Is(err, dbErr.ErrInvalidId):
+		case errors.Is(err, dbErr.ErrInvalidID):
 			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: errMsgInvalidAnimalCategoryID,
@@ -111,7 +111,7 @@ func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
 	res, err := a.dbClient.UpdateAnimalCategory(ctx, id, categoryName)
 	if err != nil {
 		switch {
-		case errors.Is(err, dbErr.ErrInvalidId):
+		case errors.Is(err, dbErr.ErrInvalidID):
 			return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: errMsgInvalidAnimalCategoryID,

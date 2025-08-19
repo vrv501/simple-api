@@ -8,7 +8,7 @@ import (
 )
 
 type APIHandler struct {
-	dbClient db.DBHandler
+	dbClient db.Handler
 }
 
 func NewAPIHandler(ctx context.Context) *APIHandler {

@@ -3,7 +3,7 @@ package errors
 import "errors"
 
 var (
-	ErrInvalidId = errors.New("invalid ID")
+	ErrInvalidID = errors.New("invalid ID")
 
 	ErrConflict = errors.New("conflict error")
 

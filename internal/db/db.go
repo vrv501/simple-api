@@ -9,7 +9,7 @@ import (
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 )
 
-type DBHandler interface {
+type Handler interface {
 	animalCategoryHandler
 
 	Close(ctx context.Context) error
@@ -23,7 +23,7 @@ type animalCategoryHandler interface {
 	DeleteAnimalCategory(ctx context.Context, id string) error
 }
 
-func NewDBHandler(ctx context.Context) DBHandler {
+func NewDBHandler(ctx context.Context) Handler {
 	switch dbEnv := os.Getenv("DB_TYPE"); dbEnv {
 	case constants.MongoDB:
 		return mongodb.NewInstance(ctx)
