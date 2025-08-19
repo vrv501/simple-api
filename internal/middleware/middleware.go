@@ -3,7 +3,10 @@ package middleware
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"runtime"
+	"slices"
+	"strings"
 
 	"github.com/rs/zerolog/hlog"
 
@@ -44,11 +47,17 @@ func PanicRecovery(h http.Handler) http.Handler {
 }
 
 func WithCORS(h http.Handler) http.Handler {
-	allowedOrigin := "http://localhost:8080"
+	allowedOriginList := []string{"http://localhost:8080"}
+	if allowedOrigins := os.Getenv(constants.AllowedOrigins); allowedOrigins != "" {
+		for allowedOrigin := range strings.SplitSeq(allowedOrigins, ",") {
+			allowedOriginList = append(allowedOriginList, strings.TrimSpace(allowedOrigin))
+		}
+	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		if r.Header.Get("Origin") == allowedOrigin {
+		w.Header().Set("Access-Control-Expose-Headers", "X-Request-Id, X-Next-Cursor")
+		if allowedOrigin := r.Header.Get("Origin"); slices.Contains(allowedOriginList, allowedOrigin) {
 			w.Header().Set("Access-Control-Allow-Origin", allowedOrigin)
 		}
 		if r.Method == http.MethodOptions {

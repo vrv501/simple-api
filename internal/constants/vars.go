@@ -2,10 +2,11 @@ package constants
 
 // ENV Vars
 const (
-	LogLevel   = "LOG_LEVEL"
-	ServerPort = "SERVER_PORT"
-	DBUsername = "DB_USERNAME"
-	DBPassword = "DB_PASSWORD"
+	LogLevel       = "LOG_LEVEL"
+	ServerPort     = "SERVER_PORT"
+	DBUsername     = "DB_USERNAME"
+	DBPassword     = "DB_PASSWORD"
+	AllowedOrigins = "ALLOWED_ORIGINS"
 )
 
 // Headers
