@@ -12,30 +12,36 @@ import (
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 )
 
+var (
+	errMsgInvalidAnimalCategoryID = "Invalid animal category ID"
+	errMsgAnimalCategoryNotFound  = "Animal category not found for id %s"
+	errMsgAnimalCategoryExists    = "Animal category already exists with name %s"
+)
+
 // Find animal-category using name
 // (GET /animal-categories)
-func (a *ApiHandler) FindAnimalCategory(ctx context.Context, request genRouter.FindAnimalCategoryRequestObject) (genRouter.FindAnimalCategoryResponseObject, error) {
+func (a *APIHandler) FindAnimalCategory(ctx context.Context, request genRouter.FindAnimalCategoryRequestObject) (genRouter.FindAnimalCategoryResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
 // Add new animal-category to the store.
 // (POST /animal-categories)
-func (a *ApiHandler) AddAnimalCategory(ctx context.Context, request genRouter.AddAnimalCategoryRequestObject) (genRouter.AddAnimalCategoryResponseObject, error) {
+func (a *APIHandler) AddAnimalCategory(ctx context.Context, request genRouter.AddAnimalCategoryRequestObject) (genRouter.AddAnimalCategoryResponseObject, error) {
 	logger := log.Ctx(ctx)
 	categoryName := string(request.Body.Name)
-	id, createdTime, err := a.dbClient.AddAnimalCategory(ctx, categoryName)
+	res, err := a.dbClient.AddAnimalCategory(ctx, categoryName)
 	if err != nil {
 		if errors.Is(err, dbErr.ErrConflict) {
 			return genRouter.AddAnimalCategorydefaultJSONResponse{
-				Body: genRouter.ApiResponse{
-					Message: fmt.Sprintf("Animal Category: %s already exists", categoryName),
+				Body: genRouter.Generic{
+					Message: fmt.Sprintf(errMsgAnimalCategoryExists, categoryName),
 				},
 				StatusCode: http.StatusConflict,
 			}, nil
 		}
 		logger.Error().Err(err).Msg("Failed to add animal category")
 		return genRouter.AddAnimalCategorydefaultJSONResponse{
-			Body: genRouter.ApiResponse{
+			Body: genRouter.Generic{
 				Message: http.StatusText(http.StatusInternalServerError),
 			},
 			StatusCode: http.StatusInternalServerError,
@@ -43,18 +49,12 @@ func (a *ApiHandler) AddAnimalCategory(ctx context.Context, request genRouter.Ad
 	}
 
 	logger.Info().Msgf("Added animal category %s", categoryName)
-	return genRouter.AddAnimalCategory201JSONResponse{
-		AnimalCategoryResponseJSONResponse: genRouter.AnimalCategoryResponseJSONResponse{
-			Id:        id,
-			Name:      categoryName,
-			CreatedAt: createdTime,
-		},
-	}, nil
+	return genRouter.AddAnimalCategory201JSONResponse{AnimalCategoryJSONResponse: *res}, nil
 }
 
 // Delete an animal-category.
 // (DELETE /animal-categories/{animalCategoryId})
-func (a *ApiHandler) DeleteAnimalCategory(ctx context.Context, request genRouter.DeleteAnimalCategoryRequestObject) (genRouter.DeleteAnimalCategoryResponseObject, error) {
+func (a *APIHandler) DeleteAnimalCategory(ctx context.Context, request genRouter.DeleteAnimalCategoryRequestObject) (genRouter.DeleteAnimalCategoryResponseObject, error) {
 	logger := log.Ctx(ctx)
 	id := string(request.AnimalCategoryId)
 
@@ -63,21 +63,21 @@ func (a *ApiHandler) DeleteAnimalCategory(ctx context.Context, request genRouter
 		switch {
 		case errors.Is(err, dbErr.ErrInvalidId):
 			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
-				Body: genRouter.ApiResponse{
-					Message: "Invalid animal category ID",
+				Body: genRouter.Generic{
+					Message: errMsgInvalidAnimalCategoryID,
 				},
 				StatusCode: http.StatusBadRequest,
 			}, nil
 		case errors.Is(err, dbErr.ErrNotFound):
 			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
-				Body: genRouter.ApiResponse{
-					Message: fmt.Sprintf("Animal category not found for id %s", id),
+				Body: genRouter.Generic{
+					Message: fmt.Sprintf(errMsgAnimalCategoryNotFound, id),
 				},
 				StatusCode: http.StatusNotFound,
 			}, nil
 		case errors.Is(err, dbErr.ErrForeignKeyConstraint):
 			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
-				Body: genRouter.ApiResponse{
+				Body: genRouter.Generic{
 					Message: fmt.Sprintf("Pets found for animal category %s", id),
 				},
 				StatusCode: http.StatusUnprocessableEntity,
@@ -86,7 +86,7 @@ func (a *ApiHandler) DeleteAnimalCategory(ctx context.Context, request genRouter
 
 		logger.Error().Err(err).Msg("Failed to delete animal category")
 		return genRouter.DeleteAnimalCategorydefaultJSONResponse{
-			Body: genRouter.ApiResponse{
+			Body: genRouter.Generic{
 				Message: http.StatusText(http.StatusInternalServerError),
 			},
 			StatusCode: http.StatusInternalServerError,
@@ -94,11 +94,49 @@ func (a *ApiHandler) DeleteAnimalCategory(ctx context.Context, request genRouter
 	}
 
 	logger.Info().Msgf("Deleted animal category with ID %s", id)
-	return genRouter.DeleteAnimalCategory200Response{}, nil
+	return genRouter.DeleteAnimalCategory204Response{}, nil
 }
 
 // Replace existing animal-category data using Id.
 // (PUT /animal-categories/{animalCategoryId})
-func (a *ApiHandler) ReplaceAnimalCategory(ctx context.Context, request genRouter.ReplaceAnimalCategoryRequestObject) (genRouter.ReplaceAnimalCategoryResponseObject, error) {
-	panic("not implemented") // TODO: Implement
+func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context, request genRouter.ReplaceAnimalCategoryRequestObject) (genRouter.ReplaceAnimalCategoryResponseObject, error) {
+	logger := log.Ctx(ctx)
+	categoryName := string(request.Body.Name)
+	id := string(request.AnimalCategoryId)
+	res, err := a.dbClient.UpdateAnimalCategory(ctx, id, categoryName)
+	if err != nil {
+		switch {
+		case errors.Is(err, dbErr.ErrInvalidId):
+			return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: errMsgInvalidAnimalCategoryID,
+				},
+				StatusCode: http.StatusBadRequest,
+			}, nil
+		case errors.Is(err, dbErr.ErrNotFound):
+			return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: fmt.Sprintf(errMsgAnimalCategoryNotFound, id),
+				},
+				StatusCode: http.StatusNotFound,
+			}, nil
+		case errors.Is(err, dbErr.ErrConflict):
+			return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: fmt.Sprintf(errMsgAnimalCategoryExists, categoryName),
+				},
+				StatusCode: http.StatusUnprocessableEntity,
+			}, nil
+		}
+
+		logger.Error().Err(err).Msg("Failed to update animal category")
+		return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+
+	return genRouter.ReplaceAnimalCategory200JSONResponse{AnimalCategoryJSONResponse: *res}, nil
 }

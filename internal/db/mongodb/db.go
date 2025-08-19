@@ -34,10 +34,13 @@ const (
 	fsChunksCollection       string = "fs.chunks"
 
 	idField         string = "_id"
+	nameField       string = "name"
 	categoryIdField string = "category_id"
+	updatedOnField  string = "updated_on"
 	deletedOnField  string = "deleted_on"
 
-	setOperator string = "$set"
+	setOperator   string = "$set"
+	notEqOperator string = "$ne"
 )
 
 type mongoClient struct {

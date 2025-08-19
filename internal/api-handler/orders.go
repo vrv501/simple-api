@@ -8,24 +8,24 @@ import (
 
 // Find user Orders using status.
 // (GET /store/orders)
-func (a *ApiHandler) FindOrders(ctx context.Context, request genRouter.FindOrdersRequestObject) (genRouter.FindOrdersResponseObject, error) {
+func (a *APIHandler) FindOrders(ctx context.Context, request genRouter.FindOrdersRequestObject) (genRouter.FindOrdersResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
 // Place orders for pets.
 // (POST /store/orders)
-func (a *ApiHandler) PlaceOrders(ctx context.Context, request genRouter.PlaceOrdersRequestObject) (genRouter.PlaceOrdersResponseObject, error) {
+func (a *APIHandler) PlaceOrders(ctx context.Context, request genRouter.PlaceOrdersRequestObject) (genRouter.PlaceOrdersResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
-// Delete purchase order by identifier.
+// Delete user order by identifier.
 // (DELETE /store/orders/{orderId})
-func (a *ApiHandler) DeleteOrder(ctx context.Context, request genRouter.DeleteOrderRequestObject) (genRouter.DeleteOrderResponseObject, error) {
+func (a *APIHandler) DeleteOrder(ctx context.Context, request genRouter.DeleteOrderRequestObject) (genRouter.DeleteOrderResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
-// Find purchase order by ID.
+// Find user order by ID.
 // (GET /store/orders/{orderId})
-func (a *ApiHandler) GetOrderById(ctx context.Context, request genRouter.GetOrderByIdRequestObject) (genRouter.GetOrderByIdResponseObject, error) {
+func (a *APIHandler) GetOrderById(ctx context.Context, request genRouter.GetOrderByIdRequestObject) (genRouter.GetOrderByIdResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }

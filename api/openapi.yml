@@ -533,6 +533,7 @@ components:
       minLength: 1
       maxLength: 150
     User:
+      x-go-name: UserSchema
       type: object
       required:
         - username
@@ -647,7 +648,6 @@ components:
                 items:
                   "$ref": "#/components/schemas/OrderWithMetadata"
     User:
-      x-go-name: UserResponse
       description: "Successful User object response"
       content:
         application/json:

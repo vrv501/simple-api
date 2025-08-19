@@ -3,10 +3,10 @@ package db
 import (
 	"context"
 	"os"
-	"time"
 
 	"github.com/vrv501/simple-api/internal/constants"
 	"github.com/vrv501/simple-api/internal/db/mongodb"
+	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 )
 
 type DBHandler interface {
@@ -16,7 +16,9 @@ type DBHandler interface {
 }
 
 type animalCategoryHandler interface {
-	AddAnimalCategory(ctx context.Context, name string) (string, time.Time, error)
+	AddAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error)
+
+	UpdateAnimalCategory(ctx context.Context, id, name string) (*genRouter.AnimalCategoryJSONResponse, error)
 
 	DeleteAnimalCategory(ctx context.Context, id string) error
 }

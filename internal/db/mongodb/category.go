@@ -10,9 +10,10 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	dbErr "github.com/vrv501/simple-api/internal/db/errors"
+	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 )
 
-func (m *mongoClient) AddAnimalCategory(ctx context.Context, name string) (string, time.Time, error) {
+func (m *mongoClient) AddAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error) {
 	currTime := time.Now().UTC()
 	res, err := m.mongoDbHandler.Collection(animalCategoryCollection).InsertOne(ctx, animalCategory{
 		Name:      name,
@@ -20,11 +21,53 @@ func (m *mongoClient) AddAnimalCategory(ctx context.Context, name string) (strin
 	})
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return "", currTime, dbErr.ErrConflict
+			return nil, dbErr.ErrConflict
 		}
-		return "", currTime, err
+		return nil, err
 	}
-	return res.InsertedID.(bson.ObjectID).Hex(), currTime, nil
+
+	return &genRouter.AnimalCategoryJSONResponse{
+		Id:        res.InsertedID.(bson.ObjectID).Hex(),
+		Name:      name,
+		CreatedAt: currTime,
+	}, nil
+}
+
+func (m *mongoClient) UpdateAnimalCategory(ctx context.Context, id, name string) (*genRouter.AnimalCategoryJSONResponse, error) {
+	bsonID, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, dbErr.ErrInvalidId
+	}
+
+	currTime := time.Now().UTC()
+	res := m.mongoDbHandler.Collection(animalCategoryCollection).FindOneAndUpdate(ctx,
+		bson.M{idField: bsonID, deletedOnField: bson.M{notEqOperator: bson.Null{}}},
+		bson.M{nameField: name, updatedOnField: currTime},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	)
+	err = res.Err()
+	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			return nil, dbErr.ErrConflict
+		}
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, dbErr.ErrNotFound
+		}
+		return nil, err
+	}
+
+	var animalCategoryRes animalCategory
+	err = res.Decode(&animalCategoryRes)
+	if err != nil {
+		return nil, err
+	}
+
+	return &genRouter.AnimalCategoryJSONResponse{
+		Id:        animalCategoryRes.ID.Hex(),
+		Name:      animalCategoryRes.Name,
+		CreatedAt: animalCategoryRes.CreatedOn,
+		UpdatedAt: animalCategoryRes.UpdatedOn,
+	}, nil
 }
 
 func (m *mongoClient) DeleteAnimalCategory(ctx context.Context, id string) error {

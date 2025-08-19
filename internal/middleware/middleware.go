@@ -34,7 +34,7 @@ func PanicRecovery(h http.Handler) http.Handler {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusInternalServerError)
 				jsonBody, _ := json.Marshal(
-					genRouter.ApiResponse{
+					genRouter.Generic{
 						Message: http.StatusText(http.StatusInternalServerError),
 					},
 				)
