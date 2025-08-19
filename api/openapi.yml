@@ -34,9 +34,9 @@ paths:
             "$ref": "#/components/schemas/AnimalCategoryName"
       responses:
         "200":
-          "$ref": "#/components/responses/AnimalCategoryResponse"
+          "$ref": "#/components/responses/AnimalCategory"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
     post:
       tags:
         - animal-categories
@@ -44,12 +44,12 @@ paths:
       description: Add new animal-category to the store.
       operationId: addAnimalCategory
       requestBody:
-        "$ref": "#/components/requestBodies/AnimalCategoryRequest"
+        "$ref": "#/components/requestBodies/AnimalCategory"
       responses:
         "201":
-          "$ref": "#/components/responses/AnimalCategoryResponse"
+          "$ref": "#/components/responses/AnimalCategory"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
   "/animal-categories/{animalCategoryId}":
     put:
       tags:
@@ -58,14 +58,14 @@ paths:
       description: Replace existing animal-category data using Id.
       operationId: replaceAnimalCategory
       parameters:
-        - "$ref": "#/components/parameters/AnimalCategoryIdParameter"
+        - "$ref": "#/components/parameters/AnimalCategoryId"
       requestBody:
-        "$ref": "#/components/requestBodies/AnimalCategoryRequest"
+        "$ref": "#/components/requestBodies/AnimalCategory"
       responses:
         "200":
-          "$ref": "#/components/responses/AnimalCategoryResponse"
+          "$ref": "#/components/responses/AnimalCategory"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
     delete:
       tags:
         - animal-categories
@@ -73,12 +73,12 @@ paths:
       description: Delete an animal-category.
       operationId: deleteAnimalCategory
       parameters:
-        - "$ref": "#/components/parameters/AnimalCategoryIdParameter"
+        - "$ref": "#/components/parameters/AnimalCategoryId"
       responses:
         "204":
           description: Animal-category deleted
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
   "/pets":
     get:
       tags:
@@ -113,9 +113,26 @@ paths:
         - "$ref": "#/components/parameters/Limit"
       responses:
         "200":
-          "$ref": "#/components/responses/PetResponseArray"
+          description: "Successful Pet array response"
+          headers: *paginationHeader
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - count 
+                  - pets
+                properties:
+                  count:
+                    type: integer
+                    description: Total number of pets
+                    example: 1
+                  pets:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/PetWithMetadata"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
     post:
       tags:
         - pets
@@ -123,12 +140,12 @@ paths:
       description: Add new pet to the store.
       operationId: addPet
       requestBody:
-        "$ref": "#/components/requestBodies/PetRequest"
+        "$ref": "#/components/requestBodies/Pet"
       responses:
         "202":
           description: "Request Accepted"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
   "/pets/{petId}":
     get:
       tags:
@@ -137,12 +154,16 @@ paths:
       description: Returns a single pet.
       operationId: getPetById
       parameters:
-        - "$ref": "#/components/parameters/PetIdParameter"
+        - "$ref": "#/components/parameters/PetId"
       responses:
         "200":
-          "$ref": "#/components/responses/PetResponse"                
+          description: "Successful Pet object response"
+          content:
+            application/json:
+              schema: 
+                "$ref": "#/components/schemas/PetWithMetadata"                
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
     put:
       tags:
         - pets
@@ -150,14 +171,14 @@ paths:
       description: Replace existing pet data using Id.
       operationId: replacePet
       parameters:
-        - "$ref": "#/components/parameters/PetIdParameter"
+        - "$ref": "#/components/parameters/PetId"
       requestBody:
-        "$ref": "#/components/requestBodies/PetRequest"
+        "$ref": "#/components/requestBodies/Pet"
       responses:
         "202":
           description: "Request Accepted"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
     delete:
       tags:
         - pets
@@ -165,12 +186,12 @@ paths:
       description: Delete a pet.
       operationId: deletePet
       parameters:
-        - "$ref": "#/components/parameters/PetIdParameter"
+        - "$ref": "#/components/parameters/PetId"
       responses:
         "204":
           description: Pet deleted
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
   "/pets/{petId}/images":
     post:
       tags:
@@ -179,7 +200,7 @@ paths:
       description: Upload a new image for a pet.
       operationId: uploadPetImage
       parameters:
-        - "$ref": "#/components/parameters/PetIdParameter"
+        - "$ref": "#/components/parameters/PetId"
       requestBody:
         content:
           multipart/form-data:
@@ -198,7 +219,7 @@ paths:
         "202":
           description: "Accepted Request"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
   "/pets/{petId}/images/{imageId}":
     get:
       tags:
@@ -207,8 +228,8 @@ paths:
       description: Get a pet image using ID.
       operationId: getImageByPetId
       parameters:
-        - "$ref": "#/components/parameters/PetIdParameter"
-        - "$ref": "#/components/parameters/ImageIdParameter"
+        - "$ref": "#/components/parameters/PetId"
+        - "$ref": "#/components/parameters/ImageId"
       responses:
         "200":
           description: Successful response
@@ -219,7 +240,7 @@ paths:
                 format: binary
                 example: binary string representation of jpeg image
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
     delete:
       tags:
         - pets
@@ -227,13 +248,13 @@ paths:
       description: Delete a pet image.
       operationId: deletePetImage
       parameters:
-        - "$ref": "#/components/parameters/PetIdParameter"
-        - "$ref": "#/components/parameters/ImageIdParameter"
+        - "$ref": "#/components/parameters/PetId"
+        - "$ref": "#/components/parameters/ImageId"
       responses:
         "204":
           description: Pet image deleted
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
   "/store/orders":
     get:
       tags:
@@ -262,9 +283,9 @@ paths:
         - "$ref": "#/components/parameters/Limit"
       responses:
         "200":
-          "$ref": "#/components/responses/OrderResponseArray"
+          "$ref": "#/components/responses/OrderArray"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
     post:
       tags:
         - orders
@@ -272,12 +293,25 @@ paths:
       description: Place new orders in the store.
       operationId: placeOrders
       requestBody:
-        "$ref": "#/components/requestBodies/OrderRequest"
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array 
+              minItems: 1
+              maxItems: 10
+              items:
+                type: object
+                required:
+                  - petId
+                properties:
+                  petId:
+                    "$ref": "#/components/schemas/Id"
       responses:
         "201":
-          "$ref": "#/components/responses/OrderResponseArray"
+          "$ref": "#/components/responses/OrderArray"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
   "/store/orders/{orderId}":
     get:
       tags:
@@ -285,24 +319,28 @@ paths:
       summary: Find user order by ID.
       operationId: getOrderById
       parameters: 
-        - "$ref": "#/components/parameters/OrderIdParameter"
+        - "$ref": "#/components/parameters/OrderId"
       responses:
         "200":
-          "$ref": "#/components/responses/OrderResponse"
+          description: "Successful Order response"
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OrderWithMetadata"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
     delete:
       tags:
         - orders
       summary: Delete user order by identifier.
       operationId: deleteOrder
       parameters:
-        - "$ref": "#/components/parameters/OrderIdParameter"
+        - "$ref": "#/components/parameters/OrderId"
       responses:
         "204":
           description: Order deleted
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
   "/users":
     post:
       tags:
@@ -310,12 +348,12 @@ paths:
       summary: Create user.
       operationId: createUser
       requestBody:
-        "$ref": "#/components/requestBodies/UserRequest"
+        "$ref": "#/components/requestBodies/User"
       responses:
         "201":
-          "$ref": "#/components/responses/UserResponse"
+          "$ref": "#/components/responses/User"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
       security: []
   "/users/{username}":
     get:
@@ -325,38 +363,38 @@ paths:
       description: Get user detail based on username.
       operationId: getUserByName
       parameters:
-        - "$ref": "#/components/parameters/UsernameParameter"
+        - "$ref": "#/components/parameters/Username"
       responses:
         "200":
-          "$ref": "#/components/responses/UserResponse"
+          "$ref": "#/components/responses/User"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
     put:
       tags:
         - users
       summary: Replace user resource.
       operationId: replaceUser
       parameters:
-        - "$ref": "#/components/parameters/UsernameParameter"
+        - "$ref": "#/components/parameters/Username"
       requestBody:
-        "$ref": "#/components/requestBodies/UserRequest"
+        "$ref": "#/components/requestBodies/User"
       responses:
         "200":
-          "$ref": "#/components/responses/UserResponse"
+          "$ref": "#/components/responses/User"
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
     delete:
       tags:
         - users
       summary: Delete user resource.
       operationId: deleteUser
       parameters:
-        - "$ref": "#/components/parameters/UsernameParameter"
+        - "$ref": "#/components/parameters/Username"
       responses:
         "204":
           description: Order deleted
         default:
-          "$ref": "#/components/responses/ApiResponse"
+          "$ref": "#/components/responses/Generic"
 components:
   schemas:
     Id: 
@@ -427,7 +465,7 @@ components:
         description: "Min size: 1B, Max size: 256KB"
         format: binary
         example: binary string representation of jpeg image
-    PetResp:
+    PetWithMetadata:
       allOf:
         - type: object
           required:
@@ -452,7 +490,7 @@ components:
         - placed
         - in-progress
         - delivered 
-    OrderResp: 
+    OrderWithMetadata: 
       allOf:
         - type: object
           required:
@@ -523,7 +561,8 @@ components:
           maxLength: 16
           example: "+1-555-123-4567"
   requestBodies:
-    AnimalCategoryRequest:
+    AnimalCategory:
+      x-go-name: AnimalCategoryRequest
       description: Animal Category object that needs to be added to the store
       required: true
       content:
@@ -535,7 +574,7 @@ components:
             properties: 
               name:
                 "$ref": "#/components/schemas/AnimalCategoryName"
-    PetRequest:
+    Pet:
       required: true
       content:
         multipart/form-data:
@@ -554,22 +593,8 @@ components:
             photos:
               contentType: image/jpeg
               explode: true
-    OrderRequest:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: array 
-            minItems: 1
-            maxItems: 10
-            items:
-              type: object
-              required:
-                - petId
-              properties:
-                petId:
-                  "$ref": "#/components/schemas/Id"
-    UserRequest:
+    User:
+      x-go-name: UserRequest
       required: true
       content:
         application/json:
@@ -586,7 +611,7 @@ components:
                     minLength: 1
                     maxLength: 320         
   responses:
-    AnimalCategoryResponse: 
+    AnimalCategory: 
       description: "Successful Animal Category response"
       content:
         application/json:
@@ -602,38 +627,7 @@ components:
                   name: 
                     "$ref": "#/components/schemas/AnimalCategoryName"
               - "$ref": "#/components/schemas/DateTimeMetadata"
-    PetResponse: 
-      description: "Successful Pet object response"
-      content:
-        application/json:
-          schema: 
-            "$ref": "#/components/schemas/PetResp"
-    PetResponseArray:
-      description: "Successful Pet array response"
-      headers: *paginationHeader
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - count 
-              - pets
-            properties:
-              count:
-                type: integer
-                description: Total number of pets
-                example: 1
-              pets:
-                type: array
-                items:
-                  "$ref": "#/components/schemas/PetResp"
-    OrderResponse:
-      description: "Successful Order response"
-      content:
-        application/json:
-          schema:
-            "$ref": "#/components/schemas/OrderResp"
-    OrderResponseArray:
+    OrderArray:
       description: "Successful Order array response"
       headers: *paginationHeader
       content:
@@ -651,8 +645,9 @@ components:
               orders:
                 type: array
                 items:
-                  "$ref": "#/components/schemas/OrderResp"
-    UserResponse:
+                  "$ref": "#/components/schemas/OrderWithMetadata"
+    User:
+      x-go-name: UserResponse
       description: "Successful User object response"
       content:
         application/json:
@@ -660,7 +655,7 @@ components:
             allOf:
               - "$ref": "#/components/schemas/User"
               - "$ref": "#/components/schemas/DateTimeMetadata"
-    ApiResponse:
+    Generic:
       description: "Generic API Response"
       content:
         application/json:
@@ -672,31 +667,31 @@ components:
               message:
                 type: string
   parameters:
-    AnimalCategoryIdParameter:
+    AnimalCategoryId:
       name: animalCategoryId
       in: path
       required: true
       schema:
         "$ref": "#/components/schemas/Id"    
-    PetIdParameter:
+    PetId:
       name: petId
       in: path
       required: true
       schema:
         "$ref": "#/components/schemas/Id"
-    ImageIdParameter:
+    ImageId:
       name: imageId
       in: path
       required: true
       schema:
         "$ref": "#/components/schemas/Id"
-    OrderIdParameter:
+    OrderId:
       name: orderId
       in: path
       required: true
       schema:
         "$ref": "#/components/schemas/Id"
-    UsernameParameter:
+    Username:
       name: username
       in: path
       required: true

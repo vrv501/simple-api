@@ -58,8 +58,11 @@ type DateTimeMetadata struct {
 // Id defines model for Id.
 type Id = string
 
-// OrderResp defines model for OrderResp.
-type OrderResp struct {
+// OrderStatus order status.
+type OrderStatus string
+
+// OrderWithMetadata defines model for OrderWithMetadata.
+type OrderWithMetadata struct {
 	// CreatedAt DateTime(UTC) when the pet was created in the store
 	CreatedAt time.Time `json:"created_at"`
 	Id        Id        `json:"id"`
@@ -74,9 +77,6 @@ type OrderResp struct {
 	// UpdatedAt DateTime(UTC) when the pet was last updated
 	UpdatedAt *time.Time `json:"updated_at"`
 }
-
-// OrderStatus order status.
-type OrderStatus string
 
 // Pet defines model for Pet.
 type Pet struct {
@@ -97,8 +97,14 @@ type PetName = string
 // PetPhotos Pet images (up to 10)
 type PetPhotos = []openapi_types.File
 
-// PetResp defines model for PetResp.
-type PetResp struct {
+// PetStatus pet status in the store
+type PetStatus string
+
+// PetTags defines model for PetTags.
+type PetTags = []string
+
+// PetWithMetadata defines model for PetWithMetadata.
+type PetWithMetadata struct {
 	CategoryId string `json:"category_id"`
 
 	// CreatedAt DateTime(UTC) when the pet was created in the store
@@ -118,12 +124,6 @@ type PetResp struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
-// PetStatus pet status in the store
-type PetStatus string
-
-// PetTags defines model for PetTags.
-type PetTags = []string
-
 // User defines model for User.
 type User struct {
 	Email       string   `json:"email"`
@@ -135,29 +135,26 @@ type User struct {
 // Username defines model for Username.
 type Username = string
 
-// AnimalCategoryIdParameter defines model for AnimalCategoryIdParameter.
-type AnimalCategoryIdParameter = Id
+// AnimalCategoryId defines model for AnimalCategoryId.
+type AnimalCategoryId = Id
 
 // Cursor defines model for Cursor.
 type Cursor = string
 
-// ImageIdParameter defines model for ImageIdParameter.
-type ImageIdParameter = Id
+// ImageId defines model for ImageId.
+type ImageId = Id
 
 // Limit defines model for Limit.
 type Limit = int
 
-// OrderIdParameter defines model for OrderIdParameter.
-type OrderIdParameter = Id
+// OrderId defines model for OrderId.
+type OrderId = Id
 
-// PetIdParameter defines model for PetIdParameter.
-type PetIdParameter = Id
+// PetId defines model for PetId.
+type PetId = Id
 
-// UsernameParameter defines model for UsernameParameter.
-type UsernameParameter = Username
-
-// AnimalCategoryResponse defines model for AnimalCategoryResponse.
-type AnimalCategoryResponse struct {
+// AnimalCategory defines model for AnimalCategory.
+type AnimalCategory struct {
 	// CreatedAt DateTime(UTC) when the pet was created in the store
 	CreatedAt time.Time          `json:"created_at"`
 	Id        Id                 `json:"id"`
@@ -167,32 +164,19 @@ type AnimalCategoryResponse struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
-// ApiResponse defines model for ApiResponse.
-type ApiResponse struct {
+// Generic defines model for Generic.
+type Generic struct {
 	Message string `json:"message"`
 }
 
-// OrderResponse defines model for OrderResponse.
-type OrderResponse = OrderResp
-
-// OrderResponseArray defines model for OrderResponseArray.
-type OrderResponseArray struct {
+// OrderArray defines model for OrderArray.
+type OrderArray struct {
 	// Count Total number of orders
-	Count  int         `json:"count"`
-	Orders []OrderResp `json:"orders"`
+	Count  int                 `json:"count"`
+	Orders []OrderWithMetadata `json:"orders"`
 }
 
-// PetResponse defines model for PetResponse.
-type PetResponse = PetResp
-
-// PetResponseArray defines model for PetResponseArray.
-type PetResponseArray struct {
-	// Count Total number of pets
-	Count int       `json:"count"`
-	Pets  []PetResp `json:"pets"`
-}
-
-// UserResponse defines model for UserResponse.
+// UserResponse defines model for User.
 type UserResponse struct {
 	// CreatedAt DateTime(UTC) when the pet was created in the store
 	CreatedAt   time.Time `json:"created_at"`
@@ -205,17 +189,12 @@ type UserResponse struct {
 	Username  Username   `json:"username"`
 }
 
-// AnimalCategoryRequest defines model for AnimalCategoryRequest.
+// AnimalCategoryRequest defines model for AnimalCategory.
 type AnimalCategoryRequest struct {
 	Name AnimalCategoryName `json:"name"`
 }
 
-// OrderRequest defines model for OrderRequest.
-type OrderRequest = []struct {
-	PetId Id `json:"petId"`
-}
-
-// UserRequest defines model for UserRequest.
+// UserRequest defines model for User.
 type UserRequest struct {
 	Email       string   `json:"email"`
 	FullName    string   `json:"full_name"`
@@ -352,10 +331,10 @@ type ServerInterface interface {
 	AddAnimalCategory(w http.ResponseWriter, r *http.Request)
 	// Delete an animal-category.
 	// (DELETE /animal-categories/{animalCategoryId})
-	DeleteAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryIdParameter)
+	DeleteAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryId)
 	// Replace existing animal-category data using Id.
 	// (PUT /animal-categories/{animalCategoryId})
-	ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryIdParameter)
+	ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryId)
 	// Find Pets using name, status, tags.
 	// (GET /pets)
 	FindPets(w http.ResponseWriter, r *http.Request, params FindPetsParams)
@@ -364,22 +343,22 @@ type ServerInterface interface {
 	AddPet(w http.ResponseWriter, r *http.Request)
 	// Delete a pet.
 	// (DELETE /pets/{petId})
-	DeletePet(w http.ResponseWriter, r *http.Request, petId PetIdParameter)
+	DeletePet(w http.ResponseWriter, r *http.Request, petId PetId)
 	// Find pet by ID.
 	// (GET /pets/{petId})
-	GetPetById(w http.ResponseWriter, r *http.Request, petId PetIdParameter)
+	GetPetById(w http.ResponseWriter, r *http.Request, petId PetId)
 	// Replace existing pet data using Id.
 	// (PUT /pets/{petId})
-	ReplacePet(w http.ResponseWriter, r *http.Request, petId PetIdParameter)
+	ReplacePet(w http.ResponseWriter, r *http.Request, petId PetId)
 	// Upload a new image for a pet.
 	// (POST /pets/{petId}/images)
-	UploadPetImage(w http.ResponseWriter, r *http.Request, petId PetIdParameter)
+	UploadPetImage(w http.ResponseWriter, r *http.Request, petId PetId)
 	// Delete a pet image.
 	// (DELETE /pets/{petId}/images/{imageId})
-	DeletePetImage(w http.ResponseWriter, r *http.Request, petId PetIdParameter, imageId ImageIdParameter)
+	DeletePetImage(w http.ResponseWriter, r *http.Request, petId PetId, imageId ImageId)
 	// Get a pet image using ID.
 	// (GET /pets/{petId}/images/{imageId})
-	GetImageByPetId(w http.ResponseWriter, r *http.Request, petId PetIdParameter, imageId ImageIdParameter)
+	GetImageByPetId(w http.ResponseWriter, r *http.Request, petId PetId, imageId ImageId)
 	// Find user orders using status.
 	// (GET /store/orders)
 	FindOrders(w http.ResponseWriter, r *http.Request, params FindOrdersParams)
@@ -388,22 +367,22 @@ type ServerInterface interface {
 	PlaceOrders(w http.ResponseWriter, r *http.Request)
 	// Delete user order by identifier.
 	// (DELETE /store/orders/{orderId})
-	DeleteOrder(w http.ResponseWriter, r *http.Request, orderId OrderIdParameter)
+	DeleteOrder(w http.ResponseWriter, r *http.Request, orderId OrderId)
 	// Find user order by ID.
 	// (GET /store/orders/{orderId})
-	GetOrderById(w http.ResponseWriter, r *http.Request, orderId OrderIdParameter)
+	GetOrderById(w http.ResponseWriter, r *http.Request, orderId OrderId)
 	// Create user.
 	// (POST /users)
 	CreateUser(w http.ResponseWriter, r *http.Request)
 	// Delete user resource.
 	// (DELETE /users/{username})
-	DeleteUser(w http.ResponseWriter, r *http.Request, username UsernameParameter)
+	DeleteUser(w http.ResponseWriter, r *http.Request, username Username)
 	// Get user by user name.
 	// (GET /users/{username})
-	GetUserByName(w http.ResponseWriter, r *http.Request, username UsernameParameter)
+	GetUserByName(w http.ResponseWriter, r *http.Request, username Username)
 	// Replace user resource.
 	// (PUT /users/{username})
-	ReplaceUser(w http.ResponseWriter, r *http.Request, username UsernameParameter)
+	ReplaceUser(w http.ResponseWriter, r *http.Request, username Username)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -481,7 +460,7 @@ func (siw *ServerInterfaceWrapper) DeleteAnimalCategory(w http.ResponseWriter, r
 	var err error
 
 	// ------------- Path parameter "animalCategoryId" -------------
-	var animalCategoryId AnimalCategoryIdParameter
+	var animalCategoryId AnimalCategoryId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "animalCategoryId", r.PathValue("animalCategoryId"), &animalCategoryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -512,7 +491,7 @@ func (siw *ServerInterfaceWrapper) ReplaceAnimalCategory(w http.ResponseWriter, 
 	var err error
 
 	// ------------- Path parameter "animalCategoryId" -------------
-	var animalCategoryId AnimalCategoryIdParameter
+	var animalCategoryId AnimalCategoryId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "animalCategoryId", r.PathValue("animalCategoryId"), &animalCategoryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -628,7 +607,7 @@ func (siw *ServerInterfaceWrapper) DeletePet(w http.ResponseWriter, r *http.Requ
 	var err error
 
 	// ------------- Path parameter "petId" -------------
-	var petId PetIdParameter
+	var petId PetId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -659,7 +638,7 @@ func (siw *ServerInterfaceWrapper) GetPetById(w http.ResponseWriter, r *http.Req
 	var err error
 
 	// ------------- Path parameter "petId" -------------
-	var petId PetIdParameter
+	var petId PetId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -690,7 +669,7 @@ func (siw *ServerInterfaceWrapper) ReplacePet(w http.ResponseWriter, r *http.Req
 	var err error
 
 	// ------------- Path parameter "petId" -------------
-	var petId PetIdParameter
+	var petId PetId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -721,7 +700,7 @@ func (siw *ServerInterfaceWrapper) UploadPetImage(w http.ResponseWriter, r *http
 	var err error
 
 	// ------------- Path parameter "petId" -------------
-	var petId PetIdParameter
+	var petId PetId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -752,7 +731,7 @@ func (siw *ServerInterfaceWrapper) DeletePetImage(w http.ResponseWriter, r *http
 	var err error
 
 	// ------------- Path parameter "petId" -------------
-	var petId PetIdParameter
+	var petId PetId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -761,7 +740,7 @@ func (siw *ServerInterfaceWrapper) DeletePetImage(w http.ResponseWriter, r *http
 	}
 
 	// ------------- Path parameter "imageId" -------------
-	var imageId ImageIdParameter
+	var imageId ImageId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "imageId", r.PathValue("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -792,7 +771,7 @@ func (siw *ServerInterfaceWrapper) GetImageByPetId(w http.ResponseWriter, r *htt
 	var err error
 
 	// ------------- Path parameter "petId" -------------
-	var petId PetIdParameter
+	var petId PetId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -801,7 +780,7 @@ func (siw *ServerInterfaceWrapper) GetImageByPetId(w http.ResponseWriter, r *htt
 	}
 
 	// ------------- Path parameter "imageId" -------------
-	var imageId ImageIdParameter
+	var imageId ImageId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "imageId", r.PathValue("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -909,7 +888,7 @@ func (siw *ServerInterfaceWrapper) DeleteOrder(w http.ResponseWriter, r *http.Re
 	var err error
 
 	// ------------- Path parameter "orderId" -------------
-	var orderId OrderIdParameter
+	var orderId OrderId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "orderId", r.PathValue("orderId"), &orderId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -940,7 +919,7 @@ func (siw *ServerInterfaceWrapper) GetOrderById(w http.ResponseWriter, r *http.R
 	var err error
 
 	// ------------- Path parameter "orderId" -------------
-	var orderId OrderIdParameter
+	var orderId OrderId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "orderId", r.PathValue("orderId"), &orderId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -985,7 +964,7 @@ func (siw *ServerInterfaceWrapper) DeleteUser(w http.ResponseWriter, r *http.Req
 	var err error
 
 	// ------------- Path parameter "username" -------------
-	var username UsernameParameter
+	var username Username
 
 	err = runtime.BindStyledParameterWithOptions("simple", "username", r.PathValue("username"), &username, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -1016,7 +995,7 @@ func (siw *ServerInterfaceWrapper) GetUserByName(w http.ResponseWriter, r *http.
 	var err error
 
 	// ------------- Path parameter "username" -------------
-	var username UsernameParameter
+	var username Username
 
 	err = runtime.BindStyledParameterWithOptions("simple", "username", r.PathValue("username"), &username, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -1047,7 +1026,7 @@ func (siw *ServerInterfaceWrapper) ReplaceUser(w http.ResponseWriter, r *http.Re
 	var err error
 
 	// ------------- Path parameter "username" -------------
-	var username UsernameParameter
+	var username Username
 
 	err = runtime.BindStyledParameterWithOptions("simple", "username", r.PathValue("username"), &username, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -1216,7 +1195,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	return m
 }
 
-type AnimalCategoryResponseJSONResponse struct {
+type AnimalCategoryJSONResponse struct {
 	// CreatedAt DateTime(UTC) when the pet was created in the store
 	CreatedAt time.Time          `json:"created_at"`
 	Id        Id                 `json:"id"`
@@ -1226,41 +1205,24 @@ type AnimalCategoryResponseJSONResponse struct {
 	UpdatedAt *time.Time `json:"updated_at"`
 }
 
-type ApiResponseJSONResponse struct {
+type GenericJSONResponse struct {
 	Message string `json:"message"`
 }
 
-type OrderResponseJSONResponse OrderResp
-
-type OrderResponseArrayResponseHeaders struct {
+type OrderArrayResponseHeaders struct {
 	XNextCursor string
 }
-type OrderResponseArrayJSONResponse struct {
+type OrderArrayJSONResponse struct {
 	Body struct {
 		// Count Total number of orders
-		Count  int         `json:"count"`
-		Orders []OrderResp `json:"orders"`
+		Count  int                 `json:"count"`
+		Orders []OrderWithMetadata `json:"orders"`
 	}
 
-	Headers OrderResponseArrayResponseHeaders
+	Headers OrderArrayResponseHeaders
 }
 
-type PetResponseJSONResponse PetResp
-
-type PetResponseArrayResponseHeaders struct {
-	XNextCursor string
-}
-type PetResponseArrayJSONResponse struct {
-	Body struct {
-		// Count Total number of pets
-		Count int       `json:"count"`
-		Pets  []PetResp `json:"pets"`
-	}
-
-	Headers PetResponseArrayResponseHeaders
-}
-
-type UserResponseJSONResponse struct {
+type UserJSONResponse struct {
 	// CreatedAt DateTime(UTC) when the pet was created in the store
 	CreatedAt   time.Time `json:"created_at"`
 	Email       string    `json:"email"`
@@ -1280,9 +1242,7 @@ type FindAnimalCategoryResponseObject interface {
 	VisitFindAnimalCategoryResponse(w http.ResponseWriter) error
 }
 
-type FindAnimalCategory200JSONResponse struct {
-	AnimalCategoryResponseJSONResponse
-}
+type FindAnimalCategory200JSONResponse struct{ AnimalCategoryJSONResponse }
 
 func (response FindAnimalCategory200JSONResponse) VisitFindAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1313,9 +1273,7 @@ type AddAnimalCategoryResponseObject interface {
 	VisitAddAnimalCategoryResponse(w http.ResponseWriter) error
 }
 
-type AddAnimalCategory201JSONResponse struct {
-	AnimalCategoryResponseJSONResponse
-}
+type AddAnimalCategory201JSONResponse struct{ AnimalCategoryJSONResponse }
 
 func (response AddAnimalCategory201JSONResponse) VisitAddAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1339,7 +1297,7 @@ func (response AddAnimalCategorydefaultJSONResponse) VisitAddAnimalCategoryRespo
 }
 
 type DeleteAnimalCategoryRequestObject struct {
-	AnimalCategoryId AnimalCategoryIdParameter `json:"animalCategoryId"`
+	AnimalCategoryId AnimalCategoryId `json:"animalCategoryId"`
 }
 
 type DeleteAnimalCategoryResponseObject interface {
@@ -1369,7 +1327,7 @@ func (response DeleteAnimalCategorydefaultJSONResponse) VisitDeleteAnimalCategor
 }
 
 type ReplaceAnimalCategoryRequestObject struct {
-	AnimalCategoryId AnimalCategoryIdParameter `json:"animalCategoryId"`
+	AnimalCategoryId AnimalCategoryId `json:"animalCategoryId"`
 	Body             *ReplaceAnimalCategoryJSONRequestBody
 }
 
@@ -1377,9 +1335,7 @@ type ReplaceAnimalCategoryResponseObject interface {
 	VisitReplaceAnimalCategoryResponse(w http.ResponseWriter) error
 }
 
-type ReplaceAnimalCategory200JSONResponse struct {
-	AnimalCategoryResponseJSONResponse
-}
+type ReplaceAnimalCategory200JSONResponse struct{ AnimalCategoryJSONResponse }
 
 func (response ReplaceAnimalCategory200JSONResponse) VisitReplaceAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1410,7 +1366,18 @@ type FindPetsResponseObject interface {
 	VisitFindPetsResponse(w http.ResponseWriter) error
 }
 
-type FindPets200JSONResponse struct{ PetResponseArrayJSONResponse }
+type FindPets200ResponseHeaders struct {
+	XNextCursor string
+}
+
+type FindPets200JSONResponse struct {
+	Body struct {
+		// Count Total number of pets
+		Count int               `json:"count"`
+		Pets  []PetWithMetadata `json:"pets"`
+	}
+	Headers FindPets200ResponseHeaders
+}
 
 func (response FindPets200JSONResponse) VisitFindPetsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1465,7 +1432,7 @@ func (response AddPetdefaultJSONResponse) VisitAddPetResponse(w http.ResponseWri
 }
 
 type DeletePetRequestObject struct {
-	PetId PetIdParameter `json:"petId"`
+	PetId PetId `json:"petId"`
 }
 
 type DeletePetResponseObject interface {
@@ -1495,14 +1462,14 @@ func (response DeletePetdefaultJSONResponse) VisitDeletePetResponse(w http.Respo
 }
 
 type GetPetByIdRequestObject struct {
-	PetId PetIdParameter `json:"petId"`
+	PetId PetId `json:"petId"`
 }
 
 type GetPetByIdResponseObject interface {
 	VisitGetPetByIdResponse(w http.ResponseWriter) error
 }
 
-type GetPetById200JSONResponse struct{ PetResponseJSONResponse }
+type GetPetById200JSONResponse PetWithMetadata
 
 func (response GetPetById200JSONResponse) VisitGetPetByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1526,7 +1493,7 @@ func (response GetPetByIddefaultJSONResponse) VisitGetPetByIdResponse(w http.Res
 }
 
 type ReplacePetRequestObject struct {
-	PetId PetIdParameter `json:"petId"`
+	PetId PetId `json:"petId"`
 	Body  *multipart.Reader
 }
 
@@ -1557,7 +1524,7 @@ func (response ReplacePetdefaultJSONResponse) VisitReplacePetResponse(w http.Res
 }
 
 type UploadPetImageRequestObject struct {
-	PetId PetIdParameter `json:"petId"`
+	PetId PetId `json:"petId"`
 	Body  *multipart.Reader
 }
 
@@ -1588,8 +1555,8 @@ func (response UploadPetImagedefaultJSONResponse) VisitUploadPetImageResponse(w 
 }
 
 type DeletePetImageRequestObject struct {
-	PetId   PetIdParameter   `json:"petId"`
-	ImageId ImageIdParameter `json:"imageId"`
+	PetId   PetId   `json:"petId"`
+	ImageId ImageId `json:"imageId"`
 }
 
 type DeletePetImageResponseObject interface {
@@ -1619,8 +1586,8 @@ func (response DeletePetImagedefaultJSONResponse) VisitDeletePetImageResponse(w 
 }
 
 type GetImageByPetIdRequestObject struct {
-	PetId   PetIdParameter   `json:"petId"`
-	ImageId ImageIdParameter `json:"imageId"`
+	PetId   PetId   `json:"petId"`
+	ImageId ImageId `json:"imageId"`
 }
 
 type GetImageByPetIdResponseObject interface {
@@ -1668,7 +1635,7 @@ type FindOrdersResponseObject interface {
 	VisitFindOrdersResponse(w http.ResponseWriter) error
 }
 
-type FindOrders200JSONResponse struct{ OrderResponseArrayJSONResponse }
+type FindOrders200JSONResponse struct{ OrderArrayJSONResponse }
 
 func (response FindOrders200JSONResponse) VisitFindOrdersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1700,7 +1667,7 @@ type PlaceOrdersResponseObject interface {
 	VisitPlaceOrdersResponse(w http.ResponseWriter) error
 }
 
-type PlaceOrders201JSONResponse struct{ OrderResponseArrayJSONResponse }
+type PlaceOrders201JSONResponse struct{ OrderArrayJSONResponse }
 
 func (response PlaceOrders201JSONResponse) VisitPlaceOrdersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1725,7 +1692,7 @@ func (response PlaceOrdersdefaultJSONResponse) VisitPlaceOrdersResponse(w http.R
 }
 
 type DeleteOrderRequestObject struct {
-	OrderId OrderIdParameter `json:"orderId"`
+	OrderId OrderId `json:"orderId"`
 }
 
 type DeleteOrderResponseObject interface {
@@ -1755,14 +1722,14 @@ func (response DeleteOrderdefaultJSONResponse) VisitDeleteOrderResponse(w http.R
 }
 
 type GetOrderByIdRequestObject struct {
-	OrderId OrderIdParameter `json:"orderId"`
+	OrderId OrderId `json:"orderId"`
 }
 
 type GetOrderByIdResponseObject interface {
 	VisitGetOrderByIdResponse(w http.ResponseWriter) error
 }
 
-type GetOrderById200JSONResponse struct{ OrderResponseJSONResponse }
+type GetOrderById200JSONResponse OrderWithMetadata
 
 func (response GetOrderById200JSONResponse) VisitGetOrderByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1817,7 +1784,7 @@ func (response CreateUserdefaultJSONResponse) VisitCreateUserResponse(w http.Res
 }
 
 type DeleteUserRequestObject struct {
-	Username UsernameParameter `json:"username"`
+	Username Username `json:"username"`
 }
 
 type DeleteUserResponseObject interface {
@@ -1847,7 +1814,7 @@ func (response DeleteUserdefaultJSONResponse) VisitDeleteUserResponse(w http.Res
 }
 
 type GetUserByNameRequestObject struct {
-	Username UsernameParameter `json:"username"`
+	Username Username `json:"username"`
 }
 
 type GetUserByNameResponseObject interface {
@@ -1878,7 +1845,7 @@ func (response GetUserByNamedefaultJSONResponse) VisitGetUserByNameResponse(w ht
 }
 
 type ReplaceUserRequestObject struct {
-	Username UsernameParameter `json:"username"`
+	Username Username `json:"username"`
 	Body     *ReplaceUserJSONRequestBody
 }
 
@@ -2060,7 +2027,7 @@ func (sh *strictHandler) AddAnimalCategory(w http.ResponseWriter, r *http.Reques
 }
 
 // DeleteAnimalCategory operation middleware
-func (sh *strictHandler) DeleteAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryIdParameter) {
+func (sh *strictHandler) DeleteAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryId) {
 	var request DeleteAnimalCategoryRequestObject
 
 	request.AnimalCategoryId = animalCategoryId
@@ -2086,7 +2053,7 @@ func (sh *strictHandler) DeleteAnimalCategory(w http.ResponseWriter, r *http.Req
 }
 
 // ReplaceAnimalCategory operation middleware
-func (sh *strictHandler) ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryIdParameter) {
+func (sh *strictHandler) ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryId) {
 	var request ReplaceAnimalCategoryRequestObject
 
 	request.AnimalCategoryId = animalCategoryId
@@ -2176,7 +2143,7 @@ func (sh *strictHandler) AddPet(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeletePet operation middleware
-func (sh *strictHandler) DeletePet(w http.ResponseWriter, r *http.Request, petId PetIdParameter) {
+func (sh *strictHandler) DeletePet(w http.ResponseWriter, r *http.Request, petId PetId) {
 	var request DeletePetRequestObject
 
 	request.PetId = petId
@@ -2202,7 +2169,7 @@ func (sh *strictHandler) DeletePet(w http.ResponseWriter, r *http.Request, petId
 }
 
 // GetPetById operation middleware
-func (sh *strictHandler) GetPetById(w http.ResponseWriter, r *http.Request, petId PetIdParameter) {
+func (sh *strictHandler) GetPetById(w http.ResponseWriter, r *http.Request, petId PetId) {
 	var request GetPetByIdRequestObject
 
 	request.PetId = petId
@@ -2228,7 +2195,7 @@ func (sh *strictHandler) GetPetById(w http.ResponseWriter, r *http.Request, petI
 }
 
 // ReplacePet operation middleware
-func (sh *strictHandler) ReplacePet(w http.ResponseWriter, r *http.Request, petId PetIdParameter) {
+func (sh *strictHandler) ReplacePet(w http.ResponseWriter, r *http.Request, petId PetId) {
 	var request ReplacePetRequestObject
 
 	request.PetId = petId
@@ -2261,7 +2228,7 @@ func (sh *strictHandler) ReplacePet(w http.ResponseWriter, r *http.Request, petI
 }
 
 // UploadPetImage operation middleware
-func (sh *strictHandler) UploadPetImage(w http.ResponseWriter, r *http.Request, petId PetIdParameter) {
+func (sh *strictHandler) UploadPetImage(w http.ResponseWriter, r *http.Request, petId PetId) {
 	var request UploadPetImageRequestObject
 
 	request.PetId = petId
@@ -2294,7 +2261,7 @@ func (sh *strictHandler) UploadPetImage(w http.ResponseWriter, r *http.Request, 
 }
 
 // DeletePetImage operation middleware
-func (sh *strictHandler) DeletePetImage(w http.ResponseWriter, r *http.Request, petId PetIdParameter, imageId ImageIdParameter) {
+func (sh *strictHandler) DeletePetImage(w http.ResponseWriter, r *http.Request, petId PetId, imageId ImageId) {
 	var request DeletePetImageRequestObject
 
 	request.PetId = petId
@@ -2321,7 +2288,7 @@ func (sh *strictHandler) DeletePetImage(w http.ResponseWriter, r *http.Request, 
 }
 
 // GetImageByPetId operation middleware
-func (sh *strictHandler) GetImageByPetId(w http.ResponseWriter, r *http.Request, petId PetIdParameter, imageId ImageIdParameter) {
+func (sh *strictHandler) GetImageByPetId(w http.ResponseWriter, r *http.Request, petId PetId, imageId ImageId) {
 	var request GetImageByPetIdRequestObject
 
 	request.PetId = petId
@@ -2405,7 +2372,7 @@ func (sh *strictHandler) PlaceOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteOrder operation middleware
-func (sh *strictHandler) DeleteOrder(w http.ResponseWriter, r *http.Request, orderId OrderIdParameter) {
+func (sh *strictHandler) DeleteOrder(w http.ResponseWriter, r *http.Request, orderId OrderId) {
 	var request DeleteOrderRequestObject
 
 	request.OrderId = orderId
@@ -2431,7 +2398,7 @@ func (sh *strictHandler) DeleteOrder(w http.ResponseWriter, r *http.Request, ord
 }
 
 // GetOrderById operation middleware
-func (sh *strictHandler) GetOrderById(w http.ResponseWriter, r *http.Request, orderId OrderIdParameter) {
+func (sh *strictHandler) GetOrderById(w http.ResponseWriter, r *http.Request, orderId OrderId) {
 	var request GetOrderByIdRequestObject
 
 	request.OrderId = orderId
@@ -2488,7 +2455,7 @@ func (sh *strictHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteUser operation middleware
-func (sh *strictHandler) DeleteUser(w http.ResponseWriter, r *http.Request, username UsernameParameter) {
+func (sh *strictHandler) DeleteUser(w http.ResponseWriter, r *http.Request, username Username) {
 	var request DeleteUserRequestObject
 
 	request.Username = username
@@ -2514,7 +2481,7 @@ func (sh *strictHandler) DeleteUser(w http.ResponseWriter, r *http.Request, user
 }
 
 // GetUserByName operation middleware
-func (sh *strictHandler) GetUserByName(w http.ResponseWriter, r *http.Request, username UsernameParameter) {
+func (sh *strictHandler) GetUserByName(w http.ResponseWriter, r *http.Request, username Username) {
 	var request GetUserByNameRequestObject
 
 	request.Username = username
@@ -2540,7 +2507,7 @@ func (sh *strictHandler) GetUserByName(w http.ResponseWriter, r *http.Request, u
 }
 
 // ReplaceUser operation middleware
-func (sh *strictHandler) ReplaceUser(w http.ResponseWriter, r *http.Request, username UsernameParameter) {
+func (sh *strictHandler) ReplaceUser(w http.ResponseWriter, r *http.Request, username Username) {
 	var request ReplaceUserRequestObject
 
 	request.Username = username
@@ -2575,55 +2542,54 @@ func (sh *strictHandler) ReplaceUser(w http.ResponseWriter, r *http.Request, use
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"PgAA",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
