@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	//ENV vars
+	// ENV vars
 	mongoURIEnvVar string = "MONGO_URI"       // Should be hostname:port
 	mongoApplyURI  string = "MONGO_APPLY_URI" // Should be mongodb+srv://{{ rest of the URI }}
 

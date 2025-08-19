@@ -20,13 +20,15 @@ var (
 
 // Find animal-category using name
 // (GET /animal-categories)
-func (a *APIHandler) FindAnimalCategory(ctx context.Context, request genRouter.FindAnimalCategoryRequestObject) (genRouter.FindAnimalCategoryResponseObject, error) {
+func (a *APIHandler) FindAnimalCategory(ctx context.Context,
+	request genRouter.FindAnimalCategoryRequestObject) (genRouter.FindAnimalCategoryResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
 // Add new animal-category to the store.
 // (POST /animal-categories)
-func (a *APIHandler) AddAnimalCategory(ctx context.Context, request genRouter.AddAnimalCategoryRequestObject) (genRouter.AddAnimalCategoryResponseObject, error) {
+func (a *APIHandler) AddAnimalCategory(ctx context.Context,
+	request genRouter.AddAnimalCategoryRequestObject) (genRouter.AddAnimalCategoryResponseObject, error) {
 	logger := log.Ctx(ctx)
 	categoryName := string(request.Body.Name)
 	res, err := a.dbClient.AddAnimalCategory(ctx, categoryName)
@@ -54,7 +56,8 @@ func (a *APIHandler) AddAnimalCategory(ctx context.Context, request genRouter.Ad
 
 // Delete an animal-category.
 // (DELETE /animal-categories/{animalCategoryId})
-func (a *APIHandler) DeleteAnimalCategory(ctx context.Context, request genRouter.DeleteAnimalCategoryRequestObject) (genRouter.DeleteAnimalCategoryResponseObject, error) {
+func (a *APIHandler) DeleteAnimalCategory(ctx context.Context,
+	request genRouter.DeleteAnimalCategoryRequestObject) (genRouter.DeleteAnimalCategoryResponseObject, error) {
 	logger := log.Ctx(ctx)
 	id := string(request.AnimalCategoryId)
 
@@ -99,7 +102,8 @@ func (a *APIHandler) DeleteAnimalCategory(ctx context.Context, request genRouter
 
 // Replace existing animal-category data using Id.
 // (PUT /animal-categories/{animalCategoryId})
-func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context, request genRouter.ReplaceAnimalCategoryRequestObject) (genRouter.ReplaceAnimalCategoryResponseObject, error) {
+func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
+	request genRouter.ReplaceAnimalCategoryRequestObject) (genRouter.ReplaceAnimalCategoryResponseObject, error) {
 	logger := log.Ctx(ctx)
 	categoryName := string(request.Body.Name)
 	id := string(request.AnimalCategoryId)
