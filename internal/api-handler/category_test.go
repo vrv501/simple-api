@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -148,7 +147,7 @@ func TestAPIHandler_AddAnimalCategory(t *testing.T) {
 				t.Errorf("APIHandler.AddAnimalCategory() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !cmp.Equal(got, tt.want) {
 				t.Errorf("APIHandler.AddAnimalCategory() = %v, want %v", got, tt.want)
 			}
 		})
@@ -182,7 +181,7 @@ func TestAPIHandler_DeleteAnimalCategory(t *testing.T) {
 				t.Errorf("APIHandler.DeleteAnimalCategory() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !cmp.Equal(got, tt.want) {
 				t.Errorf("APIHandler.DeleteAnimalCategory() = %v, want %v", got, tt.want)
 			}
 		})
@@ -216,7 +215,7 @@ func TestAPIHandler_ReplaceAnimalCategory(t *testing.T) {
 				t.Errorf("APIHandler.ReplaceAnimalCategory() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !cmp.Equal(got, tt.want) {
 				t.Errorf("APIHandler.ReplaceAnimalCategory() = %v, want %v", got, tt.want)
 			}
 		})
