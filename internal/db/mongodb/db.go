@@ -52,7 +52,6 @@ type mongoClient struct {
 //
 //revive:disable:unexported-return
 func NewInstance(ctx context.Context) *mongoClient {
-
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	serverAPI.SetStrict(true)
 
