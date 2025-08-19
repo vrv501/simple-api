@@ -1346,11 +1346,11 @@ type DeleteAnimalCategoryResponseObject interface {
 	VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error
 }
 
-type DeleteAnimalCategory200Response struct {
+type DeleteAnimalCategory204Response struct {
 }
 
-func (response DeleteAnimalCategory200Response) VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
+func (response DeleteAnimalCategory204Response) VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
 	return nil
 }
 
@@ -1472,11 +1472,11 @@ type DeletePetResponseObject interface {
 	VisitDeletePetResponse(w http.ResponseWriter) error
 }
 
-type DeletePet200Response struct {
+type DeletePet204Response struct {
 }
 
-func (response DeletePet200Response) VisitDeletePetResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
+func (response DeletePet204Response) VisitDeletePetResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
 	return nil
 }
 
@@ -1596,11 +1596,11 @@ type DeletePetImageResponseObject interface {
 	VisitDeletePetImageResponse(w http.ResponseWriter) error
 }
 
-type DeletePetImage200Response struct {
+type DeletePetImage204Response struct {
 }
 
-func (response DeletePetImage200Response) VisitDeletePetImageResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
+func (response DeletePetImage204Response) VisitDeletePetImageResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
 	return nil
 }
 
@@ -1732,11 +1732,11 @@ type DeleteOrderResponseObject interface {
 	VisitDeleteOrderResponse(w http.ResponseWriter) error
 }
 
-type DeleteOrder200Response struct {
+type DeleteOrder204Response struct {
 }
 
-func (response DeleteOrder200Response) VisitDeleteOrderResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
+func (response DeleteOrder204Response) VisitDeleteOrderResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
 	return nil
 }
 
@@ -1824,11 +1824,11 @@ type DeleteUserResponseObject interface {
 	VisitDeleteUserResponse(w http.ResponseWriter) error
 }
 
-type DeleteUser200Response struct {
+type DeleteUser204Response struct {
 }
 
-func (response DeleteUser200Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
+func (response DeleteUser204Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
 	return nil
 }
 
@@ -2608,22 +2608,22 @@ var swaggerSpec = []string{
 	"k0BMEopH+LDb7x5hDe1MA9QzF5UdG4atyU7BUXD8TOMAlckXKBUqbqlzVlwqs9csq/xff1Cu5vTO+bXq",
 	"Ve3+jkSgYoTZBfn5Z67buyfdNjlbqzeVNvGw31+3zoqut6aXrOtg6/wblyg0T7Ump1GkAnwj6DjLwa5w",
 	"/SBVMEqYcBzlaRCgGB5qCxdvnerneRrUjzO/plusF7Nwk9dzX+Mta8APvjHwbSHaBP/Sc9hX77E6G7A0",
-	"BxSCq8R8p58jElc5qZ+PIW2yOBcgOUlv/aDDOutwXXPmeBm5gj2dykY0GiwhdRjCJ9BFFoI5FVIZVfW4",
-	"VVpn7e08qENuv39mzJ/JxL61b9se/CZjy7rI6+OXipsF/+nZxNtDaukuevXqVIZAhEQs1pFIt9RWJ6Wi",
-	"eRZuXr1yBryx6Xa3CnMJyM2hrfV9QHY1WGtQmbLinoQpiHzWwI4a+CwWNAAOgW5UT2godX5TuvJ2M5j3",
-	"luqTBe3bB5WirZZAkameijCMobtFO960lmwBXtaeaLRT2+xvQWnmk3bLJ2o3NHvMJDarf8HCzJVJYwKh",
-	"StfGpGGs1XxrN1YYAan7rqHLl2tidOr7kOwv5GwStYJW5oKyRkabuK7WXRfKDXDbxZLKYFi7oK0Kk+cJ",
-	"1Jl4Nb1yuuhPelhPV0w0nobgBucXkGOQZ2aq8lnQaW2g+7RNpWB3C3T+zm2HrdIXtUa7lGVvuvW/adXt",
-	"kGuwb9uo1C0vp5v8nISMBIhoB6KJdaBdY/SGWoFs26P7Pp0tx+j2Ox331Jk389h1i99KjzL9QQXt24Me",
-	"NZ1wOw0qtLpbhgyz14bAsR8das50anPf7SOOgev54k6OUbvo8wvI4oeZJ3jnjEBa7rPF2I5YfzcwF2y8",
-	"YKilCZDnun3aOPrB9xsxN52Vw+Z0xtbLp9jWF4ipHlHRhHbR/M66Xu19zMbnNtZ7310VVpohaK7Dfjb1",
-	"l0XF3NgjMlHP5IwKtJpyyOYfXLxq+ndEluvaNnMw301l5hjQ3GP+t0nzMpXOxiTXFmZjndWoYGRXKt4o",
-	"1nVYk6+UeOtkrvQrhJ16uM8GqQHCgqB/HgXSDWXVP/Qe7W90KsHYFWg1+1u7/9pPhdrFTDPt+izxMtc9",
-	"VYLQAGJJJxT4Gt2z7rMWFDWHOxVmrSHZQp2exzjrNVpJkxRhqSIog/RWD9Hpi/Id7K34a46dzK00Nfok",
-	"eOxdKx5d3RTBMvJpuIoQGVQKCPUes/vlFlZm4dpOo+q/W/s+rIyDYCn3wQXPhsRUfxuAJDTMr40zDJ0Z",
-	"qgLgzNxsPh92f5e6lRI/jcXdwvybyV/H0rZMnO2PvarUXq3428Ca9UMaVbRi/OURi6sbBYjQww2uRDhk",
-	"Pgk7AdxjD6c8tDMUo15Pv5gxIUf/OOz3eyShvfuBRnfeKQzd5z9x/qd++O0H8Zf/DQAA//+PlZVYNz4A",
-	"AA==",
+	"BxSCq8R8p58jElc5qZ+PIW2yOBcgOUlv/aCDwzqOHKpVwcvIFezpVDai0WAJqcMQPoEushDMqZDKqKrH",
+	"rdI6a2/nQR1y+/0zY/5MJvatfdv24DcZW9ZFXh+/VNws+E/PJt4eUkt30atXpzIEIiRisY5EuqW2OikV",
+	"zbNw8+qVM+CNTbe7VZhLQG4Oba3vA7KrwVqDypQV9yRMQeSzBnbUwGexoAFwCHSjekJDqfOb0pW3m8G8",
+	"t1SfLGjfPqgUbbUEikz1VIRhDN0t2vGmtWQL8LL2RKOd2mZ/C0ozn7RbPlG7odljJrFZ/QsWZq5MGhMI",
+	"Vbo2Jg1jreZbu7HCCEjddw1dvlwTo1Pfh2R/IWeTqBW0MheUNTLaxHW17rpQboDbLpZUBsPaBW1VmDxP",
+	"oM7Eq+mV00V/0sN6umKi8TQENzi/gByDPDNTlftGZzsD3adtKgW7W6Dzd247bJW+qDXapSx7063/Tatu",
+	"h1yDfdtGpW55Od3k5yRkJEBEOxBNrAPtGqM31Apk2x7d9+lsOUa33+m4p868mceuW/xWepTpDypo3x70",
+	"qOmE22lQodXdMmSYvTYEjv3oUHOmU5v7bh9xDFzPF3dyjNpFn19AFj/MPME7ZwTScp8txnbE+nuAuV+x",
+	"8YKhliZAnuv2aePoB99vxNx0Vg6b0xlbL59iW18gpnpERRPaRfM763q19zEbn9tY7313VVhphqC5DvvZ",
+	"1F8WFXNjj8hEPZMzKtBqyiGbf3DxqunfEVmua9vMwXw3lZljQHOP+d8mzctUOhuTXFuYjXVWo4KRXal4",
+	"o1jXYU2+UuKtk7nSrxB26uE+G6QGCAuC/nkUSDeUVf/Qe7S/0akEY1eg1exv7f5rPxVqFzPNtOuzxMtc",
+	"91QJQgOIJZ1Q4Gt0z7rPWlDUHO5UmLWBZFsLfR7jrNdoJU1ShKWKoAzSWz1Epy/Kd7C34q85djK30tTo",
+	"k+Cxd614dHVTBMvIp+EqQmRQKSDUe8zul1tYmYVrO42q/27t+7AyDoKl3AcXPBsSU/1tAJLQML82zjB0",
+	"ZqgKgDNzs/ks2PX/TnUrJX4ai7uF+TeTv46lbZk42x97Vam9WvG3gTXrhzSqaMX4yyMWVzcKEKGHG1yJ",
+	"cMh8EnYCuMceTnloZyhGvZ5+MWNCjv5x2O/3SEJ79wON7rxTGLrPf+L8T/3w2w/iL/8bAAD//xsMuSM3",
+	"PgAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

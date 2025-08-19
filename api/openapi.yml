@@ -75,7 +75,7 @@ paths:
       parameters:
         - "$ref": "#/components/parameters/AnimalCategoryIdParameter"
       responses:
-        "200":
+        "204":
           description: Animal-category deleted
         default:
           "$ref": "#/components/responses/ApiResponse"
@@ -167,7 +167,7 @@ paths:
       parameters:
         - "$ref": "#/components/parameters/PetIdParameter"
       responses:
-        "200":
+        "204":
           description: Pet deleted
         default:
           "$ref": "#/components/responses/ApiResponse"
@@ -230,7 +230,7 @@ paths:
         - "$ref": "#/components/parameters/PetIdParameter"
         - "$ref": "#/components/parameters/ImageIdParameter"
       responses:
-        "200":
+        "204":
           description: Pet image deleted
         default:
           "$ref": "#/components/responses/ApiResponse"
@@ -299,7 +299,7 @@ paths:
       parameters:
         - "$ref": "#/components/parameters/OrderIdParameter"
       responses:
-        "200":
+        "204":
           description: Order deleted
         default:
           "$ref": "#/components/responses/ApiResponse"
@@ -353,7 +353,7 @@ paths:
       parameters:
         - "$ref": "#/components/parameters/UsernameParameter"
       responses:
-        "200":
+        "204":
           description: Order deleted
         default:
           "$ref": "#/components/responses/ApiResponse"
