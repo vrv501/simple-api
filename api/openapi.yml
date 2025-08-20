@@ -1,0 +1,724 @@
+---
+openapi: 3.0.4
+info:
+  title: Swagger Petstore - OpenAPI 3.0
+  description: This is a sample Pet Store Server based on the OpenAPI 3.0 specification.
+  version: 1.0.26
+servers:
+  - url: "http://localhost:8300/api/v1"
+    description: local-dev
+      
+security:
+  - bearerAuth: []
+x-headers:
+  paginationHeader: &paginationHeader
+    X-Next-Cursor: 
+      description: "Cursor for the next page (null if no more pages)"
+      schema:
+        type: string
+        nullable: true
+paths:
+  "/animal-categories":
+    get:
+      tags:
+        - animal-categories
+      summary: Find animal-category using name
+      description: Find animal-category using name. 
+      operationId: findAnimalCategory
+      parameters:
+        - name: name
+          in: query
+          required: true
+          description: Name of animal category
+          schema:
+            "$ref": "#/components/schemas/AnimalCategoryName"
+      responses:
+        "200":
+          "$ref": "#/components/responses/AnimalCategory"
+        default:
+          "$ref": "#/components/responses/Generic"
+    post:
+      tags:
+        - animal-categories
+      summary: Add new animal-category to the store.
+      description: Add new animal-category to the store.
+      operationId: addAnimalCategory
+      requestBody:
+        "$ref": "#/components/requestBodies/AnimalCategory"
+      responses:
+        "201":
+          "$ref": "#/components/responses/AnimalCategory"
+        default:
+          "$ref": "#/components/responses/Generic"
+  "/animal-categories/{animalCategoryId}":
+    put:
+      tags:
+        - animal-categories
+      summary: Replace existing animal-category data using Id.
+      description: Replace existing animal-category data using Id.
+      operationId: replaceAnimalCategory
+      parameters:
+        - "$ref": "#/components/parameters/AnimalCategoryId"
+      requestBody:
+        "$ref": "#/components/requestBodies/AnimalCategory"
+      responses:
+        "200":
+          "$ref": "#/components/responses/AnimalCategory"
+        default:
+          "$ref": "#/components/responses/Generic"
+    delete:
+      tags:
+        - animal-categories
+      summary: Delete an animal-category.
+      description: Delete an animal-category.
+      operationId: deleteAnimalCategory
+      parameters:
+        - "$ref": "#/components/parameters/AnimalCategoryId"
+      responses:
+        "204":
+          description: Animal-category deleted
+        default:
+          "$ref": "#/components/responses/Generic"
+  "/pets":
+    get:
+      tags:
+        - pets
+      summary: Find Pets using name, status, tags.
+      description: Find Pets using name, status, tags. **Atleast one of the parameters is required**
+      operationId: findPets
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: Name of pet
+          schema:
+            "$ref": "#/components/schemas/PetName"
+        - name: status
+          in: query
+          description: Status values that need to be considered for filter
+          required: false
+          explode: true
+          schema:
+            type: array 
+            items:
+              "$ref": "#/components/schemas/PetStatus"
+        - name: tags
+          in: query
+          description: Tags to filter by
+          required: false
+          explode: true
+          schema:
+            "$ref": "#/components/schemas/PetTags"
+        - "$ref": "#/components/parameters/Cursor"
+        - "$ref": "#/components/parameters/Limit"
+      responses:
+        "200":
+          description: "Successful Pet array response"
+          headers: *paginationHeader
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - count 
+                  - pets
+                properties:
+                  count:
+                    type: integer
+                    description: Total number of pets
+                    example: 1
+                  pets:
+                    type: array
+                    items:
+                      "$ref": "#/components/schemas/PetWithMetadata"
+        default:
+          "$ref": "#/components/responses/Generic"
+    post:
+      tags:
+        - pets
+      summary: Add new pet to the store.
+      description: Add new pet to the store.
+      operationId: addPet
+      requestBody:
+        "$ref": "#/components/requestBodies/Pet"
+      responses:
+        "202":
+          description: "Request Accepted"
+        default:
+          "$ref": "#/components/responses/Generic"
+  "/pets/{petId}":
+    get:
+      tags:
+        - pets
+      summary: Find pet by ID.
+      description: Returns a single pet.
+      operationId: getPetByID
+      parameters:
+        - "$ref": "#/components/parameters/PetId"
+      responses:
+        "200":
+          description: "Successful Pet object response"
+          content:
+            application/json:
+              schema: 
+                "$ref": "#/components/schemas/PetWithMetadata"                
+        default:
+          "$ref": "#/components/responses/Generic"
+    put:
+      tags:
+        - pets
+      summary: Replace existing pet data using Id.
+      description: Replace existing pet data using Id.
+      operationId: replacePet
+      parameters:
+        - "$ref": "#/components/parameters/PetId"
+      requestBody:
+        "$ref": "#/components/requestBodies/Pet"
+      responses:
+        "202":
+          description: "Request Accepted"
+        default:
+          "$ref": "#/components/responses/Generic"
+    delete:
+      tags:
+        - pets
+      summary: Delete a pet.
+      description: Delete a pet.
+      operationId: deletePet
+      parameters:
+        - "$ref": "#/components/parameters/PetId"
+      responses:
+        "204":
+          description: Pet deleted
+        default:
+          "$ref": "#/components/responses/Generic"
+  "/pets/{petId}/images":
+    post:
+      tags:
+        - pets
+      summary: Upload a new image for a pet.
+      description: Upload a new image for a pet.
+      operationId: uploadPetImage
+      parameters:
+        - "$ref": "#/components/parameters/PetId"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - photos
+              properties:
+                photos: 
+                  "$ref": "#/components/schemas/PetPhotos"
+            encoding:
+              photos:
+                contentType: image/jpeg
+                explode: true
+      responses:
+        "202":
+          description: "Accepted Request"
+        default:
+          "$ref": "#/components/responses/Generic"
+  "/pets/{petId}/images/{imageId}":
+    get:
+      tags:
+        - pets
+      summary: Get a pet image using ID.
+      description: Get a pet image using ID.
+      operationId: getImageByPetId
+      parameters:
+        - "$ref": "#/components/parameters/PetId"
+        - "$ref": "#/components/parameters/ImageId"
+      responses:
+        "200":
+          description: Successful response
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+                example: binary string representation of jpeg image
+        default:
+          "$ref": "#/components/responses/Generic"
+    delete:
+      tags:
+        - pets
+      summary: Delete a pet image.
+      description: Delete a pet image.
+      operationId: deletePetImage
+      parameters:
+        - "$ref": "#/components/parameters/PetId"
+        - "$ref": "#/components/parameters/ImageId"
+      responses:
+        "204":
+          description: Pet image deleted
+        default:
+          "$ref": "#/components/responses/Generic"
+  "/store/orders":
+    get:
+      tags:
+        - orders
+      summary: Find user orders using status.
+      description: Find user orders using status.
+      operationId: findOrders
+      parameters:
+        - name: status
+          in: query
+          description: Status values that need to be considered for filter
+          required: false
+          explode: true
+          schema:
+            type: array 
+            items:
+              "$ref": "#/components/schemas/OrderStatus"
+        - name: afterDate
+          in: query
+          description: Filter orders placed after this date-time(UTC)
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - "$ref": "#/components/parameters/Cursor"
+        - "$ref": "#/components/parameters/Limit"
+      responses:
+        "200":
+          "$ref": "#/components/responses/OrderArray"
+        default:
+          "$ref": "#/components/responses/Generic"
+    post:
+      tags:
+        - orders
+      summary: Place orders for pets.
+      description: Place new orders in the store.
+      operationId: placeOrders
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array 
+              minItems: 1
+              maxItems: 10
+              items:
+                type: object
+                required:
+                  - petId
+                properties:
+                  petId:
+                    "$ref": "#/components/schemas/Id"
+      responses:
+        "201":
+          "$ref": "#/components/responses/OrderArray"
+        default:
+          "$ref": "#/components/responses/Generic"
+  "/store/orders/{orderId}":
+    get:
+      tags:
+        - orders
+      summary: Find user order by ID.
+      operationId: getOrderByID
+      parameters: 
+        - "$ref": "#/components/parameters/OrderId"
+      responses:
+        "200":
+          description: "Successful Order response"
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OrderWithMetadata"
+        default:
+          "$ref": "#/components/responses/Generic"
+    delete:
+      tags:
+        - orders
+      summary: Delete user order by identifier.
+      operationId: deleteOrder
+      parameters:
+        - "$ref": "#/components/parameters/OrderId"
+      responses:
+        "204":
+          description: Order deleted
+        default:
+          "$ref": "#/components/responses/Generic"
+  "/users":
+    post:
+      tags:
+        - users
+      summary: Create user.
+      operationId: createUser
+      requestBody:
+        "$ref": "#/components/requestBodies/User"
+      responses:
+        "201":
+          "$ref": "#/components/responses/User"
+        default:
+          "$ref": "#/components/responses/Generic"
+      security: []
+  "/users/{username}":
+    get:
+      tags:
+        - users
+      summary: Get user by user name.
+      description: Get user detail based on username.
+      operationId: getUserByName
+      parameters:
+        - "$ref": "#/components/parameters/Username"
+      responses:
+        "200":
+          "$ref": "#/components/responses/User"
+        default:
+          "$ref": "#/components/responses/Generic"
+    put:
+      tags:
+        - users
+      summary: Replace user resource.
+      operationId: replaceUser
+      parameters:
+        - "$ref": "#/components/parameters/Username"
+      requestBody:
+        "$ref": "#/components/requestBodies/User"
+      responses:
+        "200":
+          "$ref": "#/components/responses/User"
+        default:
+          "$ref": "#/components/responses/Generic"
+    delete:
+      tags:
+        - users
+      summary: Delete user resource.
+      operationId: deleteUser
+      parameters:
+        - "$ref": "#/components/parameters/Username"
+      responses:
+        "204":
+          description: Order deleted
+        default:
+          "$ref": "#/components/responses/Generic"
+components:
+  schemas:
+    Id: 
+      type: string
+      minLength: 1
+      maxLength: 45
+      example: "aasd66tdhc632t5"
+    PetName:
+      type: string
+      example: max
+      minLength: 1
+      maxLength: 100
+      pattern: "^[a-z\\- ]+$"
+    AnimalCategoryName:
+      type: string
+      example: dogs
+      minLength: 1
+      maxLength: 100
+      pattern: "^[a-z0-9\\- ]+$"
+    PetTags: 
+      type: array
+      minItems: 1
+      maxItems: 50
+      items:
+        type: string
+        example: labrador
+        minLength: 1
+        maxLength: 20
+    PetStatus:
+      type: string
+      description: pet status in the store
+      default: available
+      enum:
+        - available
+        - sold      
+    Pet:
+      required:
+        - name
+        - category_id
+        - price
+      type: object
+      properties:
+        name:
+          "$ref": "#/components/schemas/PetName"
+        price:
+          type: string
+          format: decimal
+          pattern: "^\\d+(\\.\\d{1,2})?$"
+          example: "29.99"
+          minLength: 1
+          description: "Price in USD. Must be positive with max 2 decimal places."
+        category_id:
+          type: string
+          example: "x3274y237d63276"
+          minLength: 1
+          maxLength: 45
+        tags:
+          "$ref": "#/components/schemas/PetTags"
+        status:
+          "$ref": "#/components/schemas/PetStatus"
+    PetPhotos:
+      type: array
+      description: Pet images (up to 10)
+      minItems: 1
+      maxItems: 10
+      items:
+        type: string
+        description: "Min size: 1B, Max size: 256KB"
+        format: binary
+        example: binary string representation of jpeg image
+    PetWithMetadata:
+      allOf:
+        - type: object
+          required:
+            - id 
+          properties:
+            id:
+              "$ref": "#/components/schemas/Id"
+            photo_uris:
+              type: array
+              items:
+                description: URI of pet image
+                type: string
+                format: uri
+                example: /pet/{petId}/images/{imageId}
+        - "$ref": "#/components/schemas/Pet"
+        - "$ref": "#/components/schemas/DateTimeMetadata"
+    OrderStatus:
+      type: string
+      description: order status.
+      default: placed
+      enum:
+        - placed
+        - in-progress
+        - delivered 
+    OrderWithMetadata: 
+      allOf:
+        - type: object
+          required:
+            - id 
+            - pet_id
+            - status
+            - shipped_date
+          properties:
+            id:
+              "$ref": "#/components/schemas/Id"
+            pet_id:
+              "$ref": "#/components/schemas/Id"
+            status:
+              "$ref": "#/components/schemas/OrderStatus"
+            shipped_date:
+              type: string
+              format: date-time
+              description: Shipped DateTime(UTC)
+              nullable: true
+        - "$ref": "#/components/schemas/DateTimeMetadata"
+    DateTimeMetadata:
+      type: object 
+      required:
+        - created_at
+        - updated_at
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          description: DateTime(UTC) when the pet was created in the store
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: DateTime(UTC) when the pet was last updated
+    Username:
+      type: string
+      example: okagrmin123
+      pattern: "^[a-z0-9\\-_. ]+$"
+      minLength: 1
+      maxLength: 150
+    User:
+      x-go-name: UserSchema
+      type: object
+      required:
+        - username
+        - full_name
+        - email
+        - phone_number
+      properties:
+        username:
+          "$ref": "#/components/schemas/Username"
+        full_name:
+          type: string
+          example: Tony Stark
+          pattern: "^[a-z\\- ]+$"
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          example: john@email.com
+          pattern: "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+          minLength: 1
+          maxLength: 320
+        phone_number:
+          type: string
+          pattern: "^\\+?[0-9-]{7,15}$"
+          minLength: 1
+          maxLength: 16
+          example: "+1-555-123-4567"
+  requestBodies:
+    AnimalCategory:
+      x-go-name: AnimalCategoryRequest
+      description: Animal Category object that needs to be added to the store
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - name
+            properties: 
+              name:
+                "$ref": "#/components/schemas/AnimalCategoryName"
+    Pet:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+            required:
+              - pet
+            properties: 
+              pet:
+                "$ref": "#/components/schemas/Pet"
+              photos: 
+                "$ref": "#/components/schemas/PetPhotos"
+          encoding:
+            pet:
+              contentType: application/json
+            photos:
+              contentType: image/jpeg
+              explode: true
+    User:
+      x-go-name: UserRequest
+      required: true
+      content:
+        application/json:
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/User"
+              - type: object
+                required:
+                  - password
+                properties:
+                  password:
+                    type: string
+                    example: "wr34^44gz4$4r"
+                    minLength: 1
+                    maxLength: 320         
+  responses:
+    AnimalCategory: 
+      description: "Successful Animal Category response"
+      content:
+        application/json:
+          schema: 
+            allOf:
+              - type: object
+                required:
+                  - id 
+                  - name
+                properties:
+                  id:
+                    "$ref": "#/components/schemas/Id"
+                  name: 
+                    "$ref": "#/components/schemas/AnimalCategoryName"
+              - "$ref": "#/components/schemas/DateTimeMetadata"
+    OrderArray:
+      description: "Successful Order array response"
+      headers: *paginationHeader
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - count 
+              - orders
+            properties:
+              count:
+                type: integer
+                description: Total number of orders
+                example: 1
+              orders:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/OrderWithMetadata"
+    User:
+      description: "Successful User object response"
+      content:
+        application/json:
+          schema:
+            allOf:
+              - "$ref": "#/components/schemas/User"
+              - "$ref": "#/components/schemas/DateTimeMetadata"
+    Generic:
+      description: "Generic API Response"
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - message
+            properties:
+              message:
+                type: string
+  parameters:
+    AnimalCategoryId:
+      name: animalCategoryId
+      in: path
+      required: true
+      schema:
+        "$ref": "#/components/schemas/Id"    
+    PetId:
+      name: petId
+      in: path
+      required: true
+      schema:
+        "$ref": "#/components/schemas/Id"
+    ImageId:
+      name: imageId
+      in: path
+      required: true
+      schema:
+        "$ref": "#/components/schemas/Id"
+    OrderId:
+      name: orderId
+      in: path
+      required: true
+      schema:
+        "$ref": "#/components/schemas/Id"
+    Username:
+      name: username
+      in: path
+      required: true
+      schema:
+        "$ref": "#/components/schemas/Username"
+    Cursor:
+      name: cursor
+      in: query
+      description: Cursor for pagination (from previous response)
+      required: false
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 1000
+    Limit:
+      name: limit
+      in: query
+      description: Number of items to return
+      required: false
+      schema:
+        type: integer
+        minimum: 10
+        maximum: 50
+        default: 20
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer          
+      bearerFormat: JWT 
+      description: "JWT Bearer token"

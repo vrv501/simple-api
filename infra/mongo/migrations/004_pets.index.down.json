@@ -1,0 +1,6 @@
+[
+    {
+        "dropIndexes": "pets",
+        "index":  "name_category_id_unique_idx"
+    }
+]

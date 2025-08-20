@@ -1,0 +1,74 @@
+[
+    {
+        "create": "pets",
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "required": [
+                    "name",
+                    "category_id",
+                    "photo_uris",
+                    "price",
+                    "status",
+                    "tags",
+                    "created_on",
+                    "updated_on",
+                    "deleted_on"
+                ],
+                "properties": {
+                    "name": {
+                        "bsonType": "string",
+                        "description": "pet name"
+                    },
+                    "category_id": {
+                        "bsonType": "objectId",
+                        "description": "Reference to animal_categories collection _id"
+                    },
+                    "photo_uris": {
+                        "bsonType": ["array", "null"],
+                        "items": {
+                            "bsonType": "string"
+                        },
+                        "description": "photo urls of the pet"
+                    },
+                    "price": {
+                        "bsonType": "decimal",
+                        "description": "price of the pet in decimal128 format"
+                    },
+                    "status": {
+                        "enum": [
+                            "available",
+                            "sold"
+                        ],
+                        "description": "purchase status of pet"
+                    },
+                    "tags": {
+                        "bsonType": ["array", "null"],
+                        "items": {
+                            "bsonType": "string"
+                        },
+                        "description": "array of keys for tagging & metadata"
+                    },
+                    "created_on": {
+                        "bsonType": "date",
+                        "description": "creation date time(UTC) of document"
+                    },
+                    "updated_on": {
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "last updated date time(UTC) of document"
+                    },
+                    "deleted_on": {
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "deleted date time(UTC) of document. Used to mark document as soft-deleted"
+                    }
+                }
+            }
+        }
+    }
+]

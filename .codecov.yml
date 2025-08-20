@@ -11,3 +11,6 @@ coverage:
 
 ignore:
   - "**/*.gen.go"         # glob accepted
+  - cmd/server/*
+  - internal/generated/**
+  - internal/db/**

@@ -1,0 +1,54 @@
+[
+    {
+        "create": "orders",
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "required": [
+                    "user_id",
+                    "pet_id",
+                    "shipped_date",
+                    "status",
+                    "created_on",
+                    "updated_on"
+                ],
+                "properties": {
+                    "user_id": {
+                        "bsonType": "objectId",
+                        "description": "Reference to users collection _id"
+                    },
+                    "pet_id": {
+                        "bsonType": "objectId",
+                        "description": "Reference to pets collection _id"
+                    },
+                    "shipped_date": {
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "shipped date of the pet"
+                    },
+                    "status": {
+                        "enum": [
+                            "placed",
+                            "in-progress",
+                            "delivered"
+                        ],
+                        "description": "order status"
+                    },
+                    "created_on": {
+                        "bsonType": "date",
+                        "description": "creation date time(UTC) of document"
+                    },
+                    "updated_on": {
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "updated date time(UTC) of document"
+                    }
+                }
+            }
+        }
+    }
+]

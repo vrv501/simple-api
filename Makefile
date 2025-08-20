@@ -7,16 +7,11 @@ GO_BUILD_CMD = CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 all: lint test build
 .PHONY: all
 
-vendor: go.mod go.sum
-	@go mod download
-	@go mod vendor
-.PHONY: vendor
-
-build: vendor
+build:
 	$(GO_BUILD_CMD) -o bin/app -a -v cmd/main.go
 .PHONY: build
 
-lint: vendor .golangci.yml
+lint: .golangci.yml
 	@go vet ./...
 	@golangci-lint --version
 	golangci-lint run --config .golangci.yml ./...
@@ -30,15 +25,15 @@ degenerate:
 	@find . -type f -name '*_mock.go' -delete
 .PHONY: degenerate
 
-generate: degenerate vendor
-	@go generate ./...
+generate: degenerate
+	@go generate -x ./...
 .PHONY: generate
 
-test: vendor generate
+test: generate
 	$(GO_TEST_CMD) -v ./...
 .PHONY: test
 
-coverage: vendor generate
+coverage: generate
 	@mkdir -p coverage
 	$(GO_TEST_CMD) -covermode=atomic -coverpkg=./... -coverprofile=coverage/coverage.out -v ./...
 .PHONY: coverage
@@ -48,7 +43,7 @@ clean:
 .PHONY: clean
 
 run:
-	@go run ./cmd/main.go
+	@go run ./cmd/server/main.go
 .PHONY: run
 
 clean-build: degenerate clean build
