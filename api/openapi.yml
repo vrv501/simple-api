@@ -542,7 +542,7 @@ components:
           "$ref": "#/components/schemas/Username"
         full_name:
           type: string
-          example: Tony Stark
+          example: tony stark
           pattern: "^[a-z\\- ]+$"
           minLength: 1
           maxLength: 150

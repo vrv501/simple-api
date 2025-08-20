@@ -12,7 +12,7 @@ import (
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 )
 
-var (
+const (
 	errMsgInvalidAnimalCategoryID = "Invalid animal category ID"
 	errMsgAnimalCategoryNotFound  = "Animal category not found for id"
 	errMsgAnimalCategoryExists    = "Animal category %s already exists"
@@ -55,7 +55,8 @@ func (a *APIHandler) AddAnimalCategory(ctx context.Context,
 	categoryName := request.Body.Name
 	res, err := a.dbClient.AddAnimalCategory(ctx, categoryName)
 	if err != nil {
-		if errors.Is(err, dbErr.ErrConflict) {
+		var conflictErr *dbErr.ConflictError
+		if errors.As(err, &conflictErr) {
 			return genRouter.AddAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: fmt.Sprintf(errMsgAnimalCategoryExists, categoryName),
@@ -132,6 +133,7 @@ func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
 
 	res, err := a.dbClient.UpdateAnimalCategory(ctx, id, categoryName)
 	if err != nil {
+		var conflictErr *dbErr.ConflictError
 		switch {
 		case errors.Is(err, dbErr.ErrInvalidID):
 			return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
@@ -147,7 +149,7 @@ func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
 				},
 				StatusCode: http.StatusNotFound,
 			}, nil
-		case errors.Is(err, dbErr.ErrConflict):
+		case errors.As(err, &conflictErr):
 			return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: fmt.Sprintf(errMsgAnimalCategoryExists, categoryName),

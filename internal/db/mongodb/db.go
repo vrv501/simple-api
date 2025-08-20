@@ -39,8 +39,7 @@ const (
 	updatedOnField  string = "updated_on"
 	deletedOnField  string = "deleted_on"
 
-	setOperator   string = "$set"
-	notEqOperator string = "$ne"
+	setOperator string = "$set"
 )
 
 type mongoClient struct {

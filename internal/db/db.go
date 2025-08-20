@@ -13,18 +13,20 @@ import (
 
 type Handler interface {
 	animalCategoryHandler
-
+	userHandler
 	Close(ctx context.Context) error
 }
 
 type animalCategoryHandler interface {
 	FindAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error)
-
 	AddAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error)
-
 	UpdateAnimalCategory(ctx context.Context, id, name string) (*genRouter.AnimalCategoryJSONResponse, error)
-
 	DeleteAnimalCategory(ctx context.Context, id string) error
+}
+
+type userHandler interface {
+	AddUser(ctx context.Context,
+		userReq *genRouter.CreateUserJSONRequestBody) (*genRouter.UserJSONResponse, error)
 }
 
 func NewDBHandler(ctx context.Context) Handler {
