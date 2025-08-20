@@ -433,7 +433,7 @@ components:
     Pet:
       required:
         - name
-        - category_id
+        - category
         - price
       type: object
       properties:
@@ -446,11 +446,8 @@ components:
           example: "29.99"
           minLength: 1
           description: "Price in USD. Must be positive with max 2 decimal places."
-        category_id:
-          type: string
-          example: "x3274y237d63276"
-          minLength: 1
-          maxLength: 45
+        category:
+          "$ref": "#/components/schemas/AnimalCategoryName"
         tags:
           "$ref": "#/components/schemas/PetTags"
         status:

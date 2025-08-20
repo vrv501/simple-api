@@ -8,6 +8,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/hlog"
 
 	"github.com/vrv501/simple-api/internal/constants"
@@ -28,8 +29,8 @@ func PanicRecovery(h http.Handler) http.Handler {
 				stack := make([]byte, 4096)
 				stack = stack[:runtime.Stack(stack, false)]
 				hlog.FromRequest(r).Error().
-					Interface(constants.LogFieldPanic, err).
-					Str(constants.LogFieldStackTrace, string(stack)).
+					Interface(zerolog.ErrorFieldName, err).
+					Str("stack_trace", string(stack)).
 					Msg("Recovered from panic")
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusInternalServerError)

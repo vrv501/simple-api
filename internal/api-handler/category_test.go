@@ -3,6 +3,7 @@ package apihandler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -144,7 +145,7 @@ func TestAPIHandler_AddAnimalCategory(t *testing.T) {
 			},
 			want: genRouter.AddAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: errMsgAnimalCategoryExists + " Dog",
+					Message: fmt.Sprintf(errMsgAnimalCategoryExists, "Dog"),
 				},
 				StatusCode: http.StatusConflict,
 			},
@@ -419,7 +420,7 @@ func TestAPIHandler_ReplaceAnimalCategory(t *testing.T) {
 			},
 			want: genRouter.ReplaceAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: errMsgAnimalCategoryExists + " Dog",
+					Message: fmt.Sprintf(errMsgAnimalCategoryExists, "Dog"),
 				},
 				StatusCode: http.StatusUnprocessableEntity,
 			},
