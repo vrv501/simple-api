@@ -15,7 +15,7 @@ import (
 var (
 	errMsgInvalidAnimalCategoryID = "Invalid animal category ID"
 	errMsgAnimalCategoryNotFound  = "Animal category not found for id"
-	errMsgAnimalCategoryExists    = "Animal category already exists with name "
+	errMsgAnimalCategoryExists    = "Animal category already exists with name"
 )
 
 // Find animal-category using name
