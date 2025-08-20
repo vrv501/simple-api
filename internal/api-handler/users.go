@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/rs/zerolog/log"
+	"golang.org/x/crypto/bcrypt"
 
 	dbErr "github.com/vrv501/simple-api/internal/db/errors"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
@@ -15,12 +16,30 @@ const (
 	errMsgAlreadyInUse = "already in use"
 )
 
+func hashPassword(password string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	return string(hash), err
+}
+
 // Create user.
 // (POST /users)
 func (a *APIHandler) CreateUser(ctx context.Context,
 	request genRouter.CreateUserRequestObject) (genRouter.CreateUserResponseObject, error) {
 	logger := log.Ctx(ctx)
 	userReq := request.Body
+
+	hashedPswd, err := hashPassword(userReq.Password)
+	if err != nil {
+		logger.Error().Err(err).Msg("Failed to hash password")
+		return genRouter.CreateUserdefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+	userReq.Password = hashedPswd
+
 	res, err := a.dbClient.AddUser(ctx, userReq)
 	if err != nil {
 		var conflictErr *dbErr.ConflictError

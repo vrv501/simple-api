@@ -606,8 +606,9 @@ components:
                   password:
                     type: string
                     example: "wr34^44gz4$4r"
-                    minLength: 1
-                    maxLength: 320         
+                    minLength: 8
+                    maxLength: 30
+                    pattern: "^[A-Za-z0-9&%$#@*:;<>~]+$"
   responses:
     AnimalCategory: 
       description: "Successful Animal Category response"
