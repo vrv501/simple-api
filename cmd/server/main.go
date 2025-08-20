@@ -31,12 +31,13 @@ func main() {
 			AuthenticationFunc: openapi3filter.NoopAuthenticationFunc, // Update once authnz is implemented
 		},
 		ErrorHandlerWithOpts: func(_ context.Context, err error, w http.ResponseWriter,
-			r *http.Request, opts ogenMiddleware.ErrorHandlerOpts) {
-			switch e := err.(type) {
-			case *openapi3filter.RequestError:
-				errorLines := strings.Split(e.Error(), "\n")
+			_ *http.Request, opts ogenMiddleware.ErrorHandlerOpts) {
+			var reqErr *openapi3filter.RequestError
+			if errors.As(err, &reqErr) {
+				errorLines := strings.Split(reqErr.Error(), "\n")
 				err = errors.New(errorLines[0])
 			}
+
 			w.Header().Del("Content-Length")
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(opts.StatusCode)
