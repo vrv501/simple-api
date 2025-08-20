@@ -25,6 +25,7 @@ type animalCategoryHandler interface {
 }
 
 type userHandler interface {
+	GetUser(ctx context.Context, username string) (*genRouter.UserJSONResponse, error)
 	AddUser(ctx context.Context,
 		userReq *genRouter.CreateUserJSONRequestBody) (*genRouter.UserJSONResponse, error)
 	DeleteUser(ctx context.Context, username string) error

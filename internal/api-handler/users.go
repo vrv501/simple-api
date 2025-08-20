@@ -14,6 +14,7 @@ import (
 
 const (
 	errMsgAlreadyInUse = "already in use"
+	errMsgUserNotFound = "user not found"
 )
 
 func hashPassword(password string) (string, error) {
@@ -75,7 +76,7 @@ func (a *APIHandler) DeleteUser(ctx context.Context,
 		case errors.Is(err, dbErr.ErrNotFound):
 			return genRouter.DeleteUserdefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: "User not found",
+					Message: errMsgUserNotFound,
 				},
 				StatusCode: http.StatusNotFound,
 			}, nil
@@ -104,7 +105,26 @@ func (a *APIHandler) DeleteUser(ctx context.Context,
 // (GET /users/{username})
 func (a *APIHandler) GetUserByName(ctx context.Context,
 	request genRouter.GetUserByNameRequestObject) (genRouter.GetUserByNameResponseObject, error) {
-	panic("not implemented") // TODO: Implement
+	logger := log.Ctx(ctx)
+	res, err := a.dbClient.GetUser(ctx, request.Username)
+	if err != nil {
+		if errors.Is(err, dbErr.ErrNotFound) {
+			return genRouter.GetUserByNamedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: errMsgUserNotFound,
+				},
+				StatusCode: http.StatusNotFound,
+			}, nil
+		}
+		logger.Error().Err(err).Msg("Failed to get user")
+		return genRouter.GetUserByNamedefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+	return genRouter.GetUserByName200JSONResponse{UserJSONResponse: *res}, nil
 }
 
 // Replace user resource.

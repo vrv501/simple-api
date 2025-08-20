@@ -85,7 +85,39 @@ func (m *mongoClient) DeleteUser(ctx context.Context, username string) error {
 	}
 
 	_, err = m.mongoDbHandler.Collection(usersCollection).
-		UpdateOne(ctx, bson.M{usernameField: username, deletedOnField: bson.Null{}},
+		UpdateOne(ctx, bson.M{iDField: user.ID},
 			bson.M{setOperator: bson.M{deletedOnField: time.Now().UTC()}})
 	return err
+}
+
+func (m *mongoClient) GetUser(ctx context.Context,
+	username string) (*genRouter.UserJSONResponse, error) {
+	res := m.mongoDbHandler.Collection(usersCollection).FindOne(
+		ctx,
+		bson.M{usernameField: username, deletedOnField: bson.Null{}},
+		options.FindOne().SetProjection(bson.M{
+			iDField:       0,
+			passwordField: 0,
+		}),
+	)
+	err := res.Err()
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, dbErr.ErrNotFound
+		}
+		return nil, err
+	}
+	var user user
+	err = res.Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+	return &genRouter.UserJSONResponse{
+		Username:    user.Username,
+		Email:       user.Email,
+		FullName:    user.FullName,
+		PhoneNumber: user.PhoneNumber,
+		CreatedAt:   user.CreatedOn,
+		UpdatedAt:   user.UpdatedOn,
+	}, nil
 }
