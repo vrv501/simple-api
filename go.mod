@@ -7,7 +7,7 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/oapi-codegen/nethttp-middleware v1.1.2
 	github.com/oapi-codegen/runtime v1.1.1
-	github.com/rs/zerolog v1.33.0
+	github.com/rs/zerolog v1.34.0
 	go.mongodb.org/mongo-driver/v2 v2.3.0
 	go.uber.org/mock v0.6.0
 	sigs.k8s.io/controller-runtime v0.21.0
@@ -31,7 +31,7 @@ require (
 	github.com/oasdiff/yaml v0.0.0-20250309154309-f31be36b4037 // indirect
 	github.com/oasdiff/yaml3 v0.0.0-20250309153720-d2182401db90 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
-	github.com/rs/xid v1.5.0 // indirect
+	github.com/rs/xid v1.6.0 // indirect
 	github.com/speakeasy-api/jsonpath v0.6.0 // indirect
 	github.com/speakeasy-api/openapi-overlay v0.10.2 // indirect
 	github.com/vmware-labs/yaml-jsonpath v0.3.2 // indirect
