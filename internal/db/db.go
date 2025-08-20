@@ -5,6 +5,7 @@ package db
 import (
 	"context"
 	"os"
+	"testing"
 
 	"github.com/vrv501/simple-api/internal/db/mongodb"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
@@ -33,6 +34,9 @@ func NewDBHandler(ctx context.Context) Handler {
 	case "postgres":
 		return nil
 	default:
-		return nil
+		if testing.Testing() {
+			return nil
+		}
+		return mongodb.NewInstance(ctx)
 	}
 }
