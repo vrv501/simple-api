@@ -10,7 +10,6 @@ import (
 
 func TestEntryAudit(t *testing.T) {
 	t.Parallel()
-	rr := httptest.NewRecorder()
 
 	tests := []struct {
 		name           string
@@ -23,6 +22,7 @@ func TestEntryAudit(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			rr := httptest.NewRecorder()
 			handler := EntryAudit(http.HandlerFunc(
 				func(w http.ResponseWriter, r *http.Request) {
 					w.WriteHeader(http.StatusOK)
@@ -37,7 +37,6 @@ func TestEntryAudit(t *testing.T) {
 
 func TestPanicRecovery(t *testing.T) {
 	t.Parallel()
-	rr := httptest.NewRecorder()
 
 	type args struct {
 		h http.Handler
@@ -59,6 +58,7 @@ func TestPanicRecovery(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			rr := httptest.NewRecorder()
 			handler := PanicRecovery(tt.args.h)
 			handler.ServeHTTP(rr, httptest.NewRequest("GET", "/", nil))
 			if rr.Code != tt.wantStatusCode {
@@ -69,8 +69,6 @@ func TestPanicRecovery(t *testing.T) {
 }
 
 func TestWithCORS(t *testing.T) {
-	t.Parallel()
-	rr := httptest.NewRecorder()
 	t.Setenv(constants.AllowedOrigins, "http://localhost:8080")
 
 	type args struct {
@@ -102,6 +100,7 @@ func TestWithCORS(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			rr := httptest.NewRecorder()
 			if tt.prepare != nil {
 				tt.prepare(&tt.args)
 			}
