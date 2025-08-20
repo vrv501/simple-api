@@ -67,8 +67,8 @@ func (m *mongoClient) UpdateAnimalCategory(ctx context.Context, id,
 
 	currTime := time.Now().UTC()
 	res := m.mongoDbHandler.Collection(animalCategoryCollection).FindOneAndUpdate(ctx,
-		bson.M{iDField: bsonID, deletedOnField: bson.M{notEqOperator: bson.Null{}}},
-		bson.M{nameField: name, updatedOnField: currTime},
+		bson.M{iDField: bsonID, deletedOnField: bson.Null{}},
+		bson.M{setOperator: bson.M{nameField: name, updatedOnField: currTime}},
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	)
 	err = res.Err()
@@ -111,7 +111,7 @@ func (m *mongoClient) DeleteAnimalCategory(ctx context.Context, id string) error
 	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 		return err
 	}
-	if err == nil { // No error if one document is found
+	if err == nil {
 		return dbErr.ErrForeignKeyConstraint
 	}
 
