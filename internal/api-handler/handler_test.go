@@ -12,17 +12,13 @@ import (
 )
 
 func TestNewAPIHandler(t *testing.T) {
-	type args struct {
-		ctx context.Context
-	}
+	t.Parallel()
 	tests := []struct {
 		name string
-		args args
 		want *APIHandler
 	}{
 		{
 			name: "NewAPIHandler",
-			args: args{ctx: context.Background()},
 			want: &APIHandler{
 				dbClient: nil,
 			},
@@ -30,7 +26,7 @@ func TestNewAPIHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewAPIHandler(tt.args.ctx); !cmp.Equal(got, tt.want,
+			if got := NewAPIHandler(context.Background()); !cmp.Equal(got, tt.want,
 				cmpopts.IgnoreUnexported(APIHandler{})) {
 				t.Errorf("NewAPIHandler() = %v, want %v", got, tt.want)
 			}
@@ -39,6 +35,7 @@ func TestNewAPIHandler(t *testing.T) {
 }
 
 func TestAPIHandler_Close(t *testing.T) {
+	t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
