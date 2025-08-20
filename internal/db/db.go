@@ -27,6 +27,7 @@ type animalCategoryHandler interface {
 type userHandler interface {
 	AddUser(ctx context.Context,
 		userReq *genRouter.CreateUserJSONRequestBody) (*genRouter.UserJSONResponse, error)
+	DeleteUser(ctx context.Context, username string) error
 }
 
 func NewDBHandler(ctx context.Context) Handler {

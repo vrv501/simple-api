@@ -104,13 +104,13 @@ func (a *APIHandler) DeleteAnimalCategory(ctx context.Context,
 		case errors.Is(err, dbErr.ErrForeignKeyConstraint):
 			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: "Pets found for animal category " + id,
+					Message: "Animal Category cannot be deleted. Pets found for animal category " + id,
 				},
 				StatusCode: http.StatusUnprocessableEntity,
 			}, nil
 		}
 
-		logger.Error().Err(err).Msg("Failed to delete animal category")
+		logger.Error().Err(err).Msg("Failed to soft-delete animal category")
 		return genRouter.DeleteAnimalCategorydefaultJSONResponse{
 			Body: genRouter.Generic{
 				Message: http.StatusText(http.StatusInternalServerError),
@@ -119,7 +119,7 @@ func (a *APIHandler) DeleteAnimalCategory(ctx context.Context,
 		}, nil
 	}
 
-	logger.Info().Msgf("Deleted animal category with ID %s", id)
+	logger.Info().Msgf("Soft-Deleted animal category with ID %s", id)
 	return genRouter.DeleteAnimalCategory204Response{}, nil
 }
 

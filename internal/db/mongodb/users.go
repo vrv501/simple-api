@@ -5,7 +5,9 @@ import (
 	"errors"
 	"time"
 
+	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	dbErr "github.com/vrv501/simple-api/internal/db/errors"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
@@ -44,4 +46,46 @@ func (m *mongoClient) AddUser(ctx context.Context,
 		PhoneNumber: userReq.PhoneNumber,
 		CreatedAt:   currTime,
 	}, nil
+}
+
+func (m *mongoClient) DeleteUser(ctx context.Context, username string) error {
+
+	res := m.mongoDbHandler.Collection(usersCollection).FindOne(
+		ctx,
+		bson.M{usernameField: username, deletedOnField: bson.Null{}},
+		options.FindOne().SetProjection(bson.M{iDField: 1}),
+	)
+	err := res.Err()
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return dbErr.ErrNotFound
+		}
+		return err
+	}
+
+	var user user
+	err = res.Decode(&user)
+	if err != nil {
+		return err
+	}
+
+	err = m.mongoDbHandler.Collection(ordersCollection).FindOne(
+		ctx,
+		bson.M{
+			userIDField: user.ID.Hex(),
+			statusField: bson.M{notEqOperator: genRouter.Delivered},
+		},
+		options.FindOne().SetProjection(bson.M{iDField: 1}),
+	).Err()
+	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+		return err
+	}
+	if err == nil {
+		return dbErr.ErrForeignKeyConstraint
+	}
+
+	_, err = m.mongoDbHandler.Collection(usersCollection).
+		UpdateOne(ctx, bson.M{usernameField: username, deletedOnField: bson.Null{}},
+			bson.M{setOperator: bson.M{deletedOnField: time.Now().UTC()}})
+	return err
 }

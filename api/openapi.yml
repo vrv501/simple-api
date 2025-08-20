@@ -405,14 +405,14 @@ components:
     PetName:
       type: string
       example: max
-      minLength: 1
-      maxLength: 100
+      minLength: 4
+      maxLength: 20
       pattern: "^[a-z\\- ]+$"
     AnimalCategoryName:
       type: string
       example: dogs
-      minLength: 1
-      maxLength: 100
+      minLength: 4
+      maxLength: 30
       pattern: "^[a-z0-9\\- ]+$"
     PetTags: 
       type: array
@@ -421,8 +421,8 @@ components:
       items:
         type: string
         example: labrador
-        minLength: 1
-        maxLength: 20
+        minLength: 4
+        maxLength: 10
     PetStatus:
       type: string
       description: pet status in the store
@@ -445,6 +445,7 @@ components:
           pattern: "^\\d+(\\.\\d{1,2})?$"
           example: "29.99"
           minLength: 1
+          maxLength: 10
           description: "Price in USD. Must be positive with max 2 decimal places."
         category:
           "$ref": "#/components/schemas/AnimalCategoryName"
@@ -527,8 +528,8 @@ components:
       type: string
       example: okagrmin123
       pattern: "^[a-z0-9\\-_. ]+$"
-      minLength: 1
-      maxLength: 150
+      minLength: 5
+      maxLength: 15
     User:
       x-go-name: UserSchema
       type: object
@@ -544,8 +545,8 @@ components:
           type: string
           example: tony stark
           pattern: "^[a-z\\- ]+$"
-          minLength: 1
-          maxLength: 150
+          minLength: 4
+          maxLength: 30
         email:
           type: string
           example: john@email.com
@@ -703,7 +704,7 @@ components:
       schema:
         type: string
         minLength: 1
-        maxLength: 1000
+        maxLength: 50
     Limit:
       name: limit
       in: query
