@@ -6,7 +6,6 @@ import (
 	"context"
 	"os"
 
-	"github.com/vrv501/simple-api/internal/constants"
 	"github.com/vrv501/simple-api/internal/db/mongodb"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 )
@@ -29,8 +28,10 @@ type animalCategoryHandler interface {
 
 func NewDBHandler(ctx context.Context) Handler {
 	switch dbEnv := os.Getenv("DB_TYPE"); dbEnv {
-	case constants.MongoDB:
+	case "mongodb":
 		return mongodb.NewInstance(ctx)
+	case "postgres":
+		return nil
 	default:
 		return nil
 	}

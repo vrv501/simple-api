@@ -39,7 +39,7 @@ func main() {
 
 	port := getPort(logger)
 	router := http.NewServeMux()
-	router.HandleFunc(http.MethodGet+" "+constants.StatusPath,
+	router.HandleFunc(http.MethodGet+" /status",
 		func(w http.ResponseWriter, _ *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		},
@@ -59,15 +59,15 @@ func main() {
 					Middleware is executed in order from reverse
 				*/
 				middleware.EntryAudit,
-				hlog.RequestHandler(constants.LogFieldMethodAndURL),
-				hlog.RemoteAddrHandler(constants.LogFieldClientIP),
-				hlog.RequestIDHandler(constants.LogFieldRequestID, constants.HeaderRequestID),
+				hlog.RequestHandler("url"),
+				hlog.RemoteAddrHandler("client_ip"),
+				hlog.RequestIDHandler("request_id", "X-Request-ID"),
 				hlog.AccessHandler(
 					// The below function is a deferred call
 					func(r *http.Request, status, _ int, duration time.Duration) {
 						hlog.FromRequest(r).Info().
-							Int(constants.LogFieldStatus, status).
-							Str(constants.LogFieldLatency, duration.String()).
+							Int("status", status).
+							Str("latency", duration.String()).
 							Msg("Exit Audit")
 					},
 				),
@@ -112,7 +112,7 @@ func main() {
 func getPort(logger zerolog.Logger) int {
 	portStr := os.Getenv(constants.ServerPort)
 	if portStr == "" {
-		return constants.DefaultServerPort
+		return 8300
 	}
 
 	port, err := strconv.Atoi(portStr)
