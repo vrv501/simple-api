@@ -9,6 +9,7 @@ import (
 )
 
 func TestEntryAudit(t *testing.T) {
+	t.Parallel()
 	rr := httptest.NewRecorder()
 
 	tests := []struct {
@@ -35,6 +36,7 @@ func TestEntryAudit(t *testing.T) {
 }
 
 func TestPanicRecovery(t *testing.T) {
+	t.Parallel()
 	rr := httptest.NewRecorder()
 
 	type args struct {
@@ -67,7 +69,7 @@ func TestPanicRecovery(t *testing.T) {
 }
 
 func TestWithCORS(t *testing.T) {
-
+	t.Parallel()
 	rr := httptest.NewRecorder()
 	t.Setenv(constants.AllowedOrigins, "http://localhost:8080")
 
