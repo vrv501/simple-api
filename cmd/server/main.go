@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/getkin/kin-openapi/openapi3filter"
@@ -27,6 +29,24 @@ func main() {
 	ogenMw := ogenMiddleware.OapiRequestValidatorWithOptions(spec, &ogenMiddleware.Options{
 		Options: openapi3filter.Options{
 			AuthenticationFunc: openapi3filter.NoopAuthenticationFunc, // Update once authnz is implemented
+		},
+		ErrorHandlerWithOpts: func(_ context.Context, err error, w http.ResponseWriter,
+			r *http.Request, opts ogenMiddleware.ErrorHandlerOpts) {
+			switch e := err.(type) {
+			case *openapi3filter.RequestError:
+				errorLines := strings.Split(e.Error(), "\n")
+				err = errors.New(errorLines[0])
+			}
+			w.Header().Del("Content-Length")
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(opts.StatusCode)
+			jsonBody, _ := json.Marshal(
+				genRouter.Generic{
+					Message: err.Error(),
+				},
+			)
+			w.Write(jsonBody)
+			w.Write([]byte("\n"))
 		},
 		SilenceServersWarning: true,
 	})
