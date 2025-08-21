@@ -55,7 +55,8 @@ func (a *APIHandler) AddAnimalCategory(ctx context.Context,
 	categoryName := request.Body.Name
 	res, err := a.dbClient.AddAnimalCategory(ctx, categoryName)
 	if err != nil {
-		if errors.Is(err, dbErr.ErrConflict) {
+		var conflictErr *dbErr.ConflictError
+		if errors.As(err, &conflictErr) {
 			return genRouter.AddAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: fmt.Sprintf(errMsgAnimalCategoryExists, categoryName),
@@ -103,13 +104,13 @@ func (a *APIHandler) DeleteAnimalCategory(ctx context.Context,
 		case errors.Is(err, dbErr.ErrForeignKeyConstraint):
 			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: "Pets found for animal category " + id,
+					Message: "Animal Category cannot be deleted. Pets found for animal category " + id,
 				},
 				StatusCode: http.StatusUnprocessableEntity,
 			}, nil
 		}
 
-		logger.Error().Err(err).Msg("Failed to delete animal category")
+		logger.Error().Err(err).Msg("Failed to soft-delete animal category")
 		return genRouter.DeleteAnimalCategorydefaultJSONResponse{
 			Body: genRouter.Generic{
 				Message: http.StatusText(http.StatusInternalServerError),
@@ -118,7 +119,7 @@ func (a *APIHandler) DeleteAnimalCategory(ctx context.Context,
 		}, nil
 	}
 
-	logger.Info().Msgf("Deleted animal category with ID %s", id)
+	logger.Info().Msgf("Soft-deleted animal category with ID %s", id)
 	return genRouter.DeleteAnimalCategory204Response{}, nil
 }
 
@@ -132,6 +133,7 @@ func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
 
 	res, err := a.dbClient.UpdateAnimalCategory(ctx, id, categoryName)
 	if err != nil {
+		var conflictErr *dbErr.ConflictError
 		switch {
 		case errors.Is(err, dbErr.ErrInvalidID):
 			return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
@@ -147,7 +149,7 @@ func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
 				},
 				StatusCode: http.StatusNotFound,
 			}, nil
-		case errors.Is(err, dbErr.ErrConflict):
+		case errors.As(err, &conflictErr):
 			return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: fmt.Sprintf(errMsgAnimalCategoryExists, categoryName),
