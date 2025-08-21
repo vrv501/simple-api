@@ -53,6 +53,7 @@ type OrderStatus string
 
 // Pet defines model for Pet.
 type Pet struct {
+	Breed    string             `json:"breed"`
 	Category AnimalCategoryName `json:"category"`
 	Name     PetName            `json:"name"`
 
@@ -78,6 +79,7 @@ type PetTags = []string
 
 // PetWithMetadata defines model for PetWithMetadata.
 type PetWithMetadata struct {
+	Breed     string             `json:"breed"`
 	Category  AnimalCategoryName `json:"category"`
 	Id        Id                 `json:"id"`
 	Name      PetName            `json:"name"`
