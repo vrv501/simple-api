@@ -16,6 +16,7 @@ linters:
     - govet 
     - ineffassign
     - staticcheck
+    - unused
     - arangolint
     - asasalint
     - asciicheck
