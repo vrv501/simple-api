@@ -10,6 +10,7 @@
                     "email",
                     "password",
                     "phone_number",
+                    "address",
                     "created_on",
                     "updated_on",
                     "deleted_on"
@@ -29,6 +30,9 @@
                         "description": "hashed password"
                     },
                     "phone_number": {
+                        "bsonType": "string"
+                    },
+                    "address": {
                         "bsonType": "string"
                     },
                     "created_on": {

@@ -411,7 +411,7 @@ components:
       maxItems: 50
       items:
         type: string
-        example: labrador
+        example: nurtured
         minLength: 4
         maxLength: 10
     PetStatus:
@@ -426,6 +426,7 @@ components:
         - name
         - category
         - price
+        - breed
       type: object
       properties:
         name:
@@ -444,6 +445,12 @@ components:
           "$ref": "#/components/schemas/PetTags"
         status:
           "$ref": "#/components/schemas/PetStatus"
+        breed:
+          type: string
+          example: pitbull
+          minLength: 3
+          maxLength: 20
+          pattern: "^[a-z0-9\\- ]+$"
     PetPhotos:
       type: array
       description: Pet images (up to 10)

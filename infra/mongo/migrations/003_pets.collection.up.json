@@ -8,6 +8,7 @@
                     "name",
                     "category_id",
                     "photo_uris",
+                    "breed",
                     "price",
                     "status",
                     "tags",
@@ -30,6 +31,10 @@
                             "bsonType": "string"
                         },
                         "description": "photo urls of the pet"
+                    },
+                    "breed": {
+                        "bsonType": "string",
+                        "description": "pet breed"
                     },
                     "price": {
                         "bsonType": "decimal",

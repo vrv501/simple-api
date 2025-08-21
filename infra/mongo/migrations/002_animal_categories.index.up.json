@@ -7,10 +7,7 @@
                     "name": 1
                 },
                 "name": "name_unique_idx",
-                "unique": true,
-                "partialFilterExpression": {
-                    "deleted_on": null
-                }
+                "unique": true
             }
         ]
     }

@@ -115,7 +115,6 @@ type animalCategory struct {
 	Name      string        `bson:"name"`       // "bsonType": "string"
 	CreatedOn time.Time     `bson:"created_on"` // "bsonType": "date"
 	UpdatedOn *time.Time    `bson:"updated_on"` // "bsonType": ["date", "null"]
-	DeletedOn *time.Time    `bson:"deleted_on"` // "bsonType": ["date", "null"]
 }
 
 type pet struct {
@@ -137,6 +136,7 @@ type user struct {
 	FullName    string        `bson:"full_name"`    // "bsonType": "string"
 	Email       string        `bson:"email"`        // "bsonType": "string"
 	Password    string        `bson:"password"`     // "bsonType": "string"
+	Address     string        `bson:"address"`      // "bsonType": "string"
 	PhoneNumber string        `bson:"phone_number"` // "bsonType": "string"
 	CreatedOn   time.Time     `bson:"created_on"`   // "bsonType": "date"
 	UpdatedOn   *time.Time    `bson:"updated_on"`   // "bsonType": ["date", "null"]
@@ -144,13 +144,14 @@ type user struct {
 }
 
 type order struct {
-	ID          bson.ObjectID `bson:"_id,omitempty"`
-	UserID      bson.ObjectID `bson:"user_id"`      // "bsonType": "objectId"
-	PetID       bson.ObjectID `bson:"pet_id"`       // "bsonType": "objectId"
-	ShippedDate *time.Time    `bson:"shipped_date"` // "bsonType": ["date", "null"]
-	Status      string        `bson:"status"`       // "bsonType": "string"
-	CreatedOn   time.Time     `bson:"created_on"`   // "bsonType": "date"
-	UpdatedOn   *time.Time    `bson:"updated_on"`   // "bsonType": ["date", "null"]
+	ID            bson.ObjectID `bson:"_id,omitempty"`
+	UserID        bson.ObjectID `bson:"user_id"`        // "bsonType": "objectId"
+	PetID         bson.ObjectID `bson:"pet_id"`         // "bsonType": "objectId"
+	ShippedDate   *time.Time    `bson:"shipped_date"`   // "bsonType": ["date", "null"]
+	DeliveredDate *time.Time    `bson:"delivered_date"` // "bsonType": ["date", "null"]
+	Status        string        `bson:"status"`         // "bsonType": "string"
+	CreatedOn     time.Time     `bson:"created_on"`     // "bsonType": "date"
+	UpdatedOn     *time.Time    `bson:"updated_on"`     // "bsonType": ["date", "null"]
 }
 
 type fsFile struct {

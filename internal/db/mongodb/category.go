@@ -15,7 +15,7 @@ import (
 
 func (m *mongoClient) FindAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error) {
 	res := m.mongoDbHandler.Collection(animalCategoryCollection).FindOne(ctx,
-		bson.M{nameField: name, deletedOnField: bson.Null{}},
+		bson.M{nameField: name},
 	)
 	err := res.Err()
 	if err != nil {
@@ -64,7 +64,7 @@ func (m *mongoClient) UpdateAnimalCategory(ctx context.Context, id,
 
 	currTime := time.Now().UTC()
 	res := m.mongoDbHandler.Collection(animalCategoryCollection).FindOneAndUpdate(ctx,
-		bson.M{iDField: bsonID, deletedOnField: bson.Null{}},
+		bson.M{iDField: bsonID},
 		bson.M{setOperator: bson.M{nameField: name, updatedOnField: currTime}},
 		options.FindOneAndUpdate().SetReturnDocument(options.After),
 	)
@@ -89,36 +89,4 @@ func (m *mongoClient) UpdateAnimalCategory(ctx context.Context, id,
 		Id:   animalCategoryRes.ID.Hex(),
 		Name: animalCategoryRes.Name,
 	}, nil
-}
-
-func (m *mongoClient) DeleteAnimalCategory(ctx context.Context, id string) error {
-	bsonID, err := bson.ObjectIDFromHex(id)
-	if err != nil {
-		return dbErr.ErrInvalidID
-	}
-
-	err = m.mongoDbHandler.Collection(petsCollection).
-		FindOne(
-			ctx,
-			bson.M{categoryIDField: bsonID, deletedOnField: bson.Null{}},
-			options.FindOne().SetProjection(bson.M{iDField: 1}),
-		).Err()
-	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
-		return err
-	}
-	if err == nil {
-		return dbErr.ErrForeignKeyConstraint
-	}
-
-	res, err := m.mongoDbHandler.Collection(animalCategoryCollection).
-		UpdateOne(ctx, bson.M{iDField: bsonID, deletedOnField: bson.Null{}},
-			bson.M{setOperator: bson.M{deletedOnField: time.Now().UTC()}})
-	if err != nil {
-		return err
-	}
-	if res.MatchedCount == 0 {
-		return dbErr.ErrNotFound
-	}
-
-	return nil
 }

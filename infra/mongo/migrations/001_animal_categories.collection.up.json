@@ -7,8 +7,7 @@
                 "required": [
                     "name",
                     "created_on",
-                    "updated_on",
-                    "deleted_on"
+                    "updated_on"
                 ],
                 "properties": {
                     "name": {
@@ -25,13 +24,6 @@
                             "null"
                         ],
                         "description": "last updated date time(UTC) of document"
-                    },
-                    "deleted_on": {
-                        "bsonType": [
-                            "date",
-                            "null"
-                        ],
-                        "description": "deleted date time(UTC) of document. Used to mark document as soft-deleted"
                     }
                 }
             }
