@@ -10,8 +10,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"go.uber.org/mock/gomock"
 
-	"github.com/vrv501/simple-api/internal/db"
 	dbErr "github.com/vrv501/simple-api/internal/db/errors"
+	"github.com/vrv501/simple-api/internal/generated/mockdb"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 )
 
@@ -20,7 +20,7 @@ func TestAPIHandler_FindAnimalCategory(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDBClient := db.NewMockHandler(ctrl)
+	mockDBClient := mockdb.NewMockHandler(ctrl)
 
 	type args struct {
 		request genRouter.FindAnimalCategoryRequestObject
@@ -122,7 +122,7 @@ func TestAPIHandler_AddAnimalCategory(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockDBClient := db.NewMockHandler(ctrl)
+	mockDBClient := mockdb.NewMockHandler(ctrl)
 
 	type args struct {
 		request genRouter.AddAnimalCategoryRequestObject
@@ -151,7 +151,7 @@ func TestAPIHandler_AddAnimalCategory(t *testing.T) {
 			},
 			prepare: func() {
 				mockDBClient.EXPECT().AddAnimalCategory(gomock.Any(), "Dog").
-					Return(nil, dbErr.ErrConflict)
+					Return(nil, &dbErr.ConflictError{})
 			},
 			wantErr: false,
 		},
@@ -225,7 +225,7 @@ func TestAPIHandler_DeleteAnimalCategory(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockDBClient := db.NewMockHandler(ctrl)
+	mockDBClient := mockdb.NewMockHandler(ctrl)
 
 	type args struct {
 		request genRouter.DeleteAnimalCategoryRequestObject
@@ -352,7 +352,7 @@ func TestAPIHandler_ReplaceAnimalCategory(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockDBClient := db.NewMockHandler(ctrl)
+	mockDBClient := mockdb.NewMockHandler(ctrl)
 
 	type args struct {
 		request genRouter.ReplaceAnimalCategoryRequestObject
@@ -426,7 +426,7 @@ func TestAPIHandler_ReplaceAnimalCategory(t *testing.T) {
 			},
 			prepare: func() {
 				mockDBClient.EXPECT().UpdateAnimalCategory(gomock.Any(), "1", "Dog").
-					Return(nil, dbErr.ErrConflict)
+					Return(nil, &dbErr.ConflictError{})
 			},
 			wantErr: false,
 		},

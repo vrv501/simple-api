@@ -46,7 +46,7 @@ func (m *mongoClient) AddAnimalCategory(ctx context.Context, name string) (*genR
 	})
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return nil, dbErr.ErrConflict
+			return nil, &dbErr.ConflictError{Key: "name", Err: err}
 		}
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (m *mongoClient) UpdateAnimalCategory(ctx context.Context, id,
 	err = res.Err()
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return nil, dbErr.ErrConflict
+			return nil, &dbErr.ConflictError{Key: "name", Err: err}
 		}
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, dbErr.ErrNotFound
