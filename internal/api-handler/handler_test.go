@@ -9,6 +9,7 @@ import (
 	"go.uber.org/mock/gomock"
 
 	"github.com/vrv501/simple-api/internal/db"
+	"github.com/vrv501/simple-api/internal/generated/mockdb"
 )
 
 func TestNewAPIHandler(t *testing.T) {
@@ -39,7 +40,7 @@ func TestAPIHandler_Close(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockDBClient := db.NewMockHandler(ctrl)
+	mockDBClient := mockdb.NewMockHandler(ctrl)
 	type fields struct {
 		dbClient db.Handler
 	}

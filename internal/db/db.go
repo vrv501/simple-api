@@ -1,7 +1,5 @@
 package db
 
-//go:generate go tool mockgen -package db -destination db_mock.go . Handler
-
 import (
 	"context"
 	"os"

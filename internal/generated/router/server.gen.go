@@ -6,335 +6,28 @@
 package genRouter
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
-	"net/url"
-	"path"
-	"strings"
-	"time"
 
-	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/oapi-codegen/runtime"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 )
-
-const (
-	BearerAuthScopes = "bearerAuth.Scopes"
-)
-
-// Defines values for OrderStatus.
-const (
-	Delivered  OrderStatus = "delivered"
-	InProgress OrderStatus = "in-progress"
-	Placed     OrderStatus = "placed"
-)
-
-// Defines values for PetStatus.
-const (
-	Available PetStatus = "available"
-	Sold      PetStatus = "sold"
-)
-
-// AnimalCategoryName defines model for AnimalCategoryName.
-type AnimalCategoryName = string
-
-// DateTimeMetadata defines model for DateTimeMetadata.
-type DateTimeMetadata struct {
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt time.Time `json:"created_at"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
-}
-
-// Id defines model for Id.
-type Id = string
-
-// OrderStatus order status.
-type OrderStatus string
-
-// OrderWithMetadata defines model for OrderWithMetadata.
-type OrderWithMetadata struct {
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt time.Time `json:"created_at"`
-	Id        Id        `json:"id"`
-	PetId     Id        `json:"pet_id"`
-
-	// ShippedDate Shipped DateTime(UTC)
-	ShippedDate *time.Time `json:"shipped_date"`
-
-	// Status order status.
-	Status OrderStatus `json:"status"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
-}
-
-// Pet defines model for Pet.
-type Pet struct {
-	Category AnimalCategoryName `json:"category"`
-	Name     PetName            `json:"name"`
-
-	// Price Price in USD. Must be positive with max 2 decimal places.
-	Price string `json:"price"`
-
-	// Status pet status in the store
-	Status *PetStatus `json:"status,omitempty"`
-	Tags   *PetTags   `json:"tags,omitempty"`
-}
-
-// PetName defines model for PetName.
-type PetName = string
-
-// PetPhotos Pet images (up to 10)
-type PetPhotos = []openapi_types.File
-
-// PetStatus pet status in the store
-type PetStatus string
-
-// PetTags defines model for PetTags.
-type PetTags = []string
-
-// PetWithMetadata defines model for PetWithMetadata.
-type PetWithMetadata struct {
-	Category AnimalCategoryName `json:"category"`
-
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt time.Time `json:"created_at"`
-	Id        Id        `json:"id"`
-	Name      PetName   `json:"name"`
-	PhotoUris *[]string `json:"photo_uris,omitempty"`
-
-	// Price Price in USD. Must be positive with max 2 decimal places.
-	Price string `json:"price"`
-
-	// Status pet status in the store
-	Status *PetStatus `json:"status,omitempty"`
-	Tags   *PetTags   `json:"tags,omitempty"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
-}
-
-// UserSchema defines model for User.
-type UserSchema struct {
-	Email       string   `json:"email"`
-	FullName    string   `json:"full_name"`
-	PhoneNumber string   `json:"phone_number"`
-	Username    Username `json:"username"`
-}
-
-// Username defines model for Username.
-type Username = string
-
-// AnimalCategoryId defines model for AnimalCategoryId.
-type AnimalCategoryId = Id
-
-// Cursor defines model for Cursor.
-type Cursor = string
-
-// ImageId defines model for ImageId.
-type ImageId = Id
-
-// Limit defines model for Limit.
-type Limit = int
-
-// OrderId defines model for OrderId.
-type OrderId = Id
-
-// PetId defines model for PetId.
-type PetId = Id
-
-// AnimalCategory defines model for AnimalCategory.
-type AnimalCategory struct {
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt time.Time          `json:"created_at"`
-	Id        Id                 `json:"id"`
-	Name      AnimalCategoryName `json:"name"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
-}
-
-// Generic defines model for Generic.
-type Generic struct {
-	Message string `json:"message"`
-}
-
-// OrderArray defines model for OrderArray.
-type OrderArray struct {
-	// Count Total number of orders
-	Count  int                 `json:"count"`
-	Orders []OrderWithMetadata `json:"orders"`
-}
-
-// User defines model for User.
-type User struct {
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt   time.Time `json:"created_at"`
-	Email       string    `json:"email"`
-	FullName    string    `json:"full_name"`
-	PhoneNumber string    `json:"phone_number"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
-	Username  Username   `json:"username"`
-}
-
-// AnimalCategoryRequest defines model for AnimalCategory.
-type AnimalCategoryRequest struct {
-	Name AnimalCategoryName `json:"name"`
-}
-
-// UserRequest defines model for User.
-type UserRequest struct {
-	Email       string   `json:"email"`
-	FullName    string   `json:"full_name"`
-	Password    string   `json:"password"`
-	PhoneNumber string   `json:"phone_number"`
-	Username    Username `json:"username"`
-}
-
-// FindAnimalCategoryParams defines parameters for FindAnimalCategory.
-type FindAnimalCategoryParams struct {
-	// Name Name of animal category
-	Name AnimalCategoryName `form:"name" json:"name"`
-}
-
-// AddAnimalCategoryJSONBody defines parameters for AddAnimalCategory.
-type AddAnimalCategoryJSONBody struct {
-	Name AnimalCategoryName `json:"name"`
-}
-
-// ReplaceAnimalCategoryJSONBody defines parameters for ReplaceAnimalCategory.
-type ReplaceAnimalCategoryJSONBody struct {
-	Name AnimalCategoryName `json:"name"`
-}
-
-// FindPetsParams defines parameters for FindPets.
-type FindPetsParams struct {
-	// Name Name of pet
-	Name *PetName `form:"name,omitempty" json:"name,omitempty"`
-
-	// Status Status values that need to be considered for filter
-	Status *[]PetStatus `form:"status,omitempty" json:"status,omitempty"`
-
-	// Tags Tags to filter by
-	Tags *PetTags `form:"tags,omitempty" json:"tags,omitempty"`
-
-	// Cursor Cursor for pagination (from previous response)
-	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
-
-	// Limit Number of items to return
-	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
-}
-
-// AddPetMultipartBody defines parameters for AddPet.
-type AddPetMultipartBody struct {
-	Pet Pet `json:"pet"`
-
-	// Photos Pet images (up to 10)
-	Photos *PetPhotos `json:"photos,omitempty"`
-}
-
-// ReplacePetMultipartBody defines parameters for ReplacePet.
-type ReplacePetMultipartBody struct {
-	Pet Pet `json:"pet"`
-
-	// Photos Pet images (up to 10)
-	Photos *PetPhotos `json:"photos,omitempty"`
-}
-
-// UploadPetImageMultipartBody defines parameters for UploadPetImage.
-type UploadPetImageMultipartBody struct {
-	// Photos Pet images (up to 10)
-	Photos PetPhotos `json:"photos"`
-}
-
-// FindOrdersParams defines parameters for FindOrders.
-type FindOrdersParams struct {
-	// Status Status values that need to be considered for filter
-	Status *[]OrderStatus `form:"status,omitempty" json:"status,omitempty"`
-
-	// AfterDate Filter orders placed after this date-time(UTC)
-	AfterDate *time.Time `form:"afterDate,omitempty" json:"afterDate,omitempty"`
-
-	// Cursor Cursor for pagination (from previous response)
-	Cursor *Cursor `form:"cursor,omitempty" json:"cursor,omitempty"`
-
-	// Limit Number of items to return
-	Limit *Limit `form:"limit,omitempty" json:"limit,omitempty"`
-}
-
-// PlaceOrdersJSONBody defines parameters for PlaceOrders.
-type PlaceOrdersJSONBody = []struct {
-	PetId Id `json:"petId"`
-}
-
-// CreateUserJSONBody defines parameters for CreateUser.
-type CreateUserJSONBody struct {
-	Email       string   `json:"email"`
-	FullName    string   `json:"full_name"`
-	Password    string   `json:"password"`
-	PhoneNumber string   `json:"phone_number"`
-	Username    Username `json:"username"`
-}
-
-// ReplaceUserJSONBody defines parameters for ReplaceUser.
-type ReplaceUserJSONBody struct {
-	Email       string   `json:"email"`
-	FullName    string   `json:"full_name"`
-	Password    string   `json:"password"`
-	PhoneNumber string   `json:"phone_number"`
-	Username    Username `json:"username"`
-}
-
-// AddAnimalCategoryJSONRequestBody defines body for AddAnimalCategory for application/json ContentType.
-type AddAnimalCategoryJSONRequestBody AddAnimalCategoryJSONBody
-
-// ReplaceAnimalCategoryJSONRequestBody defines body for ReplaceAnimalCategory for application/json ContentType.
-type ReplaceAnimalCategoryJSONRequestBody ReplaceAnimalCategoryJSONBody
-
-// AddPetMultipartRequestBody defines body for AddPet for multipart/form-data ContentType.
-type AddPetMultipartRequestBody AddPetMultipartBody
-
-// ReplacePetMultipartRequestBody defines body for ReplacePet for multipart/form-data ContentType.
-type ReplacePetMultipartRequestBody ReplacePetMultipartBody
-
-// UploadPetImageMultipartRequestBody defines body for UploadPetImage for multipart/form-data ContentType.
-type UploadPetImageMultipartRequestBody UploadPetImageMultipartBody
-
-// PlaceOrdersJSONRequestBody defines body for PlaceOrders for application/json ContentType.
-type PlaceOrdersJSONRequestBody = PlaceOrdersJSONBody
-
-// CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
-type CreateUserJSONRequestBody CreateUserJSONBody
-
-// ReplaceUserJSONRequestBody defines body for ReplaceUser for application/json ContentType.
-type ReplaceUserJSONRequestBody ReplaceUserJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Find animal-category using name
+	// Find closest matching animal-category using name
 	// (GET /animal-categories)
 	FindAnimalCategory(w http.ResponseWriter, r *http.Request, params FindAnimalCategoryParams)
 	// Add new animal-category to the store.
 	// (POST /animal-categories)
 	AddAnimalCategory(w http.ResponseWriter, r *http.Request)
-	// Delete an animal-category.
-	// (DELETE /animal-categories/{animalCategoryId})
-	DeleteAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryId)
-	// Replace existing animal-category data using Id.
+	// Change name of existing animal-category data using Id.
 	// (PUT /animal-categories/{animalCategoryId})
-	ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryId)
+	ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId Id)
 	// Find Pets using name, status, tags.
 	// (GET /pets)
 	FindPets(w http.ResponseWriter, r *http.Request, params FindPetsParams)
@@ -454,44 +147,13 @@ func (siw *ServerInterfaceWrapper) AddAnimalCategory(w http.ResponseWriter, r *h
 	handler.ServeHTTP(w, r)
 }
 
-// DeleteAnimalCategory operation middleware
-func (siw *ServerInterfaceWrapper) DeleteAnimalCategory(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "animalCategoryId" -------------
-	var animalCategoryId AnimalCategoryId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "animalCategoryId", r.PathValue("animalCategoryId"), &animalCategoryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "animalCategoryId", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteAnimalCategory(w, r, animalCategoryId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // ReplaceAnimalCategory operation middleware
 func (siw *ServerInterfaceWrapper) ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
 	// ------------- Path parameter "animalCategoryId" -------------
-	var animalCategoryId AnimalCategoryId
+	var animalCategoryId Id
 
 	err = runtime.BindStyledParameterWithOptions("simple", "animalCategoryId", r.PathValue("animalCategoryId"), &animalCategoryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -1173,7 +835,6 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 
 	m.HandleFunc("GET "+options.BaseURL+"/animal-categories", wrapper.FindAnimalCategory)
 	m.HandleFunc("POST "+options.BaseURL+"/animal-categories", wrapper.AddAnimalCategory)
-	m.HandleFunc("DELETE "+options.BaseURL+"/animal-categories/{animalCategoryId}", wrapper.DeleteAnimalCategory)
 	m.HandleFunc("PUT "+options.BaseURL+"/animal-categories/{animalCategoryId}", wrapper.ReplaceAnimalCategory)
 	m.HandleFunc("GET "+options.BaseURL+"/pets", wrapper.FindPets)
 	m.HandleFunc("POST "+options.BaseURL+"/pets", wrapper.AddPet)
@@ -1196,13 +857,8 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 }
 
 type AnimalCategoryJSONResponse struct {
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt time.Time          `json:"created_at"`
-	Id        Id                 `json:"id"`
-	Name      AnimalCategoryName `json:"name"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
+	Id   Id                 `json:"id"`
+	Name AnimalCategoryName `json:"name"`
 }
 
 type GenericJSONResponse struct {
@@ -1215,24 +871,14 @@ type OrderArrayResponseHeaders struct {
 type OrderArrayJSONResponse struct {
 	Body struct {
 		// Count Total number of orders
-		Count  int                 `json:"count"`
-		Orders []OrderWithMetadata `json:"orders"`
+		Count  int     `json:"count"`
+		Orders []Order `json:"orders"`
 	}
 
 	Headers OrderArrayResponseHeaders
 }
 
-type UserJSONResponse struct {
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt   time.Time `json:"created_at"`
-	Email       string    `json:"email"`
-	FullName    string    `json:"full_name"`
-	PhoneNumber string    `json:"phone_number"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
-	Username  Username   `json:"username"`
-}
+type UserJSONResponse UserSchema
 
 type FindAnimalCategoryRequestObject struct {
 	Params FindAnimalCategoryParams
@@ -1296,38 +942,8 @@ func (response AddAnimalCategorydefaultJSONResponse) VisitAddAnimalCategoryRespo
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type DeleteAnimalCategoryRequestObject struct {
-	AnimalCategoryId AnimalCategoryId `json:"animalCategoryId"`
-}
-
-type DeleteAnimalCategoryResponseObject interface {
-	VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error
-}
-
-type DeleteAnimalCategory204Response struct {
-}
-
-func (response DeleteAnimalCategory204Response) VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error {
-	w.WriteHeader(204)
-	return nil
-}
-
-type DeleteAnimalCategorydefaultJSONResponse struct {
-	Body struct {
-		Message string `json:"message"`
-	}
-	StatusCode int
-}
-
-func (response DeleteAnimalCategorydefaultJSONResponse) VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
 type ReplaceAnimalCategoryRequestObject struct {
-	AnimalCategoryId AnimalCategoryId `json:"animalCategoryId"`
+	AnimalCategoryId Id `json:"animalCategoryId"`
 	Body             *ReplaceAnimalCategoryJSONRequestBody
 }
 
@@ -1373,8 +989,8 @@ type FindPets200ResponseHeaders struct {
 type FindPets200JSONResponse struct {
 	Body struct {
 		// Count Total number of pets
-		Count int               `json:"count"`
-		Pets  []PetWithMetadata `json:"pets"`
+		Count int         `json:"count"`
+		Pets  []PetWithId `json:"pets"`
 	}
 	Headers FindPets200ResponseHeaders
 }
@@ -1469,7 +1085,7 @@ type GetPetByIDResponseObject interface {
 	VisitGetPetByIDResponse(w http.ResponseWriter) error
 }
 
-type GetPetByID200JSONResponse PetWithMetadata
+type GetPetByID200JSONResponse PetWithId
 
 func (response GetPetByID200JSONResponse) VisitGetPetByIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1729,7 +1345,7 @@ type GetOrderByIDResponseObject interface {
 	VisitGetOrderByIDResponse(w http.ResponseWriter) error
 }
 
-type GetOrderByID200JSONResponse OrderWithMetadata
+type GetOrderByID200JSONResponse Order
 
 func (response GetOrderByID200JSONResponse) VisitGetOrderByIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1878,16 +1494,13 @@ func (response ReplaceUserdefaultJSONResponse) VisitReplaceUserResponse(w http.R
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
-	// Find animal-category using name
+	// Find closest matching animal-category using name
 	// (GET /animal-categories)
 	FindAnimalCategory(ctx context.Context, request FindAnimalCategoryRequestObject) (FindAnimalCategoryResponseObject, error)
 	// Add new animal-category to the store.
 	// (POST /animal-categories)
 	AddAnimalCategory(ctx context.Context, request AddAnimalCategoryRequestObject) (AddAnimalCategoryResponseObject, error)
-	// Delete an animal-category.
-	// (DELETE /animal-categories/{animalCategoryId})
-	DeleteAnimalCategory(ctx context.Context, request DeleteAnimalCategoryRequestObject) (DeleteAnimalCategoryResponseObject, error)
-	// Replace existing animal-category data using Id.
+	// Change name of existing animal-category data using Id.
 	// (PUT /animal-categories/{animalCategoryId})
 	ReplaceAnimalCategory(ctx context.Context, request ReplaceAnimalCategoryRequestObject) (ReplaceAnimalCategoryResponseObject, error)
 	// Find Pets using name, status, tags.
@@ -2026,34 +1639,8 @@ func (sh *strictHandler) AddAnimalCategory(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// DeleteAnimalCategory operation middleware
-func (sh *strictHandler) DeleteAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryId) {
-	var request DeleteAnimalCategoryRequestObject
-
-	request.AnimalCategoryId = animalCategoryId
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteAnimalCategory(ctx, request.(DeleteAnimalCategoryRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteAnimalCategory")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(DeleteAnimalCategoryResponseObject); ok {
-		if err := validResponse.VisitDeleteAnimalCategoryResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
 // ReplaceAnimalCategory operation middleware
-func (sh *strictHandler) ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryId) {
+func (sh *strictHandler) ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId Id) {
 	var request ReplaceAnimalCategoryRequestObject
 
 	request.AnimalCategoryId = animalCategoryId
@@ -2537,130 +2124,4 @@ func (sh *strictHandler) ReplaceUser(w http.ResponseWriter, r *http.Request, use
 	} else if response != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
 	}
-}
-
-// Base64 encoded, gzipped, json marshaled Swagger object
-var swaggerSpec = []string{
-
-	"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",
-	"pr6jOjwAAA==",
-}
-
-// GetSwagger returns the content of the embedded swagger specification file
-// or error if failed to decode
-func decodeSpec() ([]byte, error) {
-	zipped, err := base64.StdEncoding.DecodeString(strings.Join(swaggerSpec, ""))
-	if err != nil {
-		return nil, fmt.Errorf("error base64 decoding spec: %w", err)
-	}
-	zr, err := gzip.NewReader(bytes.NewReader(zipped))
-	if err != nil {
-		return nil, fmt.Errorf("error decompressing spec: %w", err)
-	}
-	var buf bytes.Buffer
-	_, err = buf.ReadFrom(zr)
-	if err != nil {
-		return nil, fmt.Errorf("error decompressing spec: %w", err)
-	}
-
-	return buf.Bytes(), nil
-}
-
-var rawSpec = decodeSpecCached()
-
-// a naive cached of a decoded swagger spec
-func decodeSpecCached() func() ([]byte, error) {
-	data, err := decodeSpec()
-	return func() ([]byte, error) {
-		return data, err
-	}
-}
-
-// Constructs a synthetic filesystem for resolving external references when loading openapi specifications.
-func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
-	res := make(map[string]func() ([]byte, error))
-	if len(pathToFile) > 0 {
-		res[pathToFile] = rawSpec
-	}
-
-	return res
-}
-
-// GetSwagger returns the Swagger specification corresponding to the generated code
-// in this file. The external references of Swagger specification are resolved.
-// The logic of resolving external references is tightly connected to "import-mapping" feature.
-// Externally referenced files must be embedded in the corresponding golang packages.
-// Urls can be supported but this task was out of the scope.
-func GetSwagger() (swagger *openapi3.T, err error) {
-	resolvePath := PathToRawSpec("")
-
-	loader := openapi3.NewLoader()
-	loader.IsExternalRefsAllowed = true
-	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
-		pathToFile := url.String()
-		pathToFile = path.Clean(pathToFile)
-		getSpec, ok := resolvePath[pathToFile]
-		if !ok {
-			err1 := fmt.Errorf("path not found: %s", pathToFile)
-			return nil, err1
-		}
-		return getSpec()
-	}
-	var specData []byte
-	specData, err = rawSpec()
-	if err != nil {
-		return
-	}
-	swagger, err = loader.LoadFromData(specData)
-	if err != nil {
-		return
-	}
-	return
 }
