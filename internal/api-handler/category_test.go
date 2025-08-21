@@ -284,7 +284,7 @@ func TestAPIHandler_DeleteAnimalCategory(t *testing.T) {
 			},
 			want: genRouter.DeleteAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: "Pets found for animal category 1",
+					Message: "Animal Category cannot be deleted. Pets found for animal category 1",
 				},
 				StatusCode: http.StatusUnprocessableEntity,
 			},
