@@ -15,9 +15,11 @@ const (
 
 // Defines values for OrderStatus.
 const (
+	Cancelled  OrderStatus = "cancelled"
 	Delivered  OrderStatus = "delivered"
-	InProgress OrderStatus = "in-progress"
 	Placed     OrderStatus = "placed"
+	Processing OrderStatus = "processing"
+	Shipped    OrderStatus = "shipped"
 )
 
 // Defines values for PetStatus.
@@ -29,37 +31,25 @@ const (
 // AnimalCategoryName defines model for AnimalCategoryName.
 type AnimalCategoryName = string
 
-// DateTimeMetadata defines model for DateTimeMetadata.
-type DateTimeMetadata struct {
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt time.Time `json:"created_at"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
-}
-
 // Id defines model for Id.
 type Id = string
 
-// OrderStatus order status.
-type OrderStatus string
-
-// OrderWithMetadata defines model for OrderWithMetadata.
-type OrderWithMetadata struct {
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt time.Time `json:"created_at"`
-	Id        Id        `json:"id"`
-	PetId     Id        `json:"pet_id"`
+// Order defines model for Order.
+type Order struct {
+	// DeliveredDate Delivered DateTime(UTC)
+	DeliveredDate *time.Time `json:"delivered_date"`
+	Id            Id         `json:"id"`
+	PetId         Id         `json:"pet_id"`
 
 	// ShippedDate Shipped DateTime(UTC)
 	ShippedDate *time.Time `json:"shipped_date"`
 
 	// Status order status.
 	Status OrderStatus `json:"status"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
 }
+
+// OrderStatus order status.
+type OrderStatus string
 
 // Pet defines model for Pet.
 type Pet struct {
@@ -88,13 +78,10 @@ type PetTags = []string
 
 // PetWithMetadata defines model for PetWithMetadata.
 type PetWithMetadata struct {
-	Category AnimalCategoryName `json:"category"`
-
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt time.Time `json:"created_at"`
-	Id        Id        `json:"id"`
-	Name      PetName   `json:"name"`
-	PhotoUris *[]string `json:"photo_uris,omitempty"`
+	Category  AnimalCategoryName `json:"category"`
+	Id        Id                 `json:"id"`
+	Name      PetName            `json:"name"`
+	PhotoUris *[]string          `json:"photo_uris,omitempty"`
 
 	// Price Price in USD. Must be positive with max 2 decimal places.
 	Price string `json:"price"`
@@ -102,13 +89,11 @@ type PetWithMetadata struct {
 	// Status pet status in the store
 	Status *PetStatus `json:"status,omitempty"`
 	Tags   *PetTags   `json:"tags,omitempty"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
 }
 
 // UserSchema defines model for User.
 type UserSchema struct {
+	Address     string   `json:"address"`
 	Email       string   `json:"email"`
 	FullName    string   `json:"full_name"`
 	PhoneNumber string   `json:"phone_number"`
@@ -117,9 +102,6 @@ type UserSchema struct {
 
 // Username defines model for Username.
 type Username = string
-
-// AnimalCategoryId defines model for AnimalCategoryId.
-type AnimalCategoryId = Id
 
 // Cursor defines model for Cursor.
 type Cursor = string
@@ -138,13 +120,8 @@ type PetId = Id
 
 // AnimalCategory defines model for AnimalCategory.
 type AnimalCategory struct {
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt time.Time          `json:"created_at"`
-	Id        Id                 `json:"id"`
-	Name      AnimalCategoryName `json:"name"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
+	Id   Id                 `json:"id"`
+	Name AnimalCategoryName `json:"name"`
 }
 
 // Generic defines model for Generic.
@@ -155,22 +132,12 @@ type Generic struct {
 // OrderArray defines model for OrderArray.
 type OrderArray struct {
 	// Count Total number of orders
-	Count  int                 `json:"count"`
-	Orders []OrderWithMetadata `json:"orders"`
+	Count  int     `json:"count"`
+	Orders []Order `json:"orders"`
 }
 
 // User defines model for User.
-type User struct {
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt   time.Time `json:"created_at"`
-	Email       string    `json:"email"`
-	FullName    string    `json:"full_name"`
-	PhoneNumber string    `json:"phone_number"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
-	Username  Username   `json:"username"`
-}
+type User = UserSchema
 
 // AnimalCategoryRequest defines model for AnimalCategory.
 type AnimalCategoryRequest struct {
@@ -179,6 +146,7 @@ type AnimalCategoryRequest struct {
 
 // UserRequest defines model for User.
 type UserRequest struct {
+	Address     string   `json:"address"`
 	Email       string   `json:"email"`
 	FullName    string   `json:"full_name"`
 	Password    string   `json:"password"`
@@ -264,6 +232,7 @@ type PlaceOrdersJSONBody = []struct {
 
 // CreateUserJSONBody defines parameters for CreateUser.
 type CreateUserJSONBody struct {
+	Address     string   `json:"address"`
 	Email       string   `json:"email"`
 	FullName    string   `json:"full_name"`
 	Password    string   `json:"password"`
@@ -273,6 +242,7 @@ type CreateUserJSONBody struct {
 
 // ReplaceUserJSONBody defines parameters for ReplaceUser.
 type ReplaceUserJSONBody struct {
+	Address     string   `json:"address"`
 	Email       string   `json:"email"`
 	FullName    string   `json:"full_name"`
 	Password    string   `json:"password"`

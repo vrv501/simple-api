@@ -31,10 +31,8 @@ func (m *mongoClient) FindAnimalCategory(ctx context.Context, name string) (*gen
 		return nil, err
 	}
 	return &genRouter.AnimalCategoryJSONResponse{
-		Id:        animalCategoryRes.ID.Hex(),
-		Name:      animalCategoryRes.Name,
-		CreatedAt: animalCategoryRes.CreatedOn,
-		UpdatedAt: animalCategoryRes.UpdatedOn,
+		Id:   animalCategoryRes.ID.Hex(),
+		Name: animalCategoryRes.Name,
 	}, nil
 }
 
@@ -52,9 +50,8 @@ func (m *mongoClient) AddAnimalCategory(ctx context.Context, name string) (*genR
 	}
 
 	return &genRouter.AnimalCategoryJSONResponse{
-		Id:        res.InsertedID.(bson.ObjectID).Hex(),
-		Name:      name,
-		CreatedAt: currTime,
+		Id:   res.InsertedID.(bson.ObjectID).Hex(),
+		Name: name,
 	}, nil
 }
 
@@ -89,10 +86,8 @@ func (m *mongoClient) UpdateAnimalCategory(ctx context.Context, id,
 	}
 
 	return &genRouter.AnimalCategoryJSONResponse{
-		Id:        animalCategoryRes.ID.Hex(),
-		Name:      animalCategoryRes.Name,
-		CreatedAt: animalCategoryRes.CreatedOn,
-		UpdatedAt: animalCategoryRes.UpdatedOn,
+		Id:   animalCategoryRes.ID.Hex(),
+		Name: animalCategoryRes.Name,
 	}, nil
 }
 

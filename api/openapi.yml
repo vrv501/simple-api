@@ -22,8 +22,8 @@ paths:
     get:
       tags:
         - animal-categories
-      summary: Find animal-category using name
-      description: Find animal-category using name. 
+      summary: Find closest-matching animal-category using name
+      description: Find closest-matching animal-category using name. 
       operationId: findAnimalCategory
       parameters:
         - name: name
@@ -54,29 +54,20 @@ paths:
     put:
       tags:
         - animal-categories
-      summary: Replace existing animal-category data using Id.
-      description: Replace existing animal-category data using Id.
+      summary: Rename existing animal-category data using Id.
+      description: Rename existing animal-category data using Id.
       operationId: replaceAnimalCategory
       parameters:
-        - "$ref": "#/components/parameters/AnimalCategoryId"
+        - name: animalCategoryId
+          in: path
+          required: true
+          schema:
+            "$ref": "#/components/schemas/Id" 
       requestBody:
         "$ref": "#/components/requestBodies/AnimalCategory"
       responses:
         "200":
           "$ref": "#/components/responses/AnimalCategory"
-        default:
-          "$ref": "#/components/responses/Generic"
-    delete:
-      tags:
-        - animal-categories
-      summary: Delete an animal-category.
-      description: Delete an animal-category.
-      operationId: deleteAnimalCategory
-      parameters:
-        - "$ref": "#/components/parameters/AnimalCategoryId"
-      responses:
-        "204":
-          description: Animal-category deleted
         default:
           "$ref": "#/components/responses/Generic"
   "/pets":
@@ -326,7 +317,7 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/OrderWithMetadata"
+                "$ref": "#/components/schemas/Order"
         default:
           "$ref": "#/components/responses/Generic"
     delete:
@@ -405,14 +396,14 @@ components:
     PetName:
       type: string
       example: max
-      minLength: 1
-      maxLength: 100
+      minLength: 4
+      maxLength: 20
       pattern: "^[a-z\\- ]+$"
     AnimalCategoryName:
       type: string
       example: dogs
-      minLength: 1
-      maxLength: 100
+      minLength: 3
+      maxLength: 20
       pattern: "^[a-z0-9\\- ]+$"
     PetTags: 
       type: array
@@ -421,8 +412,8 @@ components:
       items:
         type: string
         example: labrador
-        minLength: 1
-        maxLength: 20
+        minLength: 4
+        maxLength: 10
     PetStatus:
       type: string
       description: pet status in the store
@@ -445,6 +436,7 @@ components:
           pattern: "^\\d+(\\.\\d{1,2})?$"
           example: "29.99"
           minLength: 1
+          maxLength: 10
           description: "Price in USD. Must be positive with max 2 decimal places."
         category:
           "$ref": "#/components/schemas/AnimalCategoryName"
@@ -478,57 +470,47 @@ components:
                 format: uri
                 example: /pet/{petId}/images/{imageId}
         - "$ref": "#/components/schemas/Pet"
-        - "$ref": "#/components/schemas/DateTimeMetadata"
     OrderStatus:
       type: string
       description: order status.
       default: placed
       enum:
         - placed
-        - in-progress
-        - delivered 
-    OrderWithMetadata: 
-      allOf:
-        - type: object
-          required:
-            - id 
-            - pet_id
-            - status
-            - shipped_date
-          properties:
-            id:
-              "$ref": "#/components/schemas/Id"
-            pet_id:
-              "$ref": "#/components/schemas/Id"
-            status:
-              "$ref": "#/components/schemas/OrderStatus"
-            shipped_date:
-              type: string
-              format: date-time
-              description: Shipped DateTime(UTC)
-              nullable: true
-        - "$ref": "#/components/schemas/DateTimeMetadata"
-    DateTimeMetadata:
-      type: object 
+        - processing
+        - shipped 
+        - delivered
+        - cancelled 
+    Order: 
+      type: object
       required:
-        - created_at
-        - updated_at
+        - id 
+        - pet_id
+        - status
+        - shipped_date
+        - delivered_date
       properties:
-        created_at:
+        id:
+          "$ref": "#/components/schemas/Id"
+        pet_id:
+          "$ref": "#/components/schemas/Id"
+        status:
+          "$ref": "#/components/schemas/OrderStatus"
+        shipped_date:
           type: string
           format: date-time
-          description: DateTime(UTC) when the pet was created in the store
-        updated_at:
-          type: string
-          format: date-time
+          description: Shipped DateTime(UTC)
           nullable: true
-          description: DateTime(UTC) when the pet was last updated
+        delivered_date:
+          type: string
+          format: date-time
+          description: Delivered DateTime(UTC)
+          nullable: true
     Username:
       type: string
       example: okagrmin123
       pattern: "^[a-z0-9\\-_. ]+$"
-      minLength: 1
-      maxLength: 150
+      minLength: 5
+      maxLength: 20
     User:
       x-go-name: UserSchema
       type: object
@@ -537,6 +519,7 @@ components:
         - full_name
         - email
         - phone_number
+        - address
       properties:
         username:
           "$ref": "#/components/schemas/Username"
@@ -558,6 +541,12 @@ components:
           minLength: 1
           maxLength: 16
           example: "+1-555-123-4567"
+        address:
+          type: string
+          example: "123 Main St, Springfield, USA"
+          minLength: 5
+          maxLength: 100
+          pattern: "^[A-Za-z0-9,\\- ]+$"
   requestBodies:
     AnimalCategory:
       x-go-name: AnimalCategoryRequest
@@ -605,26 +594,25 @@ components:
                 properties:
                   password:
                     type: string
-                    example: "wr34^44gz4$4r"
-                    minLength: 1
-                    maxLength: 320         
+                    example: "wr3444gz4$4r"
+                    minLength: 8
+                    maxLength: 30
+                    pattern: "^[A-Za-z0-9&%$#@*:;<>~]+$"      
   responses:
     AnimalCategory: 
       description: "Successful Animal Category response"
       content:
         application/json:
           schema: 
-            allOf:
-              - type: object
-                required:
-                  - id 
-                  - name
-                properties:
-                  id:
-                    "$ref": "#/components/schemas/Id"
-                  name: 
-                    "$ref": "#/components/schemas/AnimalCategoryName"
-              - "$ref": "#/components/schemas/DateTimeMetadata"
+            type: object
+            required:
+              - id 
+              - name
+            properties:
+              id:
+                "$ref": "#/components/schemas/Id"
+              name: 
+                "$ref": "#/components/schemas/AnimalCategoryName"
     OrderArray:
       description: "Successful Order array response"
       headers: *paginationHeader
@@ -643,15 +631,13 @@ components:
               orders:
                 type: array
                 items:
-                  "$ref": "#/components/schemas/OrderWithMetadata"
+                  "$ref": "#/components/schemas/Order"
     User:
       description: "Successful User object response"
       content:
         application/json:
           schema:
-            allOf:
-              - "$ref": "#/components/schemas/User"
-              - "$ref": "#/components/schemas/DateTimeMetadata"
+            "$ref": "#/components/schemas/User"
     Generic:
       description: "Generic API Response"
       content:
@@ -663,13 +649,7 @@ components:
             properties:
               message:
                 type: string
-  parameters:
-    AnimalCategoryId:
-      name: animalCategoryId
-      in: path
-      required: true
-      schema:
-        "$ref": "#/components/schemas/Id"    
+  parameters: 
     PetId:
       name: petId
       in: path
@@ -702,7 +682,7 @@ components:
       schema:
         type: string
         minLength: 1
-        maxLength: 1000
+        maxLength: 64
     Limit:
       name: limit
       in: query

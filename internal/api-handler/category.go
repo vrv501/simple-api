@@ -77,52 +77,6 @@ func (a *APIHandler) AddAnimalCategory(ctx context.Context,
 	return genRouter.AddAnimalCategory201JSONResponse{AnimalCategoryJSONResponse: *res}, nil
 }
 
-// Delete an animal-category.
-// (DELETE /animal-categories/{animalCategoryId})
-func (a *APIHandler) DeleteAnimalCategory(ctx context.Context,
-	request genRouter.DeleteAnimalCategoryRequestObject) (genRouter.DeleteAnimalCategoryResponseObject, error) {
-	logger := log.Ctx(ctx)
-	id := request.AnimalCategoryId
-
-	err := a.dbClient.DeleteAnimalCategory(ctx, id)
-	if err != nil {
-		switch {
-		case errors.Is(err, dbErr.ErrInvalidID):
-			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
-				Body: genRouter.Generic{
-					Message: errMsgInvalidAnimalCategoryID,
-				},
-				StatusCode: http.StatusBadRequest,
-			}, nil
-		case errors.Is(err, dbErr.ErrNotFound):
-			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
-				Body: genRouter.Generic{
-					Message: errMsgAnimalCategoryNotFound + " " + id,
-				},
-				StatusCode: http.StatusNotFound,
-			}, nil
-		case errors.Is(err, dbErr.ErrForeignKeyConstraint):
-			return genRouter.DeleteAnimalCategorydefaultJSONResponse{
-				Body: genRouter.Generic{
-					Message: "Animal Category cannot be deleted. Pets found for animal category " + id,
-				},
-				StatusCode: http.StatusUnprocessableEntity,
-			}, nil
-		}
-
-		logger.Error().Err(err).Msg("Failed to soft-delete animal category")
-		return genRouter.DeleteAnimalCategorydefaultJSONResponse{
-			Body: genRouter.Generic{
-				Message: http.StatusText(http.StatusInternalServerError),
-			},
-			StatusCode: http.StatusInternalServerError,
-		}, nil
-	}
-
-	logger.Info().Msgf("Soft-deleted animal category with ID %s", id)
-	return genRouter.DeleteAnimalCategory204Response{}, nil
-}
-
 // Replace existing animal-category data using Id.
 // (PUT /animal-categories/{animalCategoryId})
 func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
