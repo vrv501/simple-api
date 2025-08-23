@@ -58,9 +58,10 @@ func (m *mongoClient) FindAnimalCategory(ctx context.Context, name string) (*gen
 			limitOperator: 1,
 		},
 	}
-	
+
 	// Atlas Search requires local read concern
-	collection := m.mongoDbHandler.Collection(animalCategoryCollection, options.Collection().SetReadConcern(readconcern.Local()))
+	collection := m.mongoDbHandler.Collection(animalCategoryCollection,
+		options.Collection().SetReadConcern(readconcern.Local()))
 	cursor, err := collection.Aggregate(ctx, pipeline)
 	if err != nil {
 		return nil, err
