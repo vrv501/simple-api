@@ -6,8 +6,11 @@ services:
       - MONGODB_INITDB_ROOT_PASSWORD=mongo
     volumes:
       - type: volume
-        source: mongo_data
-        target: /data
+        source: data
+        target: /data/db
+      - type: volume
+        source: config
+        target: /data/configdb
       - type: bind
         source: ./mongo-admin.sh
         target: /docker-entrypoint-initdb.d/mongo-admin.sh
@@ -36,5 +39,7 @@ services:
         source: ../../api
         target: /api
 volumes:
-  mongo_data:
+  config:
+    driver: local
+  data:
     driver: local
