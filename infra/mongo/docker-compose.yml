@@ -18,6 +18,9 @@ services:
     command: '-path=/migrations/ -database mongodb://mongo:mongo@localhost:27017/shop?authSource=admin up'
     network_mode: host
     restart: on-failure:3
+    depends_on:
+      mongodb:
+        condition: service_healthy
     volumes:
       - type: bind
         source: ./migrations
