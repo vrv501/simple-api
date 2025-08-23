@@ -3,6 +3,7 @@ package apihandler
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/rs/zerolog/log"
@@ -69,7 +70,37 @@ func (a *APIHandler) CreateUser(ctx context.Context,
 // (DELETE /users/{username})
 func (a *APIHandler) DeleteUser(ctx context.Context,
 	request genRouter.DeleteUserRequestObject) (genRouter.DeleteUserResponseObject, error) {
-	panic("not implemented") // TODO: Implement
+	logger := log.Ctx(ctx)
+	err := a.dbClient.DeleteUser(ctx, request.Username)
+	if err != nil {
+		var fKeyErr *dbErr.ForeignKeyError
+		switch {
+		case errors.Is(err, dbErr.ErrNotFound):
+			return genRouter.DeleteUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: errMsgUserNotFound,
+				},
+				StatusCode: http.StatusNotFound,
+			}, nil
+		case errors.As(err, &fKeyErr):
+			return genRouter.DeleteUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: fmt.Sprintf("User cannot be deleted as there are pending %s", fKeyErr.Key),
+				},
+				StatusCode: http.StatusUnprocessableEntity,
+			}, nil
+		}
+
+		logger.Error().Err(err).Msg("Failed to soft-delete user")
+		return genRouter.DeleteUserdefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+	logger.Info().Msgf("User %s soft-deleted", request.Username)
+	return genRouter.DeleteUser204Response{}, nil
 }
 
 // Get user by user name.

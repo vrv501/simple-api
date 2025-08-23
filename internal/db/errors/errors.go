@@ -6,8 +6,6 @@ var (
 	ErrInvalidID = errors.New("invalid ID")
 
 	ErrNotFound = errors.New("not found")
-
-	ErrForeignKeyConstraint = errors.New("cannot delete: foreign key constraint violation")
 )
 
 type ConflictError struct {
@@ -16,5 +14,14 @@ type ConflictError struct {
 }
 
 func (e *ConflictError) Error() string {
+	return e.Err.Error()
+}
+
+type ForeignKeyError struct {
+	Key string
+	Err error
+}
+
+func (e *ForeignKeyError) Error() string {
 	return e.Err.Error()
 }

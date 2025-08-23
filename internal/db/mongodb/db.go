@@ -37,12 +37,15 @@ const (
 	nameField       string = "name"
 	usernameField   string = "username"
 	passwordField   string = "password"
+	statusField     string = "status"
 	categoryIDField string = "category_id"
+	userIDField     string = "user_id"
 	updatedOnField  string = "updated_on"
 	deletedOnField  string = "deleted_on"
 
 	setOperator   string = "$set"
 	notEqOperator string = "$ne"
+	notInOperator string = "$nin"
 	limitOperator string = "$limit"
 )
 
@@ -125,12 +128,12 @@ type pet struct {
 	Name       string          `bson:"name"`        // "bsonType": "string"
 	CategoryID bson.ObjectID   `bson:"category_id"` // "bsonType": "objectId"
 	PhotoURIs  []string        `bson:"photo_uris"`  // "bsonType": ["array", "null"]
+	UserID     bson.ObjectID   `bson:"user_id"`     // "bsonType": "objectId"
 	Price      bson.Decimal128 `bson:"price"`       // "bsonType": "decimal"
 	Status     string          `bson:"status"`      // "bsonType": "string"
 	Tags       []string        `bson:"tags"`        // "bsonType": ["array", "null"]
 	CreatedOn  time.Time       `bson:"created_on"`  // "bsonType": "date"
 	UpdatedOn  *time.Time      `bson:"updated_on"`  // "bsonType": ["date", "null"]
-	DeletedOn  *time.Time      `bson:"deleted_on"`  // "bsonType": ["date", "null"]
 }
 
 type user struct {

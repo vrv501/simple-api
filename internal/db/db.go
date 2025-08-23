@@ -17,9 +17,7 @@ type Handler interface {
 
 type animalCategoryHandler interface {
 	FindAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error)
-
 	AddAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error)
-
 	UpdateAnimalCategory(ctx context.Context, id, name string) (*genRouter.AnimalCategoryJSONResponse, error)
 }
 
@@ -28,6 +26,7 @@ type userHandler interface {
 		userReq *genRouter.CreateUserJSONRequestBody) (*genRouter.UserJSONResponse, error)
 	GetUser(ctx context.Context,
 		username string) (*genRouter.UserJSONResponse, error)
+	DeleteUser(ctx context.Context, username string) error
 }
 
 func NewDBHandler(ctx context.Context) Handler {
