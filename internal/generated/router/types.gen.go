@@ -28,15 +28,6 @@ const (
 	Sold      PetStatus = "sold"
 )
 
-// AnimalBreed defines model for AnimalBreed.
-type AnimalBreed = string
-
-// AnimalCategory defines model for AnimalCategory.
-type AnimalCategory struct {
-	Breed AnimalBreed        `json:"breed"`
-	Name  AnimalCategoryName `json:"name"`
-}
-
 // AnimalCategoryName defines model for AnimalCategoryName.
 type AnimalCategoryName = string
 
@@ -127,11 +118,10 @@ type OrderId = Id
 // PetId defines model for PetId.
 type PetId = Id
 
-// AnimalCategoryResponse defines model for AnimalCategory.
-type AnimalCategoryResponse struct {
-	Breed AnimalBreed        `json:"breed"`
-	Id    Id                 `json:"id"`
-	Name  AnimalCategoryName `json:"name"`
+// AnimalCategory defines model for AnimalCategory.
+type AnimalCategory struct {
+	Id   Id                 `json:"id"`
+	Name AnimalCategoryName `json:"name"`
 }
 
 // Generic defines model for Generic.
@@ -150,7 +140,9 @@ type OrderArray struct {
 type User = UserSchema
 
 // AnimalCategoryRequest defines model for AnimalCategory.
-type AnimalCategoryRequest = AnimalCategory
+type AnimalCategoryRequest struct {
+	Name AnimalCategoryName `json:"name"`
+}
 
 // UserRequest defines model for User.
 type UserRequest struct {
@@ -166,9 +158,16 @@ type UserRequest struct {
 type FindAnimalCategoryParams struct {
 	// Name Name of animal category
 	Name AnimalCategoryName `form:"name" json:"name"`
+}
 
-	// Breed Name of animal breed
-	Breed AnimalBreed `form:"breed" json:"breed"`
+// AddAnimalCategoryJSONBody defines parameters for AddAnimalCategory.
+type AddAnimalCategoryJSONBody struct {
+	Name AnimalCategoryName `json:"name"`
+}
+
+// ReplaceAnimalCategoryJSONBody defines parameters for ReplaceAnimalCategory.
+type ReplaceAnimalCategoryJSONBody struct {
+	Name AnimalCategoryName `json:"name"`
 }
 
 // FindPetsParams defines parameters for FindPets.
@@ -252,10 +251,10 @@ type ReplaceUserJSONBody struct {
 }
 
 // AddAnimalCategoryJSONRequestBody defines body for AddAnimalCategory for application/json ContentType.
-type AddAnimalCategoryJSONRequestBody = AnimalCategory
+type AddAnimalCategoryJSONRequestBody AddAnimalCategoryJSONBody
 
 // ReplaceAnimalCategoryJSONRequestBody defines body for ReplaceAnimalCategory for application/json ContentType.
-type ReplaceAnimalCategoryJSONRequestBody = AnimalCategory
+type ReplaceAnimalCategoryJSONRequestBody ReplaceAnimalCategoryJSONBody
 
 // AddPetMultipartRequestBody defines body for AddPet for multipart/form-data ContentType.
 type AddPetMultipartRequestBody AddPetMultipartBody

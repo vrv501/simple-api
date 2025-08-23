@@ -116,21 +116,6 @@ func (siw *ServerInterfaceWrapper) FindAnimalCategory(w http.ResponseWriter, r *
 		return
 	}
 
-	// ------------- Required query parameter "breed" -------------
-
-	if paramValue := r.URL.Query().Get("breed"); paramValue != "" {
-
-	} else {
-		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "breed"})
-		return
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "breed", r.URL.Query(), &params.Breed)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "breed", Err: err})
-		return
-	}
-
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.FindAnimalCategory(w, r, params)
 	}))
@@ -872,9 +857,8 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 }
 
 type AnimalCategoryJSONResponse struct {
-	Breed AnimalBreed        `json:"breed"`
-	Id    Id                 `json:"id"`
-	Name  AnimalCategoryName `json:"name"`
+	Id   Id                 `json:"id"`
+	Name AnimalCategoryName `json:"name"`
 }
 
 type GenericJSONResponse struct {
@@ -904,9 +888,7 @@ type FindAnimalCategoryResponseObject interface {
 	VisitFindAnimalCategoryResponse(w http.ResponseWriter) error
 }
 
-type FindAnimalCategory200JSONResponse struct {
-	AnimalCategoryResponseJSONResponse
-}
+type FindAnimalCategory200JSONResponse struct{ AnimalCategoryJSONResponse }
 
 func (response FindAnimalCategory200JSONResponse) VisitFindAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -937,9 +919,7 @@ type AddAnimalCategoryResponseObject interface {
 	VisitAddAnimalCategoryResponse(w http.ResponseWriter) error
 }
 
-type AddAnimalCategory201JSONResponse struct {
-	AnimalCategoryResponseJSONResponse
-}
+type AddAnimalCategory201JSONResponse struct{ AnimalCategoryJSONResponse }
 
 func (response AddAnimalCategory201JSONResponse) VisitAddAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -971,9 +951,7 @@ type ReplaceAnimalCategoryResponseObject interface {
 	VisitReplaceAnimalCategoryResponse(w http.ResponseWriter) error
 }
 
-type ReplaceAnimalCategory200JSONResponse struct {
-	AnimalCategoryResponseJSONResponse
-}
+type ReplaceAnimalCategory200JSONResponse struct{ AnimalCategoryJSONResponse }
 
 func (response ReplaceAnimalCategory200JSONResponse) VisitReplaceAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")

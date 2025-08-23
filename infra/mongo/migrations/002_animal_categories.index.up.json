@@ -4,10 +4,9 @@
         "indexes": [
             {
                 "key": {
-                    "name": 1,
-                    "breed": 1
+                    "name": 1
                 },
-                "name": "name_breed_unique_idx",
+                "name": "name_unique_idx",
                 "unique": true
             }
         ]
@@ -16,17 +15,12 @@
         "createSearchIndexes": "animal_categories",
         "indexes": [
             {
-                "name": "name_breed_fuzzy_match",
+                "name": "name_fuzzy_match",
                 "definition": {
                     "mappings": {
                         "dynamic": false,
                         "fields": {
                             "name": {
-                                "type": "string",
-                                "analyzer": "lucene.simple",
-                                "searchAnalyzer": "lucene.simple"
-                            },
-                            "breed": {
                                 "type": "string",
                                 "analyzer": "lucene.simple",
                                 "searchAnalyzer": "lucene.simple"

@@ -112,7 +112,7 @@ func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
 			}, nil
 		}
 
-		logger.Error().Err(err).Msg("Failed to rename animal category")
+		logger.Error().Err(err).Msg("Failed to replace animal category")
 		return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
 			Body: genRouter.Generic{
 				Message: http.StatusText(http.StatusInternalServerError),
@@ -121,6 +121,6 @@ func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
 		}, nil
 	}
 
-	logger.Info().Msgf("Renamed animal category with ID %s", id)
+	logger.Info().Msgf("Replaced animal category with ID %s", id)
 	return genRouter.ReplaceAnimalCategory200JSONResponse{AnimalCategoryJSONResponse: *res}, nil
 }
