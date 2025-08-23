@@ -116,9 +116,16 @@ func (siw *ServerInterfaceWrapper) FindAnimalCategory(w http.ResponseWriter, r *
 		return
 	}
 
-	// ------------- Optional query parameter "breed" -------------
+	// ------------- Required query parameter "breed" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "breed", r.URL.Query(), &params.Breed)
+	if paramValue := r.URL.Query().Get("breed"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "breed"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "breed", r.URL.Query(), &params.Breed)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "breed", Err: err})
 		return

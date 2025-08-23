@@ -168,7 +168,7 @@ type FindAnimalCategoryParams struct {
 	Name AnimalCategoryName `form:"name" json:"name"`
 
 	// Breed Name of animal breed
-	Breed *AnimalBreed `form:"breed,omitempty" json:"breed,omitempty"`
+	Breed AnimalBreed `form:"breed" json:"breed"`
 }
 
 // FindPetsParams defines parameters for FindPets.
