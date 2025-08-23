@@ -41,6 +41,7 @@ const (
 
 	setOperator   string = "$set"
 	notEqOperator string = "$ne"
+	limitOperator string = "$limit"
 )
 
 type mongoClient struct {
