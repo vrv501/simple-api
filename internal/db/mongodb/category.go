@@ -7,6 +7,8 @@ import (
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readconcern"
 
 	dbErr "github.com/vrv501/simple-api/internal/db/errors"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
@@ -56,9 +58,10 @@ func (m *mongoClient) FindAnimalCategory(ctx context.Context, name string) (*gen
 			limitOperator: 1,
 		},
 	}
-
-	cursor, err := m.mongoDbHandler.Collection(animalCategoryCollection).
-		Aggregate(ctx, pipeline)
+	
+	// Atlas Search requires local read concern
+	collection := m.mongoDbHandler.Collection(animalCategoryCollection, options.Collection().SetReadConcern(readconcern.Local()))
+	cursor, err := collection.Aggregate(ctx, pipeline)
 	if err != nil {
 		return nil, err
 	}
