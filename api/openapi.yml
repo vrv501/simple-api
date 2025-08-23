@@ -528,7 +528,7 @@ components:
           example: Tony Stark
           pattern: "^[a-z\\- ]+$"
           minLength: 1
-          maxLength: 150
+          maxLength: 60
         email:
           type: string
           example: john@email.com
@@ -545,7 +545,7 @@ components:
           type: string
           example: "123 Main St, Springfield, USA"
           minLength: 5
-          maxLength: 100
+          maxLength: 250
           pattern: "^[A-Za-z0-9,\\- ]+$"
   requestBodies:
     AnimalCategory:

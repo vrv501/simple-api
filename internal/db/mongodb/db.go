@@ -35,6 +35,8 @@ const (
 
 	iDField         string = "_id"
 	nameField       string = "name"
+	usernameField   string = "username"
+	passwordField   string = "password"
 	categoryIDField string = "category_id"
 	updatedOnField  string = "updated_on"
 	deletedOnField  string = "deleted_on"
