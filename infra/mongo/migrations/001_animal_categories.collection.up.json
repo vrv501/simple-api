@@ -6,6 +6,7 @@
                 "bsonType": "object",
                 "required": [
                     "name",
+                    "breed",
                     "created_on",
                     "updated_on"
                 ],
@@ -13,6 +14,10 @@
                     "name": {
                         "bsonType": "string",
                         "description": "animal category"
+                    },
+                    "breed": {
+                        "bsonType": "string",
+                        "description": "animal breed"
                     },
                     "created_on": {
                         "bsonType": "date",

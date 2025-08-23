@@ -19,7 +19,7 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Find closest-matching animal-category using name
+	// Find closest-matching animal-category
 	// (GET /animal-categories)
 	FindAnimalCategory(w http.ResponseWriter, r *http.Request, params FindAnimalCategoryParams)
 	// Add new animal-category to the store.
@@ -113,6 +113,14 @@ func (siw *ServerInterfaceWrapper) FindAnimalCategory(w http.ResponseWriter, r *
 	err = runtime.BindQueryParameter("form", true, true, "name", r.URL.Query(), &params.Name)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "breed" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "breed", r.URL.Query(), &params.Breed)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "breed", Err: err})
 		return
 	}
 
@@ -857,8 +865,9 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 }
 
 type AnimalCategoryJSONResponse struct {
-	Id   Id                 `json:"id"`
-	Name AnimalCategoryName `json:"name"`
+	Breed AnimalBreed        `json:"breed"`
+	Id    Id                 `json:"id"`
+	Name  AnimalCategoryName `json:"name"`
 }
 
 type GenericJSONResponse struct {
@@ -888,7 +897,9 @@ type FindAnimalCategoryResponseObject interface {
 	VisitFindAnimalCategoryResponse(w http.ResponseWriter) error
 }
 
-type FindAnimalCategory200JSONResponse struct{ AnimalCategoryJSONResponse }
+type FindAnimalCategory200JSONResponse struct {
+	AnimalCategoryResponseJSONResponse
+}
 
 func (response FindAnimalCategory200JSONResponse) VisitFindAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -919,7 +930,9 @@ type AddAnimalCategoryResponseObject interface {
 	VisitAddAnimalCategoryResponse(w http.ResponseWriter) error
 }
 
-type AddAnimalCategory201JSONResponse struct{ AnimalCategoryJSONResponse }
+type AddAnimalCategory201JSONResponse struct {
+	AnimalCategoryResponseJSONResponse
+}
 
 func (response AddAnimalCategory201JSONResponse) VisitAddAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -951,7 +964,9 @@ type ReplaceAnimalCategoryResponseObject interface {
 	VisitReplaceAnimalCategoryResponse(w http.ResponseWriter) error
 }
 
-type ReplaceAnimalCategory200JSONResponse struct{ AnimalCategoryJSONResponse }
+type ReplaceAnimalCategory200JSONResponse struct {
+	AnimalCategoryResponseJSONResponse
+}
 
 func (response ReplaceAnimalCategory200JSONResponse) VisitReplaceAnimalCategoryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1494,7 +1509,7 @@ func (response ReplaceUserdefaultJSONResponse) VisitReplaceUserResponse(w http.R
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
-	// Find closest-matching animal-category using name
+	// Find closest-matching animal-category
 	// (GET /animal-categories)
 	FindAnimalCategory(ctx context.Context, request FindAnimalCategoryRequestObject) (FindAnimalCategoryResponseObject, error)
 	// Add new animal-category to the store.

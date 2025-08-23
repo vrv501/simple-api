@@ -22,8 +22,8 @@ paths:
     get:
       tags:
         - animal-categories
-      summary: Find closest-matching animal-category using name
-      description: Find closest-matching animal-category using name. 
+      summary: Find closest-matching animal-category
+      description: Find closest-matching animal-category. 
       operationId: findAnimalCategory
       parameters:
         - name: name
@@ -32,6 +32,12 @@ paths:
           description: Name of animal category
           schema:
             "$ref": "#/components/schemas/AnimalCategoryName"
+        - name: breed
+          in: query
+          required: true
+          description: Name of animal breed
+          schema:
+            "$ref": "#/components/schemas/AnimalBreed"
       responses:
         "200":
           "$ref": "#/components/responses/AnimalCategory"
@@ -404,8 +410,24 @@ components:
       example: dogs
       minLength: 3
       maxLength: 20
-      pattern: "^[a-z0-9\\- ]+$"
-    PetTags: 
+      pattern: "^[a-z\\- ]+$"
+    AnimalBreed:
+      type: string
+      example: bulldog
+      minLength: 3
+      maxLength: 20
+      pattern: "^[a-z\\- ]+$"
+    AnimalCategory:
+      type: object
+      required:
+        - name
+        - breed
+      properties:
+        name:
+          "$ref": "#/components/schemas/AnimalCategoryName"
+        breed:
+          "$ref": "#/components/schemas/AnimalBreed"
+    PetTags:
       type: array
       minItems: 1
       maxItems: 50
@@ -426,7 +448,6 @@ components:
         - name
         - category
         - price
-        - breed
       type: object
       properties:
         name:
@@ -445,12 +466,6 @@ components:
           "$ref": "#/components/schemas/PetTags"
         status:
           "$ref": "#/components/schemas/PetStatus"
-        breed:
-          type: string
-          example: pitbull
-          minLength: 3
-          maxLength: 20
-          pattern: "^[a-z0-9\\- ]+$"
     PetPhotos:
       type: array
       description: Pet images (up to 10)
@@ -562,12 +577,7 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            required:
-              - name
-            properties: 
-              name:
-                "$ref": "#/components/schemas/AnimalCategoryName"
+            "$ref": "#/components/schemas/AnimalCategory"
     Pet:
       required: true
       content:
@@ -607,19 +617,19 @@ components:
                     pattern: "^[A-Za-z0-9&%$#@*:;<>~]+$"      
   responses:
     AnimalCategory: 
+      x-go-name: AnimalCategoryResponse
       description: "Successful Animal Category response"
       content:
         application/json:
           schema: 
-            type: object
-            required:
-              - id 
-              - name
-            properties:
-              id:
-                "$ref": "#/components/schemas/Id"
-              name: 
-                "$ref": "#/components/schemas/AnimalCategoryName"
+            allOf:
+              - "$ref": "#/components/schemas/AnimalCategory"
+              - type: object
+                required:
+                  - id
+                properties:
+                  id:
+                    "$ref": "#/components/schemas/Id"
     OrderArray:
       description: "Successful Order array response"
       headers: *paginationHeader

@@ -28,6 +28,15 @@ const (
 	Sold      PetStatus = "sold"
 )
 
+// AnimalBreed defines model for AnimalBreed.
+type AnimalBreed = string
+
+// AnimalCategory defines model for AnimalCategory.
+type AnimalCategory struct {
+	Breed AnimalBreed        `json:"breed"`
+	Name  AnimalCategoryName `json:"name"`
+}
+
 // AnimalCategoryName defines model for AnimalCategoryName.
 type AnimalCategoryName = string
 
@@ -53,7 +62,6 @@ type OrderStatus string
 
 // Pet defines model for Pet.
 type Pet struct {
-	Breed    string             `json:"breed"`
 	Category AnimalCategoryName `json:"category"`
 	Name     PetName            `json:"name"`
 
@@ -79,7 +87,6 @@ type PetTags = []string
 
 // PetWithMetadata defines model for PetWithMetadata.
 type PetWithMetadata struct {
-	Breed     string             `json:"breed"`
 	Category  AnimalCategoryName `json:"category"`
 	Id        Id                 `json:"id"`
 	Name      PetName            `json:"name"`
@@ -120,10 +127,11 @@ type OrderId = Id
 // PetId defines model for PetId.
 type PetId = Id
 
-// AnimalCategory defines model for AnimalCategory.
-type AnimalCategory struct {
-	Id   Id                 `json:"id"`
-	Name AnimalCategoryName `json:"name"`
+// AnimalCategoryResponse defines model for AnimalCategory.
+type AnimalCategoryResponse struct {
+	Breed AnimalBreed        `json:"breed"`
+	Id    Id                 `json:"id"`
+	Name  AnimalCategoryName `json:"name"`
 }
 
 // Generic defines model for Generic.
@@ -142,9 +150,7 @@ type OrderArray struct {
 type User = UserSchema
 
 // AnimalCategoryRequest defines model for AnimalCategory.
-type AnimalCategoryRequest struct {
-	Name AnimalCategoryName `json:"name"`
-}
+type AnimalCategoryRequest = AnimalCategory
 
 // UserRequest defines model for User.
 type UserRequest struct {
@@ -160,16 +166,9 @@ type UserRequest struct {
 type FindAnimalCategoryParams struct {
 	// Name Name of animal category
 	Name AnimalCategoryName `form:"name" json:"name"`
-}
 
-// AddAnimalCategoryJSONBody defines parameters for AddAnimalCategory.
-type AddAnimalCategoryJSONBody struct {
-	Name AnimalCategoryName `json:"name"`
-}
-
-// ReplaceAnimalCategoryJSONBody defines parameters for ReplaceAnimalCategory.
-type ReplaceAnimalCategoryJSONBody struct {
-	Name AnimalCategoryName `json:"name"`
+	// Breed Name of animal breed
+	Breed *AnimalBreed `form:"breed,omitempty" json:"breed,omitempty"`
 }
 
 // FindPetsParams defines parameters for FindPets.
@@ -253,10 +252,10 @@ type ReplaceUserJSONBody struct {
 }
 
 // AddAnimalCategoryJSONRequestBody defines body for AddAnimalCategory for application/json ContentType.
-type AddAnimalCategoryJSONRequestBody AddAnimalCategoryJSONBody
+type AddAnimalCategoryJSONRequestBody = AnimalCategory
 
 // ReplaceAnimalCategoryJSONRequestBody defines body for ReplaceAnimalCategory for application/json ContentType.
-type ReplaceAnimalCategoryJSONRequestBody ReplaceAnimalCategoryJSONBody
+type ReplaceAnimalCategoryJSONRequestBody = AnimalCategory
 
 // AddPetMultipartRequestBody defines body for AddPet for multipart/form-data ContentType.
 type AddPetMultipartRequestBody AddPetMultipartBody

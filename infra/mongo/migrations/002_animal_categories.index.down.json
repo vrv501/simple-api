@@ -1,6 +1,10 @@
 [
     {
         "dropIndexes": "animal_categories",
-        "index":  "name_unique_idx"
+        "index":  "name_breed_unique_idx"
+    },
+    {
+        "dropIndexes": "animal_categories",
+        "index":  "name_breed_fuzzy_match"
     }
 ]

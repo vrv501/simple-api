@@ -113,6 +113,7 @@ func (m *mongoClient) Close(ctx context.Context) error {
 type animalCategory struct {
 	ID        bson.ObjectID `bson:"_id,omitempty"`
 	Name      string        `bson:"name"`       // "bsonType": "string"
+	Breed     string        `bson:"breed"`      // "bsonType": "string"
 	CreatedOn time.Time     `bson:"created_on"` // "bsonType": "date"
 	UpdatedOn *time.Time    `bson:"updated_on"` // "bsonType": ["date", "null"]
 }
