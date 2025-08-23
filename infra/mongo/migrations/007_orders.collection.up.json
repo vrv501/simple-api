@@ -8,6 +8,7 @@
                     "user_id",
                     "pet_id",
                     "shipped_date",
+                    "delivered_date",
                     "status",
                     "created_on",
                     "updated_on"
@@ -27,6 +28,13 @@
                             "null"
                         ],
                         "description": "shipped date of the pet"
+                    },
+                    "delivered_date": {
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "delivered date of the pet"
                     },
                     "status": {
                         "enum": [

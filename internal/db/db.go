@@ -21,8 +21,6 @@ type animalCategoryHandler interface {
 	AddAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error)
 
 	UpdateAnimalCategory(ctx context.Context, id, name string) (*genRouter.AnimalCategoryJSONResponse, error)
-
-	DeleteAnimalCategory(ctx context.Context, id string) error
 }
 
 func NewDBHandler(ctx context.Context) Handler {

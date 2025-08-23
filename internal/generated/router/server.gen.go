@@ -12,7 +12,6 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"time"
 
 	"github.com/oapi-codegen/runtime"
 	strictnethttp "github.com/oapi-codegen/runtime/strictmiddleware/nethttp"
@@ -20,18 +19,15 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Find animal-category using name
+	// Find closest-matching animal-category
 	// (GET /animal-categories)
 	FindAnimalCategory(w http.ResponseWriter, r *http.Request, params FindAnimalCategoryParams)
 	// Add new animal-category to the store.
 	// (POST /animal-categories)
 	AddAnimalCategory(w http.ResponseWriter, r *http.Request)
-	// Delete an animal-category.
-	// (DELETE /animal-categories/{animalCategoryId})
-	DeleteAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryId)
 	// Replace existing animal-category data using Id.
 	// (PUT /animal-categories/{animalCategoryId})
-	ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryId)
+	ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId Id)
 	// Find Pets using name, status, tags.
 	// (GET /pets)
 	FindPets(w http.ResponseWriter, r *http.Request, params FindPetsParams)
@@ -151,44 +147,13 @@ func (siw *ServerInterfaceWrapper) AddAnimalCategory(w http.ResponseWriter, r *h
 	handler.ServeHTTP(w, r)
 }
 
-// DeleteAnimalCategory operation middleware
-func (siw *ServerInterfaceWrapper) DeleteAnimalCategory(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "animalCategoryId" -------------
-	var animalCategoryId AnimalCategoryId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "animalCategoryId", r.PathValue("animalCategoryId"), &animalCategoryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "animalCategoryId", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteAnimalCategory(w, r, animalCategoryId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // ReplaceAnimalCategory operation middleware
 func (siw *ServerInterfaceWrapper) ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
 	// ------------- Path parameter "animalCategoryId" -------------
-	var animalCategoryId AnimalCategoryId
+	var animalCategoryId Id
 
 	err = runtime.BindStyledParameterWithOptions("simple", "animalCategoryId", r.PathValue("animalCategoryId"), &animalCategoryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -870,7 +835,6 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 
 	m.HandleFunc("GET "+options.BaseURL+"/animal-categories", wrapper.FindAnimalCategory)
 	m.HandleFunc("POST "+options.BaseURL+"/animal-categories", wrapper.AddAnimalCategory)
-	m.HandleFunc("DELETE "+options.BaseURL+"/animal-categories/{animalCategoryId}", wrapper.DeleteAnimalCategory)
 	m.HandleFunc("PUT "+options.BaseURL+"/animal-categories/{animalCategoryId}", wrapper.ReplaceAnimalCategory)
 	m.HandleFunc("GET "+options.BaseURL+"/pets", wrapper.FindPets)
 	m.HandleFunc("POST "+options.BaseURL+"/pets", wrapper.AddPet)
@@ -893,13 +857,8 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 }
 
 type AnimalCategoryJSONResponse struct {
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt time.Time          `json:"created_at"`
-	Id        Id                 `json:"id"`
-	Name      AnimalCategoryName `json:"name"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
+	Id   Id                 `json:"id"`
+	Name AnimalCategoryName `json:"name"`
 }
 
 type GenericJSONResponse struct {
@@ -912,24 +871,14 @@ type OrderArrayResponseHeaders struct {
 type OrderArrayJSONResponse struct {
 	Body struct {
 		// Count Total number of orders
-		Count  int                 `json:"count"`
-		Orders []OrderWithMetadata `json:"orders"`
+		Count  int     `json:"count"`
+		Orders []Order `json:"orders"`
 	}
 
 	Headers OrderArrayResponseHeaders
 }
 
-type UserJSONResponse struct {
-	// CreatedAt DateTime(UTC) when the pet was created in the store
-	CreatedAt   time.Time `json:"created_at"`
-	Email       string    `json:"email"`
-	FullName    string    `json:"full_name"`
-	PhoneNumber string    `json:"phone_number"`
-
-	// UpdatedAt DateTime(UTC) when the pet was last updated
-	UpdatedAt *time.Time `json:"updated_at"`
-	Username  Username   `json:"username"`
-}
+type UserJSONResponse UserSchema
 
 type FindAnimalCategoryRequestObject struct {
 	Params FindAnimalCategoryParams
@@ -993,38 +942,8 @@ func (response AddAnimalCategorydefaultJSONResponse) VisitAddAnimalCategoryRespo
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type DeleteAnimalCategoryRequestObject struct {
-	AnimalCategoryId AnimalCategoryId `json:"animalCategoryId"`
-}
-
-type DeleteAnimalCategoryResponseObject interface {
-	VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error
-}
-
-type DeleteAnimalCategory204Response struct {
-}
-
-func (response DeleteAnimalCategory204Response) VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error {
-	w.WriteHeader(204)
-	return nil
-}
-
-type DeleteAnimalCategorydefaultJSONResponse struct {
-	Body struct {
-		Message string `json:"message"`
-	}
-	StatusCode int
-}
-
-func (response DeleteAnimalCategorydefaultJSONResponse) VisitDeleteAnimalCategoryResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
 type ReplaceAnimalCategoryRequestObject struct {
-	AnimalCategoryId AnimalCategoryId `json:"animalCategoryId"`
+	AnimalCategoryId Id `json:"animalCategoryId"`
 	Body             *ReplaceAnimalCategoryJSONRequestBody
 }
 
@@ -1426,7 +1345,7 @@ type GetOrderByIDResponseObject interface {
 	VisitGetOrderByIDResponse(w http.ResponseWriter) error
 }
 
-type GetOrderByID200JSONResponse OrderWithMetadata
+type GetOrderByID200JSONResponse Order
 
 func (response GetOrderByID200JSONResponse) VisitGetOrderByIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1575,15 +1494,12 @@ func (response ReplaceUserdefaultJSONResponse) VisitReplaceUserResponse(w http.R
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
-	// Find animal-category using name
+	// Find closest-matching animal-category
 	// (GET /animal-categories)
 	FindAnimalCategory(ctx context.Context, request FindAnimalCategoryRequestObject) (FindAnimalCategoryResponseObject, error)
 	// Add new animal-category to the store.
 	// (POST /animal-categories)
 	AddAnimalCategory(ctx context.Context, request AddAnimalCategoryRequestObject) (AddAnimalCategoryResponseObject, error)
-	// Delete an animal-category.
-	// (DELETE /animal-categories/{animalCategoryId})
-	DeleteAnimalCategory(ctx context.Context, request DeleteAnimalCategoryRequestObject) (DeleteAnimalCategoryResponseObject, error)
 	// Replace existing animal-category data using Id.
 	// (PUT /animal-categories/{animalCategoryId})
 	ReplaceAnimalCategory(ctx context.Context, request ReplaceAnimalCategoryRequestObject) (ReplaceAnimalCategoryResponseObject, error)
@@ -1723,34 +1639,8 @@ func (sh *strictHandler) AddAnimalCategory(w http.ResponseWriter, r *http.Reques
 	}
 }
 
-// DeleteAnimalCategory operation middleware
-func (sh *strictHandler) DeleteAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryId) {
-	var request DeleteAnimalCategoryRequestObject
-
-	request.AnimalCategoryId = animalCategoryId
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteAnimalCategory(ctx, request.(DeleteAnimalCategoryRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteAnimalCategory")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(DeleteAnimalCategoryResponseObject); ok {
-		if err := validResponse.VisitDeleteAnimalCategoryResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
 // ReplaceAnimalCategory operation middleware
-func (sh *strictHandler) ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId AnimalCategoryId) {
+func (sh *strictHandler) ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId Id) {
 	var request ReplaceAnimalCategoryRequestObject
 
 	request.AnimalCategoryId = animalCategoryId

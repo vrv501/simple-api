@@ -2,5 +2,9 @@
     {
         "dropIndexes": "animal_categories",
         "index":  "name_unique_idx"
+    },
+    {
+        "dropIndexes": "animal_categories",
+        "index":  "name_fuzzy_match"
     }
 ]

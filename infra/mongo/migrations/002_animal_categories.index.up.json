@@ -7,9 +7,26 @@
                     "name": 1
                 },
                 "name": "name_unique_idx",
-                "unique": true,
-                "partialFilterExpression": {
-                    "deleted_on": null
+                "unique": true
+            }
+        ]
+    },
+    {
+        "createSearchIndexes": "animal_categories",
+        "indexes": [
+            {
+                "name": "name_fuzzy_match",
+                "definition": {
+                    "mappings": {
+                        "dynamic": false,
+                        "fields": {
+                            "name": {
+                                "type": "string",
+                                "analyzer": "lucene.simple",
+                                "searchAnalyzer": "lucene.simple"
+                            }
+                        }
+                    }
                 }
             }
         ]

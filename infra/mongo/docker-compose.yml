@@ -1,6 +1,6 @@
 services:
   mongodb:
-    image: mongodb/mongodb-community-server:7.0.22-ubi8
+    image: mongodb/mongodb-atlas-local:8.0.6
     environment:
       - MONGODB_INITDB_ROOT_USERNAME=mongo
       - MONGODB_INITDB_ROOT_PASSWORD=mongo
@@ -18,6 +18,9 @@ services:
     command: '-path=/migrations/ -database mongodb://mongo:mongo@localhost:27017/shop?authSource=admin up'
     network_mode: host
     restart: on-failure:3
+    depends_on:
+      mongodb:
+        condition: service_healthy
     volumes:
       - type: bind
         source: ./migrations
