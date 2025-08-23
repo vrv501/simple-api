@@ -5,8 +5,8 @@ services:
       - MONGODB_INITDB_ROOT_USERNAME=mongo
       - MONGODB_INITDB_ROOT_PASSWORD=mongo
     volumes:
-      - type: bind
-        source: /tmp/mongo
+      - type: volume
+        source: mongo_data
         target: /data
       - type: bind
         source: ./mongo-admin.sh
@@ -35,3 +35,6 @@ services:
       - type: bind
         source: ../../api
         target: /api
+volumes:
+  mongo_data:
+    driver: local
