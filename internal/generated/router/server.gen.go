@@ -25,7 +25,7 @@ type ServerInterface interface {
 	// Add new animal-category to the store.
 	// (POST /animal-categories)
 	AddAnimalCategory(w http.ResponseWriter, r *http.Request)
-	// Rename existing animal-category data using Id.
+	// Replace existing animal-category data using Id.
 	// (PUT /animal-categories/{animalCategoryId})
 	ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId Id)
 	// Find Pets using name, status, tags.
@@ -1522,7 +1522,7 @@ type StrictServerInterface interface {
 	// Add new animal-category to the store.
 	// (POST /animal-categories)
 	AddAnimalCategory(ctx context.Context, request AddAnimalCategoryRequestObject) (AddAnimalCategoryResponseObject, error)
-	// Rename existing animal-category data using Id.
+	// Replace existing animal-category data using Id.
 	// (PUT /animal-categories/{animalCategoryId})
 	ReplaceAnimalCategory(ctx context.Context, request ReplaceAnimalCategoryRequestObject) (ReplaceAnimalCategoryResponseObject, error)
 	// Find Pets using name, status, tags.

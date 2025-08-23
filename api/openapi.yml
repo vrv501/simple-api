@@ -60,8 +60,8 @@ paths:
     put:
       tags:
         - animal-categories
-      summary: Rename existing animal-category data using Id.
-      description: Rename existing animal-category data using Id.
+      summary: Replace existing animal-category data using Id.
+      description: Replace existing animal-category data using Id.
       operationId: replaceAnimalCategory
       parameters:
         - name: animalCategoryId
