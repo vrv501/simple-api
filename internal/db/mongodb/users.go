@@ -80,26 +80,27 @@ func (m *mongoClient) GetUser(ctx context.Context,
 	}, nil
 }
 
-func (m *mongoClient) DeleteUser(ctx context.Context, username string) error {
-	res := m.mongoDbHandler.Collection(usersCollection).FindOne(
-		ctx,
-		bson.M{usernameField: username, deletedOnField: bson.Null{}},
-		options.FindOne().SetProjection(bson.M{iDField: 1}),
-	)
-	err := res.Err()
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return dbErr.ErrNotFound
-		}
-		return err
-	}
-	var user user
-	err = res.Decode(&user)
-	if err != nil {
-		return err
-	}
+func (m *mongoClient) DeleteUser(aInctx context.Context, username string) error {
 
-	_, err = m.performAdvisoryLockDBOperation(ctx, user.ID, func(aCtx context.Context) (any, error) {
+	_, err := m.performAdvisoryLockDBOperation(aInctx, username, func(aCtx context.Context) (any, error) {
+		res := m.mongoDbHandler.Collection(usersCollection).FindOne(
+			aCtx,
+			bson.M{usernameField: username, deletedOnField: bson.Null{}},
+			options.FindOne().SetProjection(bson.M{iDField: 1}),
+		)
+		err := res.Err()
+		if err != nil {
+			if errors.Is(err, mongo.ErrNoDocuments) {
+				return nil, dbErr.ErrNotFound
+			}
+			return nil, err
+		}
+		var user user
+		err = res.Decode(&user)
+		if err != nil {
+			return nil, err
+		}
+
 		err = m.mongoDbHandler.Collection(petsCollection).FindOne(
 			aCtx,
 			bson.M{userIDField: user.ID, statusField: genRouter.Available},
