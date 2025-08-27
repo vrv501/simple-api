@@ -1,0 +1,19 @@
+[
+    {
+        "create": "leases",
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "required": [
+                    "locked_until"
+                ],
+                "properties": {
+                    "locked_until": {
+                        "bsonType": ["date", "null"],
+                        "description": "lease lock expiry date time(UTC) of document"
+                    }
+                }
+            }
+        }
+    }
+]

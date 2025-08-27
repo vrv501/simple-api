@@ -30,12 +30,12 @@ func (m *mongoClient) AddUser(ctx context.Context,
 			se := mongo.ServerError(nil)
 			_ = errors.As(err, &se)
 			switch {
-			case se.HasErrorMessage("email"):
-				return nil, &dbErr.ConflictError{Key: "email", Err: err}
-			case se.HasErrorMessage("phone_number"):
-				return nil, &dbErr.ConflictError{Key: "phone_number", Err: err}
+			case se.HasErrorMessage(emailField):
+				return nil, &dbErr.ConflictError{Key: emailField, Err: err}
+			case se.HasErrorMessage(phoneNumberField):
+				return nil, &dbErr.ConflictError{Key: phoneNumberField, Err: err}
 			}
-			return nil, &dbErr.ConflictError{Key: "username", Err: err}
+			return nil, &dbErr.ConflictError{Key: usernameField, Err: err}
 		}
 		return nil, err
 	}
@@ -81,7 +81,6 @@ func (m *mongoClient) GetUser(ctx context.Context,
 }
 
 func (m *mongoClient) DeleteUser(ctx context.Context, username string) error {
-
 	res := m.mongoDbHandler.Collection(usersCollection).FindOne(
 		ctx,
 		bson.M{usernameField: username, deletedOnField: bson.Null{}},
@@ -94,47 +93,49 @@ func (m *mongoClient) DeleteUser(ctx context.Context, username string) error {
 		}
 		return err
 	}
-
 	var user user
 	err = res.Decode(&user)
 	if err != nil {
 		return err
 	}
 
-	err = m.mongoDbHandler.Collection(petsCollection).FindOne(
-		ctx,
-		bson.M{userIDField: user.ID, statusField: genRouter.Available},
-		options.FindOne().SetProjection(bson.M{iDField: 1}),
-	).Err()
-	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
-		return err
-	}
-	if err == nil {
-		return &dbErr.ForeignKeyError{Key: "pets", Err: err}
-	}
+	_, err = m.performAdvisoryLockDBOperation(ctx, user.ID, func(aCtx context.Context) (any, error) {
+		err = m.mongoDbHandler.Collection(petsCollection).FindOne(
+			aCtx,
+			bson.M{userIDField: user.ID, statusField: genRouter.Available},
+			options.FindOne().SetProjection(bson.M{iDField: 1}),
+		).Err()
+		if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, err
+		}
+		if err == nil {
+			return nil, &dbErr.ForeignKeyError{Key: petsCollection, Err: err}
+		}
 
-	err = m.mongoDbHandler.Collection(ordersCollection).FindOne(
-		ctx,
-		bson.M{
-			userIDField: user.ID,
-			statusField: bson.M{
-				notInOperator: []string{
-					string(genRouter.Delivered),
-					string(genRouter.Cancelled),
+		err = m.mongoDbHandler.Collection(ordersCollection).FindOne(
+			aCtx,
+			bson.M{
+				userIDField: user.ID,
+				statusField: bson.M{
+					notInOperator: []string{
+						string(genRouter.Delivered),
+						string(genRouter.Cancelled),
+					},
 				},
 			},
-		},
-		options.FindOne().SetProjection(bson.M{iDField: 1}),
-	).Err()
-	if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
-		return err
-	}
-	if err == nil {
-		return &dbErr.ForeignKeyError{Key: "orders", Err: err}
-	}
+			options.FindOne().SetProjection(bson.M{iDField: 1}),
+		).Err()
+		if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, err
+		}
+		if err == nil {
+			return nil, &dbErr.ForeignKeyError{Key: ordersCollection, Err: err}
+		}
 
-	_, err = m.mongoDbHandler.Collection(usersCollection).
-		UpdateOne(ctx, bson.M{iDField: user.ID},
-			bson.M{setOperator: bson.M{deletedOnField: time.Now().UTC()}})
+		_, err = m.mongoDbHandler.Collection(usersCollection).
+			UpdateOne(aCtx, bson.M{iDField: user.ID, deletedOnField: bson.Null{}},
+				bson.M{setOperator: bson.M{deletedOnField: time.Now().UTC()}})
+		return nil, err
+	})
 	return err
 }

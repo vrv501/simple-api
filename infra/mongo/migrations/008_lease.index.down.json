@@ -1,0 +1,6 @@
+[
+    {
+        "dropIndexes": "leases",
+        "index": "locked_until_idx"
+    }
+]

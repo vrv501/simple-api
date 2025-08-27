@@ -383,7 +383,7 @@ paths:
         - "$ref": "#/components/parameters/Username"
       responses:
         "204":
-          description: Order deleted
+          description: User deleted
         default:
           "$ref": "#/components/responses/Generic"
 components:
@@ -525,7 +525,7 @@ components:
           "$ref": "#/components/schemas/Username"
         full_name:
           type: string
-          example: Tony Stark
+          example: tony stark
           pattern: "^[a-z\\- ]+$"
           minLength: 1
           maxLength: 60

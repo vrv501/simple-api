@@ -43,10 +43,7 @@
                         "description": "price of the pet in decimal128 format"
                     },
                     "status": {
-                        "enum": [
-                            "available",
-                            "sold"
-                        ],
+                        "bsonType": "string",
                         "description": "purchase status of pet"
                     },
                     "tags": {

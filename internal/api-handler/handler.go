@@ -20,7 +20,7 @@ func NewAPIHandler(ctx context.Context) *APIHandler {
 // Closes all clients associated with api handler
 func (a *APIHandler) Close() {
 	timedCtx, cancel := context.WithTimeout(context.Background(),
-		constants.DefaultShutdownTimeout)
+		constants.DefaultTimeout)
 	defer cancel()
 	_ = a.dbClient.Close(timedCtx)
 }

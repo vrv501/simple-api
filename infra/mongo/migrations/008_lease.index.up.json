@@ -1,0 +1,14 @@
+[
+    {
+        "createIndexes": "leases",
+        "indexes": [
+            {
+                "key": {
+                    "locked_until": 1
+                },
+                "name": "locked_until_idx",
+                "expireAfterSeconds": 0
+            }
+        ]
+    }
+]
