@@ -3,7 +3,6 @@ package apihandler
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/rs/zerolog/log"
@@ -85,7 +84,7 @@ func (a *APIHandler) DeleteUser(ctx context.Context,
 		case errors.As(err, &fKeyErr):
 			return genRouter.DeleteUserdefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: fmt.Sprintf("User cannot be deleted as there are pending %s", fKeyErr.Key),
+					Message: "User cannot be deleted as there are pending " + fKeyErr.Key,
 				},
 				StatusCode: http.StatusUnprocessableEntity,
 			}, nil

@@ -15,7 +15,6 @@ import (
 
 func (m *mongoClient) AddUser(ctx context.Context,
 	userReq *genRouter.CreateUserJSONRequestBody) (*genRouter.UserJSONResponse, error) {
-
 	_, err := m.mongoDbHandler.Collection(usersCollection).InsertOne(ctx, user{
 		Username:    userReq.Username,
 		Password:    userReq.Password,
@@ -81,7 +80,6 @@ func (m *mongoClient) GetUser(ctx context.Context,
 }
 
 func (m *mongoClient) DeleteUser(aInctx context.Context, username string) error {
-
 	_, err := m.performAdvisoryLockDBOperation(aInctx, username, func(aCtx context.Context) (any, error) {
 		res := m.mongoDbHandler.Collection(usersCollection).FindOne(
 			aCtx,
@@ -95,15 +93,15 @@ func (m *mongoClient) DeleteUser(aInctx context.Context, username string) error 
 			}
 			return nil, err
 		}
-		var user user
-		err = res.Decode(&user)
+		var userInst user
+		err = res.Decode(&userInst)
 		if err != nil {
 			return nil, err
 		}
 
 		err = m.mongoDbHandler.Collection(petsCollection).FindOne(
 			aCtx,
-			bson.M{userIDField: user.ID, statusField: genRouter.Available},
+			bson.M{userIDField: userInst.ID, statusField: genRouter.Available},
 			options.FindOne().SetProjection(bson.M{iDField: 1}),
 		).Err()
 		if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
@@ -116,7 +114,7 @@ func (m *mongoClient) DeleteUser(aInctx context.Context, username string) error 
 		err = m.mongoDbHandler.Collection(ordersCollection).FindOne(
 			aCtx,
 			bson.M{
-				userIDField: user.ID,
+				userIDField: userInst.ID,
 				statusField: bson.M{
 					notInOperator: []string{
 						string(genRouter.Delivered),
@@ -134,7 +132,7 @@ func (m *mongoClient) DeleteUser(aInctx context.Context, username string) error 
 		}
 
 		_, err = m.mongoDbHandler.Collection(usersCollection).
-			UpdateOne(aCtx, bson.M{iDField: user.ID, deletedOnField: bson.Null{}},
+			UpdateOne(aCtx, bson.M{iDField: userInst.ID, deletedOnField: bson.Null{}},
 				bson.M{setOperator: bson.M{deletedOnField: time.Now().UTC()}})
 		return nil, err
 	})
