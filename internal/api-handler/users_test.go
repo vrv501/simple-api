@@ -8,11 +8,12 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"go.uber.org/mock/gomock"
+
 	contextKeys "github.com/vrv501/simple-api/internal/context-keys"
 	dbErr "github.com/vrv501/simple-api/internal/db/errors"
 	"github.com/vrv501/simple-api/internal/generated/mockdb"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
-	"go.uber.org/mock/gomock"
 )
 
 func Test_hashPassword(t *testing.T) {
