@@ -123,7 +123,7 @@ func main() {
 
 	<-ctx.Done()
 	timedCtx, cancel := context.WithTimeout(context.Background(),
-		constants.DefaultShutdownTimeout)
+		constants.DefaultTimeout)
 	defer cancel()
 	if err = server.Shutdown(timedCtx); err != nil {
 		logger.Fatal().Err(err).Msg("Failed to shutdown server")

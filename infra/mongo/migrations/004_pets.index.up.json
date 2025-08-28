@@ -12,6 +12,16 @@
                 "partialFilterExpression": {
                     "deleted_on": null
                 }
+            },
+            {
+                "key": {
+                    "user_id": 1,
+                    "status": 1
+                },
+                "name": "user_id_status_idx",
+                "partialFilterExpression": {
+                    "deleted_on": null
+                }
             }
         ]
     }

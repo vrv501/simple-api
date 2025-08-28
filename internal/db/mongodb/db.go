@@ -25,22 +25,20 @@ const (
 	defaultMongoPassword string = "mongo"
 	defaultMongoURI      string = "localhost:27017"
 
-	dbName                   string = "shop"
-	animalCategoryCollection string = "animal_categories"
-	petsCollection           string = "pets"
-	ordersCollection         string = "orders"
-	usersCollection          string = "users"
-	fsFilesCollection        string = "fs.files"
-	fsChunksCollection       string = "fs.chunks"
+	dbName string = "shop"
 
-	iDField         string = "_id"
-	nameField       string = "name"
-	categoryIDField string = "category_id"
-	updatedOnField  string = "updated_on"
-	deletedOnField  string = "deleted_on"
+	leasesCollection string = "leases"
+	lockedUntilField string = "locked_until"
+	retriesForLease         = 50
+	leaseWaitTime           = 500 * time.Millisecond
+
+	iDField        string = "_id"
+	nameField      string = "name"
+	updatedOnField string = "updated_on"
+	deletedOnField string = "deleted_on"
 
 	setOperator   string = "$set"
-	notEqOperator string = "$ne"
+	notInOperator string = "$nin"
 	limitOperator string = "$limit"
 )
 
@@ -118,18 +116,29 @@ type animalCategory struct {
 	UpdatedOn *time.Time    `bson:"updated_on"` // "bsonType": ["date", "null"]
 }
 
+const (
+	animalCategoryCollection string = "animal_categories"
+)
+
 type pet struct {
 	ID         bson.ObjectID   `bson:"_id,omitempty"`
 	Name       string          `bson:"name"`        // "bsonType": "string"
 	CategoryID bson.ObjectID   `bson:"category_id"` // "bsonType": "objectId"
 	PhotoURIs  []string        `bson:"photo_uris"`  // "bsonType": ["array", "null"]
+	UserID     bson.ObjectID   `bson:"user_id"`     // "bsonType": "objectId"
 	Price      bson.Decimal128 `bson:"price"`       // "bsonType": "decimal"
 	Status     string          `bson:"status"`      // "bsonType": "string"
 	Tags       []string        `bson:"tags"`        // "bsonType": ["array", "null"]
 	CreatedOn  time.Time       `bson:"created_on"`  // "bsonType": "date"
 	UpdatedOn  *time.Time      `bson:"updated_on"`  // "bsonType": ["date", "null"]
-	DeletedOn  *time.Time      `bson:"deleted_on"`  // "bsonType": ["date", "null"]
 }
+
+const (
+	petsCollection string = "pets"
+
+	statusField string = "status"
+	userIDField string = "user_id"
+)
 
 type user struct {
 	ID          bson.ObjectID `bson:"_id,omitempty"`
@@ -144,6 +153,15 @@ type user struct {
 	DeletedOn   *time.Time    `bson:"deleted_on"`   // "bsonType": ["date", "null"]
 }
 
+const (
+	usersCollection string = "users"
+
+	usernameField    string = "username"
+	passwordField    string = "password"
+	emailField       string = "email"
+	phoneNumberField string = "phone_number"
+)
+
 type order struct {
 	ID            bson.ObjectID `bson:"_id,omitempty"`
 	UserID        bson.ObjectID `bson:"user_id"`        // "bsonType": "objectId"
@@ -154,6 +172,10 @@ type order struct {
 	CreatedOn     time.Time     `bson:"created_on"`     // "bsonType": "date"
 	UpdatedOn     *time.Time    `bson:"updated_on"`     // "bsonType": ["date", "null"]
 }
+
+const (
+	ordersCollection string = "orders"
+)
 
 type fsFile struct {
 	ID         bson.ObjectID `bson:"_id,omitempty"`

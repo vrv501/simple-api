@@ -2,5 +2,9 @@
     {
         "dropIndexes": "pets",
         "index":  "name_category_id_unique_idx"
+    },
+    {
+        "dropIndexes": "pets",
+        "index":  "user_id_status_idx"
     }
 ]

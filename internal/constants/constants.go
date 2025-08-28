@@ -13,7 +13,7 @@ const (
 
 // Default values for various configurations
 const (
-	DefaultShutdownTimeout = 3 * time.Minute
+	DefaultTimeout = 3 * time.Minute
 
 	MongoDB  = "mongodb"
 	Postgres = "postgres"

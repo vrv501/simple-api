@@ -93,11 +93,11 @@ type PetWithMetadata struct {
 
 // UserSchema defines model for User.
 type UserSchema struct {
-	Address     string   `json:"address"`
-	Email       string   `json:"email"`
-	FullName    string   `json:"full_name"`
-	PhoneNumber string   `json:"phone_number"`
-	Username    Username `json:"username"`
+	Address     string              `json:"address"`
+	Email       openapi_types.Email `json:"email"`
+	FullName    string              `json:"full_name"`
+	PhoneNumber string              `json:"phone_number"`
+	Username    Username            `json:"username"`
 }
 
 // Username defines model for Username.
@@ -146,12 +146,12 @@ type AnimalCategoryRequest struct {
 
 // UserRequest defines model for User.
 type UserRequest struct {
-	Address     string   `json:"address"`
-	Email       string   `json:"email"`
-	FullName    string   `json:"full_name"`
-	Password    string   `json:"password"`
-	PhoneNumber string   `json:"phone_number"`
-	Username    Username `json:"username"`
+	Address     string              `json:"address"`
+	Email       openapi_types.Email `json:"email"`
+	FullName    string              `json:"full_name"`
+	Password    string              `json:"password"`
+	PhoneNumber string              `json:"phone_number"`
+	Username    Username            `json:"username"`
 }
 
 // FindAnimalCategoryParams defines parameters for FindAnimalCategory.
@@ -232,22 +232,22 @@ type PlaceOrdersJSONBody = []struct {
 
 // CreateUserJSONBody defines parameters for CreateUser.
 type CreateUserJSONBody struct {
-	Address     string   `json:"address"`
-	Email       string   `json:"email"`
-	FullName    string   `json:"full_name"`
-	Password    string   `json:"password"`
-	PhoneNumber string   `json:"phone_number"`
-	Username    Username `json:"username"`
+	Address     string              `json:"address"`
+	Email       openapi_types.Email `json:"email"`
+	FullName    string              `json:"full_name"`
+	Password    string              `json:"password"`
+	PhoneNumber string              `json:"phone_number"`
+	Username    Username            `json:"username"`
 }
 
 // ReplaceUserJSONBody defines parameters for ReplaceUser.
 type ReplaceUserJSONBody struct {
-	Address     string   `json:"address"`
-	Email       string   `json:"email"`
-	FullName    string   `json:"full_name"`
-	Password    string   `json:"password"`
-	PhoneNumber string   `json:"phone_number"`
-	Username    Username `json:"username"`
+	Address     string              `json:"address"`
+	Email       openapi_types.Email `json:"email"`
+	FullName    string              `json:"full_name"`
+	Password    string              `json:"password"`
+	PhoneNumber string              `json:"phone_number"`
+	Username    Username            `json:"username"`
 }
 
 // AddAnimalCategoryJSONRequestBody defines body for AddAnimalCategory for application/json ContentType.

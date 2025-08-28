@@ -1,0 +1,6 @@
+[
+    {
+        "dropIndexes": "orders",
+        "index":  "user_id_status_idx"
+    }
+]

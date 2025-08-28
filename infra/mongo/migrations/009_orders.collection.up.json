@@ -37,11 +37,7 @@
                         "description": "delivered date of the pet"
                     },
                     "status": {
-                        "enum": [
-                            "placed",
-                            "in-progress",
-                            "delivered"
-                        ],
+                        "bsonType": "string",
                         "description": "order status"
                     },
                     "created_on": {
