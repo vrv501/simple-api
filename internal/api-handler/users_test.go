@@ -8,12 +8,11 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"go.uber.org/mock/gomock"
-
 	contextKeys "github.com/vrv501/simple-api/internal/context-keys"
 	dbErr "github.com/vrv501/simple-api/internal/db/errors"
 	"github.com/vrv501/simple-api/internal/generated/mockdb"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
+	"go.uber.org/mock/gomock"
 )
 
 func Test_hashPassword(t *testing.T) {
@@ -53,6 +52,11 @@ func TestAPIHandler_CreateUser(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockDBClient := mockdb.NewMockHandler(ctrl)
+	validReqBody := genRouter.CreateUserRequestObject{
+		Body: &genRouter.CreateUserJSONRequestBody{
+			Password: "test",
+		},
+	}
 
 	type args struct {
 		request genRouter.CreateUserRequestObject
@@ -82,11 +86,7 @@ func TestAPIHandler_CreateUser(t *testing.T) {
 		{
 			name: "conflict error",
 			args: args{
-				request: genRouter.CreateUserRequestObject{
-					Body: &genRouter.CreateUserJSONRequestBody{
-						Password: "test",
-					},
-				},
+				request: validReqBody,
 			},
 			prepFunc: func() {
 				mockDBClient.EXPECT().AddUser(gomock.Any(),
@@ -102,11 +102,7 @@ func TestAPIHandler_CreateUser(t *testing.T) {
 		{
 			name: "internal error",
 			args: args{
-				request: genRouter.CreateUserRequestObject{
-					Body: &genRouter.CreateUserJSONRequestBody{
-						Password: "test",
-					},
-				},
+				request: validReqBody,
 			},
 			prepFunc: func() {
 				mockDBClient.EXPECT().AddUser(gomock.Any(),
@@ -122,11 +118,7 @@ func TestAPIHandler_CreateUser(t *testing.T) {
 		{
 			name: "success",
 			args: args{
-				request: genRouter.CreateUserRequestObject{
-					Body: &genRouter.CreateUserJSONRequestBody{
-						Password: "test",
-					},
-				},
+				request: validReqBody,
 			},
 			prepFunc: func() {
 				mockDBClient.EXPECT().AddUser(gomock.Any(),
@@ -379,5 +371,172 @@ func TestAPIHandler_GetUser(t *testing.T) {
 					t.Errorf("APIHandler.GetUser() = %v, want %v", got, tt.want)
 				}
 			})
+	}
+}
+
+func TestAPIHandler_PatchUser(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockDBClient := mockdb.NewMockHandler(ctrl)
+	pswdTest := "test"
+	ctxU := contextKeys.ContextWithUserID(context.Background(), "1")
+	validReq := genRouter.PatchUserRequestObject{
+		Body: &genRouter.PatchUserApplicationMergePatchPlusJSONRequestBody{
+			Password: &pswdTest,
+		},
+	}
+	tooLongPswd := string(make([]byte, 100))
+
+	type args struct {
+		ctx     context.Context
+		request genRouter.PatchUserRequestObject
+	}
+	tests := []struct {
+		name     string
+		args     args
+		prepFunc func()
+		want     genRouter.PatchUserResponseObject
+	}{
+		{
+			name: "userID not in context",
+			args: args{
+				ctx: context.Background(),
+			},
+			want: genRouter.PatchUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: http.StatusText(http.StatusInternalServerError),
+				},
+				StatusCode: http.StatusInternalServerError,
+			},
+		},
+		{
+			name: "nil request body",
+			args: args{
+				ctx: ctxU,
+				request: genRouter.PatchUserRequestObject{
+					Body: &genRouter.PatchUserApplicationMergePatchPlusJSONRequestBody{},
+				},
+			},
+			want: genRouter.PatchUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: "Nothing to Update",
+				},
+				StatusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "pswd too long",
+			args: args{
+				ctx: ctxU,
+				request: genRouter.PatchUserRequestObject{
+					Body: &genRouter.PatchUserApplicationMergePatchPlusJSONRequestBody{
+						Password: &tooLongPswd,
+					},
+				},
+			},
+			want: genRouter.PatchUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: http.StatusText(http.StatusInternalServerError),
+				},
+				StatusCode: http.StatusInternalServerError,
+			},
+		},
+		{
+			name: "invalidID",
+			args: args{
+				ctx:     ctxU,
+				request: validReq,
+			},
+			prepFunc: func() {
+				mockDBClient.EXPECT().PatchUser(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil, dbErr.ErrInvalidID)
+			},
+			want: genRouter.PatchUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: errMsgInvalidUserID,
+				},
+				StatusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "user ID not found",
+			args: args{
+				ctx:     ctxU,
+				request: validReq,
+			},
+			prepFunc: func() {
+				mockDBClient.EXPECT().PatchUser(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil, dbErr.ErrNotFound)
+			},
+			want: genRouter.PatchUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: errMsgUserNotFound,
+				},
+				StatusCode: http.StatusNotFound,
+			},
+		},
+		{
+			name: "conflict error",
+			args: args{
+				ctx:     ctxU,
+				request: validReq,
+			},
+			prepFunc: func() {
+				mockDBClient.EXPECT().PatchUser(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil, &dbErr.ConflictError{})
+			},
+			want: genRouter.PatchUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: " " + errMsgAlreadyInUse,
+				},
+				StatusCode: http.StatusConflict,
+			},
+		},
+		{
+			name: "internal error",
+			args: args{
+				ctx:     ctxU,
+				request: validReq,
+			},
+			prepFunc: func() {
+				mockDBClient.EXPECT().PatchUser(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(nil, errors.New(""))
+			},
+			want: genRouter.PatchUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: http.StatusText(http.StatusInternalServerError),
+				},
+				StatusCode: http.StatusInternalServerError,
+			},
+		},
+		{
+			name: "success",
+			args: args{
+				ctx:     ctxU,
+				request: validReq,
+			},
+			prepFunc: func() {
+				mockDBClient.EXPECT().PatchUser(gomock.Any(),
+					gomock.Any(), gomock.Any()).Return(&genRouter.UserJSONResponse{}, nil)
+			},
+			want: genRouter.PatchUser200JSONResponse{
+				UserJSONResponse: genRouter.UserJSONResponse{},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &APIHandler{
+				dbClient: mockDBClient,
+			}
+			if tt.prepFunc != nil {
+				tt.prepFunc()
+			}
+			got, _ := a.PatchUser(tt.args.ctx, tt.args.request)
+			if !cmp.Equal(got, tt.want) {
+				t.Errorf("APIHandler.PatchUser() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

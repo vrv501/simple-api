@@ -144,7 +144,6 @@ type user struct {
 	ID          bson.ObjectID `bson:"_id,omitempty"`
 	Username    string        `bson:"username"`     // "bsonType": "string"
 	FullName    string        `bson:"full_name"`    // "bsonType": "string"
-	Email       string        `bson:"email"`        // "bsonType": "string"
 	Password    string        `bson:"password"`     // "bsonType": "string"
 	Address     string        `bson:"address"`      // "bsonType": "string"
 	PhoneNumber string        `bson:"phone_number"` // "bsonType": "string"
@@ -158,8 +157,9 @@ const (
 
 	usernameField    string = "username"
 	passwordField    string = "password"
-	emailField       string = "email"
+	fullNameField    string = "full_name"
 	phoneNumberField string = "phone_number"
+	addressField     string = "address"
 )
 
 type order struct {

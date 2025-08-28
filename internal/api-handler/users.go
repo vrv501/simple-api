@@ -176,7 +176,80 @@ func (a *APIHandler) GetUser(ctx context.Context,
 
 // Replace user resource.
 // (PUT /users/{username})
-func (a *APIHandler) ReplaceUser(ctx context.Context,
-	request genRouter.ReplaceUserRequestObject) (genRouter.ReplaceUserResponseObject, error) {
-	panic("not implemented") // TODO: Implement
+func (a *APIHandler) PatchUser(ctx context.Context,
+	request genRouter.PatchUserRequestObject) (genRouter.PatchUserResponseObject, error) {
+	logger := log.Ctx(ctx)
+	userID, ok := contextKeys.UserIDFromContext(ctx)
+	if !ok {
+		logger.Error().Msg("userID not found in context")
+		return genRouter.PatchUserdefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+
+	userReq := request.Body
+	if userReq.Address == nil && userReq.Password == nil &&
+		userReq.FullName == nil && userReq.PhoneNumber == nil {
+		return genRouter.PatchUserdefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: "Nothing to Update",
+			},
+			StatusCode: http.StatusBadRequest,
+		}, nil
+	}
+	if userReq.Password != nil {
+		hashedPswd, err := hashPassword(*userReq.Password)
+		if err != nil {
+			logger.Error().Err(err).Msg("Failed to hash password")
+			return genRouter.PatchUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: http.StatusText(http.StatusInternalServerError),
+				},
+				StatusCode: http.StatusInternalServerError,
+			}, nil
+		}
+		userReq.Password = &hashedPswd
+	}
+
+	resp, err := a.dbClient.PatchUser(ctx, userID, userReq)
+	if err != nil {
+		var conflictErr *dbErr.ConflictError
+		switch {
+		case errors.Is(err, dbErr.ErrInvalidID):
+			return genRouter.PatchUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: errMsgInvalidUserID,
+				},
+				StatusCode: http.StatusBadRequest,
+			}, nil
+		case errors.Is(err, dbErr.ErrNotFound):
+			return genRouter.PatchUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: errMsgUserNotFound,
+				},
+				StatusCode: http.StatusNotFound,
+			}, nil
+		case errors.As(err, &conflictErr):
+			return genRouter.PatchUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: conflictErr.Key + " " + errMsgAlreadyInUse,
+				},
+				StatusCode: http.StatusConflict,
+			}, nil
+		}
+		logger.Error().Err(err).Msg("Failed to patch user")
+		return genRouter.PatchUserdefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+	logger.Info().Msgf("UserID %s patched", userID)
+	return genRouter.PatchUser200JSONResponse{
+		UserJSONResponse: *resp,
+	}, nil
 }
