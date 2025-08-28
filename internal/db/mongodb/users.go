@@ -71,17 +71,17 @@ func (m *mongoClient) GetUser(ctx context.Context,
 		}
 		return nil, err
 	}
-	var user user
-	err = res.Decode(&user)
+	var userInstance user
+	err = res.Decode(&userInstance)
 	if err != nil {
 		return nil, err
 	}
 	return &genRouter.UserJSONResponse{
-		Username:    user.Username,
-		Email:       openapi_types.Email(user.Email),
-		FullName:    user.FullName,
-		PhoneNumber: user.PhoneNumber,
-		Address:     user.Address,
+		Username:    userInstance.Username,
+		Email:       openapi_types.Email(userInstance.Email),
+		FullName:    userInstance.FullName,
+		PhoneNumber: userInstance.PhoneNumber,
+		Address:     userInstance.Address,
 	}, nil
 }
 
