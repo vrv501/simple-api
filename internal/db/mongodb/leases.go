@@ -12,7 +12,7 @@ import (
 	"github.com/vrv501/simple-api/internal/constants"
 )
 
-func (m *mongoClient) performAdvisoryLockDBOperation(ctx context.Context, uniqueID string,
+func (m *mongoClient) performAdvisoryLockDBOperation(ctx context.Context, uniqueID bson.ObjectID,
 	fn func(aCtx context.Context) (any, error)) (any, error) {
 	ctx, cancel := context.WithTimeout(ctx, constants.DefaultTimeout)
 	defer cancel()
@@ -42,7 +42,7 @@ func (m *mongoClient) performAdvisoryLockDBOperation(ctx context.Context, unique
 		time.Sleep(leaseWaitTime)
 	}
 	if i >= retriesForLease {
-		return nil, errors.New("failed to acquire lock on uniqueID " + uniqueID)
+		return nil, errors.New("failed to acquire lock on uniqueID " + uniqueID.Hex())
 	}
 	defer func() {
 		m.mongoDbHandler.Collection(leasesCollection).UpdateOne(

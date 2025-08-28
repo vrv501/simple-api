@@ -346,15 +346,22 @@ paths:
         default:
           "$ref": "#/components/responses/Generic"
       security: []
-  "/users/{username}":
+    delete:
+      tags:
+        - users
+      summary: Delete user resource.
+      operationId: deleteUser
+      responses:
+        "204":
+          description: User deleted
+        default:
+          "$ref": "#/components/responses/Generic"
     get:
       tags:
         - users
-      summary: Get user by user name.
-      description: Get user detail based on username.
-      operationId: getUserByName
-      parameters:
-        - "$ref": "#/components/parameters/Username"
+      summary: Get user.
+      description: Get user details.
+      operationId: getUser
       responses:
         "200":
           "$ref": "#/components/responses/User"
@@ -365,25 +372,11 @@ paths:
         - users
       summary: Replace user resource.
       operationId: replaceUser
-      parameters:
-        - "$ref": "#/components/parameters/Username"
       requestBody:
         "$ref": "#/components/requestBodies/User"
       responses:
         "200":
           "$ref": "#/components/responses/User"
-        default:
-          "$ref": "#/components/responses/Generic"
-    delete:
-      tags:
-        - users
-      summary: Delete user resource.
-      operationId: deleteUser
-      parameters:
-        - "$ref": "#/components/parameters/Username"
-      responses:
-        "204":
-          description: User deleted
         default:
           "$ref": "#/components/responses/Generic"
 components:
@@ -532,7 +525,7 @@ components:
         email:
           type: string
           example: john@email.com
-          pattern: "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+          format: email
           minLength: 1
           maxLength: 320
         phone_number:
@@ -595,6 +588,7 @@ components:
                   password:
                     type: string
                     example: "wr3444gz4$4r"
+                    format: password
                     minLength: 8
                     maxLength: 30
                     pattern: "^[A-Za-z0-9&%$#@*:;<>~]+$"      
@@ -668,12 +662,6 @@ components:
       required: true
       schema:
         "$ref": "#/components/schemas/Id"
-    Username:
-      name: username
-      in: path
-      required: true
-      schema:
-        "$ref": "#/components/schemas/Username"
     Cursor:
       name: cursor
       in: query

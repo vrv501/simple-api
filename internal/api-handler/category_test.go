@@ -33,7 +33,7 @@ func TestAPIHandler_FindAnimalCategory(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "AnimalCategory not found",
+			name: "animalCategory not found",
 			args: args{
 				request: genRouter.FindAnimalCategoryRequestObject{
 					Params: genRouter.FindAnimalCategoryParams{
@@ -54,7 +54,7 @@ func TestAPIHandler_FindAnimalCategory(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "AnimalCategory internal error",
+			name: "internal error",
 			args: args{
 				request: genRouter.FindAnimalCategoryRequestObject{
 					Params: genRouter.FindAnimalCategoryParams{
@@ -75,7 +75,7 @@ func TestAPIHandler_FindAnimalCategory(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "AnimalCategory success",
+			name: "success",
 			args: args{
 				request: genRouter.FindAnimalCategoryRequestObject{
 					Params: genRouter.FindAnimalCategoryParams{
@@ -135,7 +135,7 @@ func TestAPIHandler_AddAnimalCategory(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "AddAnimalCategory conflict",
+			name: "animalCategory conflict",
 			args: args{
 				request: genRouter.AddAnimalCategoryRequestObject{
 					Body: &genRouter.AddAnimalCategoryJSONRequestBody{
@@ -156,7 +156,7 @@ func TestAPIHandler_AddAnimalCategory(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "AddAnimalCategory internal error",
+			name: "internal error",
 			args: args{
 				request: genRouter.AddAnimalCategoryRequestObject{
 					Body: &genRouter.AddAnimalCategoryJSONRequestBody{
@@ -177,7 +177,7 @@ func TestAPIHandler_AddAnimalCategory(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "AddAnimalCategory success",
+			name: "success",
 			args: args{
 				request: genRouter.AddAnimalCategoryRequestObject{
 					Body: &genRouter.AddAnimalCategoryJSONRequestBody{
@@ -238,7 +238,7 @@ func TestAPIHandler_ReplaceAnimalCategory(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "ReplaceAnimalCategory invalid ID",
+			name: "invalid ID",
 			args: args{
 				request: genRouter.ReplaceAnimalCategoryRequestObject{
 					AnimalCategoryId: "invalid-id",
@@ -260,7 +260,7 @@ func TestAPIHandler_ReplaceAnimalCategory(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "ReplaceAnimalCategory not found",
+			name: "animalCategory not found",
 			args: args{
 				request: genRouter.ReplaceAnimalCategoryRequestObject{
 					AnimalCategoryId: "1",
@@ -282,7 +282,7 @@ func TestAPIHandler_ReplaceAnimalCategory(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "ReplaceAnimalCategory error conflict",
+			name: "error conflict",
 			args: args{
 				request: genRouter.ReplaceAnimalCategoryRequestObject{
 					AnimalCategoryId: "1",
@@ -304,7 +304,7 @@ func TestAPIHandler_ReplaceAnimalCategory(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "ReplaceAnimalCategory internal error",
+			name: "internal error",
 			args: args{
 				request: genRouter.ReplaceAnimalCategoryRequestObject{
 					AnimalCategoryId: "1",
@@ -326,7 +326,7 @@ func TestAPIHandler_ReplaceAnimalCategory(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "ReplaceAnimalCategory success",
+			name: "success",
 			args: args{
 				request: genRouter.ReplaceAnimalCategoryRequestObject{
 					AnimalCategoryId: "1",

@@ -25,8 +25,8 @@ type userHandler interface {
 	AddUser(ctx context.Context,
 		userReq *genRouter.CreateUserJSONRequestBody) (*genRouter.UserJSONResponse, error)
 	GetUser(ctx context.Context,
-		username string) (*genRouter.UserJSONResponse, error)
-	DeleteUser(ctx context.Context, username string) error
+		userID string) (*genRouter.UserJSONResponse, error)
+	DeleteUser(ctx context.Context, userID string) error
 }
 
 func NewDBHandler(ctx context.Context) Handler {

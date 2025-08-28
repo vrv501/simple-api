@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -19,7 +20,7 @@ func (m *mongoClient) AddUser(ctx context.Context,
 		Username:    userReq.Username,
 		Password:    userReq.Password,
 		Address:     userReq.Address,
-		Email:       userReq.Email,
+		Email:       string(userReq.Email),
 		FullName:    userReq.FullName,
 		PhoneNumber: userReq.PhoneNumber,
 		CreatedOn:   time.Now().UTC(),
@@ -49,16 +50,21 @@ func (m *mongoClient) AddUser(ctx context.Context,
 }
 
 func (m *mongoClient) GetUser(ctx context.Context,
-	username string) (*genRouter.UserJSONResponse, error) {
+	userID string) (*genRouter.UserJSONResponse, error) {
+	bsonID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, dbErr.ErrInvalidID
+	}
+
 	res := m.mongoDbHandler.Collection(usersCollection).FindOne(
 		ctx,
-		bson.M{usernameField: username, deletedOnField: bson.Null{}},
+		bson.M{iDField: bsonID, deletedOnField: bson.Null{}},
 		options.FindOne().SetProjection(bson.M{
 			iDField:       0,
 			passwordField: 0,
 		}),
 	)
-	err := res.Err()
+	err = res.Err()
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, dbErr.ErrNotFound
@@ -72,36 +78,23 @@ func (m *mongoClient) GetUser(ctx context.Context,
 	}
 	return &genRouter.UserJSONResponse{
 		Username:    user.Username,
-		Email:       user.Email,
+		Email:       openapi_types.Email(user.Email),
 		FullName:    user.FullName,
 		PhoneNumber: user.PhoneNumber,
 		Address:     user.Address,
 	}, nil
 }
 
-func (m *mongoClient) DeleteUser(aInctx context.Context, username string) error {
-	_, err := m.performAdvisoryLockDBOperation(aInctx, username, func(aCtx context.Context) (any, error) {
-		res := m.mongoDbHandler.Collection(usersCollection).FindOne(
-			aCtx,
-			bson.M{usernameField: username, deletedOnField: bson.Null{}},
-			options.FindOne().SetProjection(bson.M{iDField: 1}),
-		)
-		err := res.Err()
-		if err != nil {
-			if errors.Is(err, mongo.ErrNoDocuments) {
-				return nil, dbErr.ErrNotFound
-			}
-			return nil, err
-		}
-		var userInst user
-		err = res.Decode(&userInst)
-		if err != nil {
-			return nil, err
-		}
+func (m *mongoClient) DeleteUser(aInctx context.Context, userID string) error {
+	bsonID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return dbErr.ErrInvalidID
+	}
 
+	_, err = m.performAdvisoryLockDBOperation(aInctx, bsonID, func(aCtx context.Context) (any, error) {
 		err = m.mongoDbHandler.Collection(petsCollection).FindOne(
 			aCtx,
-			bson.M{userIDField: userInst.ID, statusField: genRouter.Available},
+			bson.M{userIDField: bsonID, statusField: genRouter.Available},
 			options.FindOne().SetProjection(bson.M{iDField: 1}),
 		).Err()
 		if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
@@ -114,7 +107,7 @@ func (m *mongoClient) DeleteUser(aInctx context.Context, username string) error 
 		err = m.mongoDbHandler.Collection(ordersCollection).FindOne(
 			aCtx,
 			bson.M{
-				userIDField: userInst.ID,
+				userIDField: bsonID,
 				statusField: bson.M{
 					notInOperator: []string{
 						string(genRouter.Delivered),
@@ -132,7 +125,7 @@ func (m *mongoClient) DeleteUser(aInctx context.Context, username string) error 
 		}
 
 		_, err = m.mongoDbHandler.Collection(usersCollection).
-			UpdateOne(aCtx, bson.M{iDField: userInst.ID, deletedOnField: bson.Null{}},
+			UpdateOne(aCtx, bson.M{iDField: bsonID, deletedOnField: bson.Null{}},
 				bson.M{setOperator: bson.M{deletedOnField: time.Now().UTC()}})
 		return nil, err
 	})

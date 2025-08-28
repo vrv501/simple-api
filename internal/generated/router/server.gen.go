@@ -64,18 +64,18 @@ type ServerInterface interface {
 	// Find user order by ID.
 	// (GET /store/orders/{orderId})
 	GetOrderByID(w http.ResponseWriter, r *http.Request, orderId OrderId)
+	// Delete user resource.
+	// (DELETE /users)
+	DeleteUser(w http.ResponseWriter, r *http.Request)
+	// Get user.
+	// (GET /users)
+	GetUser(w http.ResponseWriter, r *http.Request)
 	// Create user.
 	// (POST /users)
 	CreateUser(w http.ResponseWriter, r *http.Request)
-	// Delete user resource.
-	// (DELETE /users/{username})
-	DeleteUser(w http.ResponseWriter, r *http.Request, username Username)
-	// Get user by user name.
-	// (GET /users/{username})
-	GetUserByName(w http.ResponseWriter, r *http.Request, username Username)
 	// Replace user resource.
-	// (PUT /users/{username})
-	ReplaceUser(w http.ResponseWriter, r *http.Request, username Username)
+	// (PUT /users)
+	ReplaceUser(w http.ResponseWriter, r *http.Request)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -606,6 +606,46 @@ func (siw *ServerInterfaceWrapper) GetOrderByID(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
+// DeleteUser operation middleware
+func (siw *ServerInterfaceWrapper) DeleteUser(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteUser(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetUser operation middleware
+func (siw *ServerInterfaceWrapper) GetUser(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetUser(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // CreateUser operation middleware
 func (siw *ServerInterfaceWrapper) CreateUser(w http.ResponseWriter, r *http.Request) {
 
@@ -620,82 +660,9 @@ func (siw *ServerInterfaceWrapper) CreateUser(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
-// DeleteUser operation middleware
-func (siw *ServerInterfaceWrapper) DeleteUser(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "username" -------------
-	var username Username
-
-	err = runtime.BindStyledParameterWithOptions("simple", "username", r.PathValue("username"), &username, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "username", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteUser(w, r, username)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// GetUserByName operation middleware
-func (siw *ServerInterfaceWrapper) GetUserByName(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "username" -------------
-	var username Username
-
-	err = runtime.BindStyledParameterWithOptions("simple", "username", r.PathValue("username"), &username, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "username", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetUserByName(w, r, username)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // ReplaceUser operation middleware
 func (siw *ServerInterfaceWrapper) ReplaceUser(w http.ResponseWriter, r *http.Request) {
 
-	var err error
-
-	// ------------- Path parameter "username" -------------
-	var username Username
-
-	err = runtime.BindStyledParameterWithOptions("simple", "username", r.PathValue("username"), &username, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "username", Err: err})
-		return
-	}
-
 	ctx := r.Context()
 
 	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
@@ -703,7 +670,7 @@ func (siw *ServerInterfaceWrapper) ReplaceUser(w http.ResponseWriter, r *http.Re
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ReplaceUser(w, r, username)
+		siw.Handler.ReplaceUser(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -848,10 +815,10 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/store/orders", wrapper.PlaceOrders)
 	m.HandleFunc("DELETE "+options.BaseURL+"/store/orders/{orderId}", wrapper.DeleteOrder)
 	m.HandleFunc("GET "+options.BaseURL+"/store/orders/{orderId}", wrapper.GetOrderByID)
+	m.HandleFunc("DELETE "+options.BaseURL+"/users", wrapper.DeleteUser)
+	m.HandleFunc("GET "+options.BaseURL+"/users", wrapper.GetUser)
 	m.HandleFunc("POST "+options.BaseURL+"/users", wrapper.CreateUser)
-	m.HandleFunc("DELETE "+options.BaseURL+"/users/{username}", wrapper.DeleteUser)
-	m.HandleFunc("GET "+options.BaseURL+"/users/{username}", wrapper.GetUserByName)
-	m.HandleFunc("PUT "+options.BaseURL+"/users/{username}", wrapper.ReplaceUser)
+	m.HandleFunc("PUT "+options.BaseURL+"/users", wrapper.ReplaceUser)
 
 	return m
 }
@@ -1368,6 +1335,65 @@ func (response GetOrderByIDdefaultJSONResponse) VisitGetOrderByIDResponse(w http
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
+type DeleteUserRequestObject struct {
+}
+
+type DeleteUserResponseObject interface {
+	VisitDeleteUserResponse(w http.ResponseWriter) error
+}
+
+type DeleteUser204Response struct {
+}
+
+func (response DeleteUser204Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteUserdefaultJSONResponse struct {
+	Body struct {
+		Message string `json:"message"`
+	}
+	StatusCode int
+}
+
+func (response DeleteUserdefaultJSONResponse) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetUserRequestObject struct {
+}
+
+type GetUserResponseObject interface {
+	VisitGetUserResponse(w http.ResponseWriter) error
+}
+
+type GetUser200JSONResponse struct{ UserJSONResponse }
+
+func (response GetUser200JSONResponse) VisitGetUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetUserdefaultJSONResponse struct {
+	Body struct {
+		Message string `json:"message"`
+	}
+	StatusCode int
+}
+
+func (response GetUserdefaultJSONResponse) VisitGetUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
 type CreateUserRequestObject struct {
 	Body *CreateUserJSONRequestBody
 }
@@ -1399,70 +1425,8 @@ func (response CreateUserdefaultJSONResponse) VisitCreateUserResponse(w http.Res
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type DeleteUserRequestObject struct {
-	Username Username `json:"username"`
-}
-
-type DeleteUserResponseObject interface {
-	VisitDeleteUserResponse(w http.ResponseWriter) error
-}
-
-type DeleteUser204Response struct {
-}
-
-func (response DeleteUser204Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
-	w.WriteHeader(204)
-	return nil
-}
-
-type DeleteUserdefaultJSONResponse struct {
-	Body struct {
-		Message string `json:"message"`
-	}
-	StatusCode int
-}
-
-func (response DeleteUserdefaultJSONResponse) VisitDeleteUserResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
-type GetUserByNameRequestObject struct {
-	Username Username `json:"username"`
-}
-
-type GetUserByNameResponseObject interface {
-	VisitGetUserByNameResponse(w http.ResponseWriter) error
-}
-
-type GetUserByName200JSONResponse struct{ UserJSONResponse }
-
-func (response GetUserByName200JSONResponse) VisitGetUserByNameResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetUserByNamedefaultJSONResponse struct {
-	Body struct {
-		Message string `json:"message"`
-	}
-	StatusCode int
-}
-
-func (response GetUserByNamedefaultJSONResponse) VisitGetUserByNameResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
 type ReplaceUserRequestObject struct {
-	Username Username `json:"username"`
-	Body     *ReplaceUserJSONRequestBody
+	Body *ReplaceUserJSONRequestBody
 }
 
 type ReplaceUserResponseObject interface {
@@ -1539,17 +1503,17 @@ type StrictServerInterface interface {
 	// Find user order by ID.
 	// (GET /store/orders/{orderId})
 	GetOrderByID(ctx context.Context, request GetOrderByIDRequestObject) (GetOrderByIDResponseObject, error)
+	// Delete user resource.
+	// (DELETE /users)
+	DeleteUser(ctx context.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error)
+	// Get user.
+	// (GET /users)
+	GetUser(ctx context.Context, request GetUserRequestObject) (GetUserResponseObject, error)
 	// Create user.
 	// (POST /users)
 	CreateUser(ctx context.Context, request CreateUserRequestObject) (CreateUserResponseObject, error)
-	// Delete user resource.
-	// (DELETE /users/{username})
-	DeleteUser(ctx context.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error)
-	// Get user by user name.
-	// (GET /users/{username})
-	GetUserByName(ctx context.Context, request GetUserByNameRequestObject) (GetUserByNameResponseObject, error)
 	// Replace user resource.
-	// (PUT /users/{username})
+	// (PUT /users)
 	ReplaceUser(ctx context.Context, request ReplaceUserRequestObject) (ReplaceUserResponseObject, error)
 }
 
@@ -2010,6 +1974,54 @@ func (sh *strictHandler) GetOrderByID(w http.ResponseWriter, r *http.Request, or
 	}
 }
 
+// DeleteUser operation middleware
+func (sh *strictHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	var request DeleteUserRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteUser(ctx, request.(DeleteUserRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteUser")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeleteUserResponseObject); ok {
+		if err := validResponse.VisitDeleteUserResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetUser operation middleware
+func (sh *strictHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	var request GetUserRequestObject
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetUser(ctx, request.(GetUserRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetUser")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetUserResponseObject); ok {
+		if err := validResponse.VisitGetUserResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // CreateUser operation middleware
 func (sh *strictHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var request CreateUserRequestObject
@@ -2041,63 +2053,9 @@ func (sh *strictHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// DeleteUser operation middleware
-func (sh *strictHandler) DeleteUser(w http.ResponseWriter, r *http.Request, username Username) {
-	var request DeleteUserRequestObject
-
-	request.Username = username
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteUser(ctx, request.(DeleteUserRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeleteUser")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(DeleteUserResponseObject); ok {
-		if err := validResponse.VisitDeleteUserResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetUserByName operation middleware
-func (sh *strictHandler) GetUserByName(w http.ResponseWriter, r *http.Request, username Username) {
-	var request GetUserByNameRequestObject
-
-	request.Username = username
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.GetUserByName(ctx, request.(GetUserByNameRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetUserByName")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(GetUserByNameResponseObject); ok {
-		if err := validResponse.VisitGetUserByNameResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
 // ReplaceUser operation middleware
-func (sh *strictHandler) ReplaceUser(w http.ResponseWriter, r *http.Request, username Username) {
+func (sh *strictHandler) ReplaceUser(w http.ResponseWriter, r *http.Request) {
 	var request ReplaceUserRequestObject
-
-	request.Username = username
 
 	var body ReplaceUserJSONRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {

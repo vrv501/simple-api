@@ -8,18 +8,27 @@ import (
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 
+	contextKeys "github.com/vrv501/simple-api/internal/context-keys"
 	dbErr "github.com/vrv501/simple-api/internal/db/errors"
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 )
 
 const (
-	errMsgAlreadyInUse = "already in use"
-	errMsgUserNotFound = "user not found"
+	errMsgAlreadyInUse  = "already in use"
+	errMsgUserNotFound  = "user not found"
+	errMsgInvalidUserID = "Invalid user ID"
 )
 
 func hashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	return string(hash), err
+}
+
+func comparePasswords(hashedPswd, plainTextPswd string) error {
+	return bcrypt.CompareHashAndPassword(
+		[]byte(hashedPswd),
+		[]byte(plainTextPswd),
+	)
 }
 
 // Create user.
@@ -68,12 +77,30 @@ func (a *APIHandler) CreateUser(ctx context.Context,
 // Delete user resource.
 // (DELETE /users/{username})
 func (a *APIHandler) DeleteUser(ctx context.Context,
-	request genRouter.DeleteUserRequestObject) (genRouter.DeleteUserResponseObject, error) {
+	_ genRouter.DeleteUserRequestObject) (genRouter.DeleteUserResponseObject, error) {
 	logger := log.Ctx(ctx)
-	err := a.dbClient.DeleteUser(ctx, request.Username)
+	userID, ok := contextKeys.UserIDFromContext(ctx)
+	if !ok {
+		logger.Error().Msg("userID not found in context")
+		return genRouter.DeleteUserdefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+
+	err := a.dbClient.DeleteUser(ctx, userID)
 	if err != nil {
 		var fKeyErr *dbErr.ForeignKeyError
 		switch {
+		case errors.Is(err, dbErr.ErrInvalidID):
+			return genRouter.DeleteUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: errMsgInvalidUserID,
+				},
+				StatusCode: http.StatusBadRequest,
+			}, nil
 		case errors.Is(err, dbErr.ErrNotFound):
 			return genRouter.DeleteUserdefaultJSONResponse{
 				Body: genRouter.Generic{
@@ -98,19 +125,38 @@ func (a *APIHandler) DeleteUser(ctx context.Context,
 			StatusCode: http.StatusInternalServerError,
 		}, nil
 	}
-	logger.Info().Msgf("User %s soft-deleted", request.Username)
+	logger.Info().Msgf("UserID %s soft-deleted", userID)
 	return genRouter.DeleteUser204Response{}, nil
 }
 
 // Get user by user name.
 // (GET /users/{username})
-func (a *APIHandler) GetUserByName(ctx context.Context,
-	request genRouter.GetUserByNameRequestObject) (genRouter.GetUserByNameResponseObject, error) {
+func (a *APIHandler) GetUser(ctx context.Context,
+	_ genRouter.GetUserRequestObject) (genRouter.GetUserResponseObject, error) {
 	logger := log.Ctx(ctx)
-	res, err := a.dbClient.GetUser(ctx, request.Username)
+	userID, ok := contextKeys.UserIDFromContext(ctx)
+	if !ok {
+		logger.Error().Msg("userID not foudn in context")
+		return genRouter.GetUserdefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+
+	res, err := a.dbClient.GetUser(ctx, userID)
 	if err != nil {
-		if errors.Is(err, dbErr.ErrNotFound) {
-			return genRouter.GetUserByNamedefaultJSONResponse{
+		switch {
+		case errors.Is(err, dbErr.ErrInvalidID):
+			return genRouter.GetUserdefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: errMsgInvalidUserID,
+				},
+				StatusCode: http.StatusBadRequest,
+			}, nil
+		case errors.Is(err, dbErr.ErrNotFound):
+			return genRouter.GetUserdefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: errMsgUserNotFound,
 				},
@@ -118,14 +164,14 @@ func (a *APIHandler) GetUserByName(ctx context.Context,
 			}, nil
 		}
 		logger.Error().Err(err).Msg("Failed to get user")
-		return genRouter.GetUserByNamedefaultJSONResponse{
+		return genRouter.GetUserdefaultJSONResponse{
 			Body: genRouter.Generic{
 				Message: http.StatusText(http.StatusInternalServerError),
 			},
 			StatusCode: http.StatusInternalServerError,
 		}, nil
 	}
-	return genRouter.GetUserByName200JSONResponse{UserJSONResponse: *res}, nil
+	return genRouter.GetUser200JSONResponse{UserJSONResponse: *res}, nil
 }
 
 // Replace user resource.
