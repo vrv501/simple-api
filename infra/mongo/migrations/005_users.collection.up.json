@@ -7,7 +7,6 @@
                 "required": [
                     "username",
                     "full_name",
-                    "email",
                     "password",
                     "phone_number",
                     "address",
@@ -20,9 +19,6 @@
                         "bsonType": "string"
                     },
                     "full_name": {
-                        "bsonType": "string"
-                    },
-                    "email": {
                         "bsonType": "string"
                     },
                     "password": {

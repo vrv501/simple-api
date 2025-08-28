@@ -5,7 +5,6 @@ import (
 	"errors"
 	"time"
 
-	openapi_types "github.com/oapi-codegen/runtime/types"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -20,7 +19,6 @@ func (m *mongoClient) AddUser(ctx context.Context,
 		Username:    userReq.Username,
 		Password:    userReq.Password,
 		Address:     userReq.Address,
-		Email:       string(userReq.Email),
 		FullName:    userReq.FullName,
 		PhoneNumber: userReq.PhoneNumber,
 		CreatedOn:   time.Now().UTC(),
@@ -29,10 +27,7 @@ func (m *mongoClient) AddUser(ctx context.Context,
 		if mongo.IsDuplicateKeyError(err) {
 			se := mongo.ServerError(nil)
 			_ = errors.As(err, &se)
-			switch {
-			case se.HasErrorMessage(emailField):
-				return nil, &dbErr.ConflictError{Key: emailField, Err: err}
-			case se.HasErrorMessage(phoneNumberField):
+			if se.HasErrorMessage(phoneNumberField) {
 				return nil, &dbErr.ConflictError{Key: phoneNumberField, Err: err}
 			}
 			return nil, &dbErr.ConflictError{Key: usernameField, Err: err}
@@ -42,7 +37,6 @@ func (m *mongoClient) AddUser(ctx context.Context,
 
 	return &genRouter.UserJSONResponse{
 		Username:    userReq.Username,
-		Email:       userReq.Email,
 		FullName:    userReq.FullName,
 		PhoneNumber: userReq.PhoneNumber,
 		Address:     userReq.Address,
@@ -78,7 +72,6 @@ func (m *mongoClient) GetUser(ctx context.Context,
 	}
 	return &genRouter.UserJSONResponse{
 		Username:    userInstance.Username,
-		Email:       openapi_types.Email(userInstance.Email),
 		FullName:    userInstance.FullName,
 		PhoneNumber: userInstance.PhoneNumber,
 		Address:     userInstance.Address,
@@ -92,19 +85,19 @@ func (m *mongoClient) DeleteUser(aInctx context.Context, userID string) error {
 	}
 
 	_, err = m.performAdvisoryLockDBOperation(aInctx, bsonID, func(aCtx context.Context) (any, error) {
-		err = m.mongoDbHandler.Collection(petsCollection).FindOne(
+		errS := m.mongoDbHandler.Collection(petsCollection).FindOne(
 			aCtx,
 			bson.M{userIDField: bsonID, statusField: genRouter.Available},
 			options.FindOne().SetProjection(bson.M{iDField: 1}),
 		).Err()
-		if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, err
+		if errS != nil && !errors.Is(errS, mongo.ErrNoDocuments) {
+			return nil, errS
 		}
-		if err == nil {
-			return nil, &dbErr.ForeignKeyError{Key: petsCollection, Err: err}
+		if errS == nil {
+			return nil, &dbErr.ForeignKeyError{Key: petsCollection, Err: errS}
 		}
 
-		err = m.mongoDbHandler.Collection(ordersCollection).FindOne(
+		errS = m.mongoDbHandler.Collection(ordersCollection).FindOne(
 			aCtx,
 			bson.M{
 				userIDField: bsonID,
@@ -117,17 +110,69 @@ func (m *mongoClient) DeleteUser(aInctx context.Context, userID string) error {
 			},
 			options.FindOne().SetProjection(bson.M{iDField: 1}),
 		).Err()
-		if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, err
+		if errS != nil && !errors.Is(errS, mongo.ErrNoDocuments) {
+			return nil, errS
 		}
-		if err == nil {
-			return nil, &dbErr.ForeignKeyError{Key: ordersCollection, Err: err}
+		if errS == nil {
+			return nil, &dbErr.ForeignKeyError{Key: ordersCollection, Err: errS}
 		}
 
-		_, err = m.mongoDbHandler.Collection(usersCollection).
+		_, errS = m.mongoDbHandler.Collection(usersCollection).
 			UpdateOne(aCtx, bson.M{iDField: bsonID, deletedOnField: bson.Null{}},
 				bson.M{setOperator: bson.M{deletedOnField: time.Now().UTC()}})
-		return nil, err
+		return nil, errS
 	})
 	return err
+}
+
+func (m *mongoClient) PatchUser(ctx context.Context, userID string,
+	userReq *genRouter.PatchUserApplicationMergePatchPlusJSONRequestBody) (*genRouter.UserJSONResponse, error) {
+	bsonID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, dbErr.ErrInvalidID
+	}
+	updateDoc := bson.M{}
+	if userReq.FullName != nil {
+		updateDoc[fullNameField] = *userReq.FullName
+	}
+	if userReq.Password != nil {
+		updateDoc[passwordField] = *userReq.Password
+	}
+	if userReq.PhoneNumber != nil {
+		updateDoc[phoneNumberField] = *userReq.PhoneNumber
+	}
+	if userReq.Address != nil {
+		updateDoc[addressField] = *userReq.Address
+	}
+	updateDoc[updatedOnField] = time.Now().UTC()
+
+	res := m.mongoDbHandler.Collection(usersCollection).
+		FindOneAndUpdate(
+			ctx,
+			bson.M{iDField: bsonID, deletedOnField: bson.Null{}},
+			bson.M{setOperator: updateDoc},
+			options.FindOneAndUpdate().SetReturnDocument(options.After),
+		)
+	err = res.Err()
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, dbErr.ErrNotFound
+		}
+		if mongo.IsDuplicateKeyError(err) {
+			return nil, &dbErr.ConflictError{Key: phoneNumberField, Err: err}
+		}
+		return nil, err
+	}
+	var userInstance user
+	err = res.Decode(&userInstance)
+	if err != nil {
+		return nil, err
+	}
+
+	return &genRouter.UserJSONResponse{
+		Address:     userInstance.Address,
+		FullName:    userInstance.FullName,
+		PhoneNumber: userInstance.PhoneNumber,
+		Username:    userInstance.Username,
+	}, nil
 }

@@ -14,16 +14,6 @@
             },
             {
                 "key": {
-                    "email": 1
-                },
-                "name": "email_unique_idx",
-                "unique": true,
-                "partialFilterExpression": {
-                    "deleted_on": null
-                }
-            },
-            {
-                "key": {
                     "phone_number": 1
                 },
                 "name": "phone_number_unique_idx",
