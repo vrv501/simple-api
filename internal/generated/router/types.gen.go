@@ -28,8 +28,14 @@ const (
 	Sold      PetStatus = "sold"
 )
 
+// Address defines model for Address.
+type Address = string
+
 // AnimalCategoryName defines model for AnimalCategoryName.
 type AnimalCategoryName = string
+
+// FullName defines model for FullName.
+type FullName = string
 
 // Id defines model for Id.
 type Id = string
@@ -50,6 +56,9 @@ type Order struct {
 
 // OrderStatus order status.
 type OrderStatus string
+
+// Password defines model for Password.
+type Password = string
 
 // Pet defines model for Pet.
 type Pet struct {
@@ -91,13 +100,15 @@ type PetWithMetadata struct {
 	Tags   *PetTags   `json:"tags,omitempty"`
 }
 
+// PhoneNumber defines model for PhoneNumber.
+type PhoneNumber = string
+
 // UserSchema defines model for User.
 type UserSchema struct {
-	Address     string              `json:"address"`
-	Email       openapi_types.Email `json:"email"`
-	FullName    string              `json:"full_name"`
-	PhoneNumber string              `json:"phone_number"`
-	Username    Username            `json:"username"`
+	Address     Address     `json:"address"`
+	FullName    FullName    `json:"full_name"`
+	PhoneNumber PhoneNumber `json:"phone_number"`
+	Username    Username    `json:"username"`
 }
 
 // Username defines model for Username.
@@ -146,12 +157,11 @@ type AnimalCategoryRequest struct {
 
 // UserRequest defines model for User.
 type UserRequest struct {
-	Address     string              `json:"address"`
-	Email       openapi_types.Email `json:"email"`
-	FullName    string              `json:"full_name"`
-	Password    string              `json:"password"`
-	PhoneNumber string              `json:"phone_number"`
-	Username    Username            `json:"username"`
+	Address     Address     `json:"address"`
+	FullName    FullName    `json:"full_name"`
+	Password    Password    `json:"password"`
+	PhoneNumber PhoneNumber `json:"phone_number"`
+	Username    Username    `json:"username"`
 }
 
 // FindAnimalCategoryParams defines parameters for FindAnimalCategory.
@@ -230,24 +240,21 @@ type PlaceOrdersJSONBody = []struct {
 	PetId Id `json:"petId"`
 }
 
-// CreateUserJSONBody defines parameters for CreateUser.
-type CreateUserJSONBody struct {
-	Address     string              `json:"address"`
-	Email       openapi_types.Email `json:"email"`
-	FullName    string              `json:"full_name"`
-	Password    string              `json:"password"`
-	PhoneNumber string              `json:"phone_number"`
-	Username    Username            `json:"username"`
+// PatchUserApplicationMergePatchPlusJSONBody defines parameters for PatchUser.
+type PatchUserApplicationMergePatchPlusJSONBody struct {
+	Address     *Address     `json:"address,omitempty"`
+	FullName    *FullName    `json:"full_name,omitempty"`
+	Password    *Password    `json:"password,omitempty"`
+	PhoneNumber *PhoneNumber `json:"phone_number,omitempty"`
 }
 
-// ReplaceUserJSONBody defines parameters for ReplaceUser.
-type ReplaceUserJSONBody struct {
-	Address     string              `json:"address"`
-	Email       openapi_types.Email `json:"email"`
-	FullName    string              `json:"full_name"`
-	Password    string              `json:"password"`
-	PhoneNumber string              `json:"phone_number"`
-	Username    Username            `json:"username"`
+// CreateUserJSONBody defines parameters for CreateUser.
+type CreateUserJSONBody struct {
+	Address     Address     `json:"address"`
+	FullName    FullName    `json:"full_name"`
+	Password    Password    `json:"password"`
+	PhoneNumber PhoneNumber `json:"phone_number"`
+	Username    Username    `json:"username"`
 }
 
 // AddAnimalCategoryJSONRequestBody defines body for AddAnimalCategory for application/json ContentType.
@@ -268,8 +275,8 @@ type UploadPetImageMultipartRequestBody UploadPetImageMultipartBody
 // PlaceOrdersJSONRequestBody defines body for PlaceOrders for application/json ContentType.
 type PlaceOrdersJSONRequestBody = PlaceOrdersJSONBody
 
+// PatchUserApplicationMergePatchPlusJSONRequestBody defines body for PatchUser for application/merge-patch+json ContentType.
+type PatchUserApplicationMergePatchPlusJSONRequestBody PatchUserApplicationMergePatchPlusJSONBody
+
 // CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
 type CreateUserJSONRequestBody CreateUserJSONBody
-
-// ReplaceUserJSONRequestBody defines body for ReplaceUser for application/json ContentType.
-type ReplaceUserJSONRequestBody ReplaceUserJSONBody

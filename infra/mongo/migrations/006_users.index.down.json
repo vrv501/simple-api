@@ -5,10 +5,6 @@
     },
     {
         "dropIndexes": "users",
-        "index": "email_unique_idx"
-    },
-    {
-        "dropIndexes": "users",
         "index": "phone_number_unique_idx"
     }
 ]

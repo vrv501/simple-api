@@ -26,6 +26,8 @@ type userHandler interface {
 		userReq *genRouter.CreateUserJSONRequestBody) (*genRouter.UserJSONResponse, error)
 	GetUser(ctx context.Context,
 		userID string) (*genRouter.UserJSONResponse, error)
+	PatchUser(ctx context.Context, userID string,
+		userReq *genRouter.PatchUserApplicationMergePatchPlusJSONRequestBody) (*genRouter.UserJSONResponse, error)
 	DeleteUser(ctx context.Context, userID string) error
 }
 

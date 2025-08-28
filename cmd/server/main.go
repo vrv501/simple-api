@@ -51,8 +51,11 @@ func main() {
 		},
 		SilenceServersWarning: true,
 	})
-	logger := configLogger()
+	if openapi3filter.RegisteredBodyDecoder("application/merge-patch+json") == nil {
+		openapi3filter.RegisterBodyDecoder("application/merge-patch+json", openapi3filter.JSONBodyDecoder)
+	}
 
+	logger := configLogger()
 	basePath, err := spec.Servers.BasePath()
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed to get base path from OpenAPI spec")

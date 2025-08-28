@@ -70,12 +70,12 @@ type ServerInterface interface {
 	// Get user.
 	// (GET /users)
 	GetUser(w http.ResponseWriter, r *http.Request)
+	// Patch user
+	// (PATCH /users)
+	PatchUser(w http.ResponseWriter, r *http.Request)
 	// Create user.
 	// (POST /users)
 	CreateUser(w http.ResponseWriter, r *http.Request)
-	// Replace user resource.
-	// (PUT /users)
-	ReplaceUser(w http.ResponseWriter, r *http.Request)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -646,11 +646,17 @@ func (siw *ServerInterfaceWrapper) GetUser(w http.ResponseWriter, r *http.Reques
 	handler.ServeHTTP(w, r)
 }
 
-// CreateUser operation middleware
-func (siw *ServerInterfaceWrapper) CreateUser(w http.ResponseWriter, r *http.Request) {
+// PatchUser operation middleware
+func (siw *ServerInterfaceWrapper) PatchUser(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateUser(w, r)
+		siw.Handler.PatchUser(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -660,17 +666,11 @@ func (siw *ServerInterfaceWrapper) CreateUser(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
-// ReplaceUser operation middleware
-func (siw *ServerInterfaceWrapper) ReplaceUser(w http.ResponseWriter, r *http.Request) {
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
+// CreateUser operation middleware
+func (siw *ServerInterfaceWrapper) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ReplaceUser(w, r)
+		siw.Handler.CreateUser(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -817,8 +817,8 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/store/orders/{orderId}", wrapper.GetOrderByID)
 	m.HandleFunc("DELETE "+options.BaseURL+"/users", wrapper.DeleteUser)
 	m.HandleFunc("GET "+options.BaseURL+"/users", wrapper.GetUser)
+	m.HandleFunc("PATCH "+options.BaseURL+"/users", wrapper.PatchUser)
 	m.HandleFunc("POST "+options.BaseURL+"/users", wrapper.CreateUser)
-	m.HandleFunc("PUT "+options.BaseURL+"/users", wrapper.ReplaceUser)
 
 	return m
 }
@@ -1394,6 +1394,37 @@ func (response GetUserdefaultJSONResponse) VisitGetUserResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
+type PatchUserRequestObject struct {
+	Body *PatchUserApplicationMergePatchPlusJSONRequestBody
+}
+
+type PatchUserResponseObject interface {
+	VisitPatchUserResponse(w http.ResponseWriter) error
+}
+
+type PatchUser200JSONResponse struct{ UserJSONResponse }
+
+func (response PatchUser200JSONResponse) VisitPatchUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchUserdefaultJSONResponse struct {
+	Body struct {
+		Message string `json:"message"`
+	}
+	StatusCode int
+}
+
+func (response PatchUserdefaultJSONResponse) VisitPatchUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
 type CreateUserRequestObject struct {
 	Body *CreateUserJSONRequestBody
 }
@@ -1419,37 +1450,6 @@ type CreateUserdefaultJSONResponse struct {
 }
 
 func (response CreateUserdefaultJSONResponse) VisitCreateUserResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
-type ReplaceUserRequestObject struct {
-	Body *ReplaceUserJSONRequestBody
-}
-
-type ReplaceUserResponseObject interface {
-	VisitReplaceUserResponse(w http.ResponseWriter) error
-}
-
-type ReplaceUser200JSONResponse struct{ UserJSONResponse }
-
-func (response ReplaceUser200JSONResponse) VisitReplaceUserResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type ReplaceUserdefaultJSONResponse struct {
-	Body struct {
-		Message string `json:"message"`
-	}
-	StatusCode int
-}
-
-func (response ReplaceUserdefaultJSONResponse) VisitReplaceUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.StatusCode)
 
@@ -1509,12 +1509,12 @@ type StrictServerInterface interface {
 	// Get user.
 	// (GET /users)
 	GetUser(ctx context.Context, request GetUserRequestObject) (GetUserResponseObject, error)
+	// Patch user
+	// (PATCH /users)
+	PatchUser(ctx context.Context, request PatchUserRequestObject) (PatchUserResponseObject, error)
 	// Create user.
 	// (POST /users)
 	CreateUser(ctx context.Context, request CreateUserRequestObject) (CreateUserResponseObject, error)
-	// Replace user resource.
-	// (PUT /users)
-	ReplaceUser(ctx context.Context, request ReplaceUserRequestObject) (ReplaceUserResponseObject, error)
 }
 
 type StrictHandlerFunc = strictnethttp.StrictHTTPHandlerFunc
@@ -2022,6 +2022,37 @@ func (sh *strictHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// PatchUser operation middleware
+func (sh *strictHandler) PatchUser(w http.ResponseWriter, r *http.Request) {
+	var request PatchUserRequestObject
+
+	var body PatchUserApplicationMergePatchPlusJSONRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.PatchUser(ctx, request.(PatchUserRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PatchUser")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(PatchUserResponseObject); ok {
+		if err := validResponse.VisitPatchUserResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // CreateUser operation middleware
 func (sh *strictHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var request CreateUserRequestObject
@@ -2046,37 +2077,6 @@ func (sh *strictHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(CreateUserResponseObject); ok {
 		if err := validResponse.VisitCreateUserResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// ReplaceUser operation middleware
-func (sh *strictHandler) ReplaceUser(w http.ResponseWriter, r *http.Request) {
-	var request ReplaceUserRequestObject
-
-	var body ReplaceUserJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-		sh.options.RequestErrorHandlerFunc(w, r, fmt.Errorf("can't decode JSON body: %w", err))
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.ReplaceUser(ctx, request.(ReplaceUserRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "ReplaceUser")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(ReplaceUserResponseObject); ok {
-		if err := validResponse.VisitReplaceUserResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
