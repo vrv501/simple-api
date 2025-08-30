@@ -35,4 +35,4 @@ jobs:
         with:
           fetch-depth: 0
       - name: Lint yaml files
-        run: yamllint -d relaxed .
+        run: yamllint -d relaxed --no-warnings .
