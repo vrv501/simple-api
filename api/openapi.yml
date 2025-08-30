@@ -152,7 +152,7 @@ paths:
           content:
             application/json:
               schema:
-                "$ref": "#/components/schemas/PetWithMetadata"            
+                "$ref": "#/components/schemas/PetWithMetadata"       
         default:
           "$ref": "#/components/responses/Generic"
     put:
@@ -605,7 +605,7 @@ components:
                   - password
                 properties:
                   password:
-                    "$ref": "#/components/schemas/Password" 
+                    "$ref": "#/components/schemas/Password"
   responses:
     AnimalCategory:
       description: "Successful Animal Category response"
