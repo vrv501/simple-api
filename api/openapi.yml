@@ -46,7 +46,7 @@ paths:
       requestBody:
         "$ref": "#/components/requestBodies/AnimalCategory"
       responses:
-        "201":
+        "27":
           "$ref": "#/components/responses/AnimalCategory"
         default:
           "$ref": "#/components/responses/Generic"
