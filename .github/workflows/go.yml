@@ -34,6 +34,26 @@ jobs:
           version: "latest"
           args: "--config=./.golangci.yml ./..."
 
+  check-generated-files:
+    name: check-generated-files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+      - name: Setup Go ToolChain
+        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5
+        with:
+          go-version-file: "./go.mod"
+      - name: Check generated files
+        shell: bash
+        run: |
+          make generate
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "Generated files are not up to date:"
+            git status --porcelain
+            exit 1
+          fi
+
   coverage:
     name: code-coverage
     runs-on: ubuntu-latest
