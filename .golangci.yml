@@ -11,9 +11,9 @@ issues:
   fix: false
 
 linters:
-  default: none 
+  default: none
   enable:
-    - govet 
+    - govet
     - ineffassign
     - staticcheck
     - unused
@@ -40,7 +40,7 @@ linters:
     - gocritic
     - gomoddirectives
     - goprintffuncname
-    - gosec 
+    - gosec
     - iface
     - intrange
     - lll
@@ -138,7 +138,7 @@ formatters:
       - .*test\.go$
       - .*\.gen\.go$
       - .*\.generated\.go$
-      - .*\.pb\.go$ 
+      - .*\.pb\.go$
       - third_party$
       - builtin$
       - examples$
