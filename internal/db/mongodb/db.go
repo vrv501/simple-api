@@ -45,6 +45,7 @@ const (
 type mongoClient struct {
 	client         *mongo.Client
 	mongoDbHandler *mongo.Database
+	imageBucket    *mongo.GridFSBucket
 }
 
 // Note: Mongo By default stores date in UTC timezone only
@@ -99,9 +100,18 @@ func NewInstance(ctx context.Context) *mongoClient {
 		panic(fmt.Sprintf("failed to ping db %v", err))
 	}
 
+	mongoDbHandler := client.Database(dbName)
+	bucket := mongoDbHandler.GridFSBucket(
+		// default chunk size is 255KiB
+		options.GridFSBucket().SetName("images"),
+		options.GridFSBucket().SetWriteConcern(writeconcern.W1()),
+		options.GridFSBucket().SetReadConcern(readconcern.Local()),
+	)
+
 	return &mongoClient{
 		client:         client,
-		mongoDbHandler: client.Database(dbName),
+		mongoDbHandler: mongoDbHandler,
+		imageBucket:    bucket,
 	}
 }
 
@@ -124,7 +134,7 @@ type pet struct {
 	ID         bson.ObjectID   `bson:"_id,omitempty"`
 	Name       string          `bson:"name"`        // "bsonType": "string"
 	CategoryID bson.ObjectID   `bson:"category_id"` // "bsonType": "objectId"
-	PhotoURIs  []string        `bson:"photo_uris"`  // "bsonType": ["array", "null"]
+	PhotoIDs   []string        `bson:"photo_ids"`   // "bsonType": "array"
 	UserID     bson.ObjectID   `bson:"user_id"`     // "bsonType": "objectId"
 	Price      bson.Decimal128 `bson:"price"`       // "bsonType": "decimal"
 	Status     string          `bson:"status"`      // "bsonType": "string"
@@ -137,6 +147,7 @@ const (
 	petsCollection string = "pets"
 
 	statusField string = "status"
+	priceField  string = "price"
 	userIDField string = "user_id"
 )
 

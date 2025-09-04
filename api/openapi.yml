@@ -291,6 +291,7 @@ paths:
               type: array 
               minItems: 1
               maxItems: 10
+              uniqueItems: true
               items:
                 type: object
                 required:
@@ -427,7 +428,7 @@ components:
     PetName:
       type: string
       example: max
-      minLength: 4
+      minLength: 3
       maxLength: 20
       pattern: "^[a-z\\- ]+$"
     AnimalCategoryName:
@@ -482,7 +483,7 @@ components:
       maxItems: 10
       items:
         type: string
-        description: "Min size: 1B, Max size: 256KB"
+        description: "Min size: 1B, Max size: 250KB"
         format: binary
         example: binary string representation of jpeg image
     PetWithMetadata:
@@ -490,16 +491,16 @@ components:
         - type: object
           required:
             - id 
+            - photo_ids
           properties:
             id:
               "$ref": "#/components/schemas/Id"
-            photo_uris:
+            photo_ids:
               type: array
               items:
-                description: URI of pet image
+                description: ID of pet image
                 type: string
-                format: uri
-                example: /pet/{petId}/images/{imageId}
+                example: d6d36d645s56
         - "$ref": "#/components/schemas/Pet"
     OrderStatus:
       type: string
@@ -581,6 +582,7 @@ components:
             type: object
             required:
               - pet
+              - photos
             properties: 
               pet:
                 "$ref": "#/components/schemas/Pet"

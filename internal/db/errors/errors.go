@@ -3,25 +3,20 @@ package errors
 import "errors"
 
 var (
-	ErrInvalidID = errors.New("invalid ID")
+	ErrInvalidValue = errors.New("invalid value")
 
 	ErrNotFound = errors.New("not found")
+
+	ErrConflict = errors.New("conflict")
+
+	ErrForeignKeyViolation = errors.New("foreign key constraint failed")
 )
 
-type ConflictError struct {
+type HintError struct {
 	Key string
 	Err error
 }
 
-func (e *ConflictError) Error() string {
-	return e.Err.Error()
-}
-
-type ForeignKeyError struct {
-	Key string
-	Err error
-}
-
-func (e *ForeignKeyError) Error() string {
+func (e *HintError) Error() string {
 	return e.Err.Error()
 }

@@ -1,16 +1,21 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image"
+	"image/jpeg"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	ogenMiddleware "github.com/oapi-codegen/nethttp-middleware"
 	"github.com/rs/zerolog"
@@ -51,9 +56,8 @@ func main() {
 		},
 		SilenceServersWarning: true,
 	})
-	if openapi3filter.RegisteredBodyDecoder("application/merge-patch+json") == nil {
-		openapi3filter.RegisterBodyDecoder("application/merge-patch+json", openapi3filter.JSONBodyDecoder)
-	}
+	registerBodyEncoders()
+	registerBodyDecoders()
 
 	logger := configLogger()
 	basePath, err := spec.Servers.BasePath()
@@ -158,4 +162,67 @@ func configLogger() zerolog.Logger {
 	}
 
 	return logger.Level(logLevel)
+}
+
+func registerBodyEncoders() {
+	openapi3filter.RegisterBodyEncoder(
+		"image/jpeg",
+		func(body any) ([]byte, error) {
+			/*
+				Encoders are only called at server side when sending responses
+				We trust that data stored and retrieved from db is []byte
+				Which is why we dont check whether byte slice is a valid jpeg
+				This is already being taken care by image/jpeg Decoder
+			*/
+			imgBytes, ok := body.([]byte)
+			if ok {
+				return imgBytes, nil
+			}
+			return nil, errors.New("cannot decode non-binary data to image/jpeg")
+		},
+	)
+}
+
+func registerBodyDecoders() {
+	var maxSize int64 = 250 * 1024 // 250 KB
+	openapi3filter.RegisterBodyDecoder("application/merge-patch+json", openapi3filter.JSONBodyDecoder)
+	openapi3filter.RegisterBodyDecoder(
+		"image/jpeg",
+		func(r io.Reader, header http.Header, schema *openapi3.SchemaRef,
+			encodingFn openapi3filter.EncodingFn) (any, error) {
+			// Valid image size doesn't exceed [maxSize]
+			var buf bytes.Buffer
+			n, err := io.CopyN(&buf, r, 1+maxSize)
+			if err != nil && !errors.Is(err, io.EOF) {
+				return nil, err
+			}
+			if n <= 0 || n > maxSize {
+				return nil, errors.New("images should have min size 1B and max size 256KB")
+			}
+			imgData := buf.Bytes()
+
+			// Check if image is valid jpeg format and supports accepted resolution
+			imgDetails, format, err := image.DecodeConfig(bytes.NewReader(imgData))
+			if err != nil {
+				return nil, err
+			}
+			if format != "jpeg" {
+				return nil, errors.New("invalid JPEG format found")
+			}
+			if imgDetails.Width < 256 || imgDetails.Width > 1080 {
+				return nil, errors.New("images should have min width 256px and max width 1080px")
+			}
+			if imgDetails.Height < 256 || imgDetails.Height > 1920 {
+				return nil, errors.New("images should have min height 256px and max height 1920px")
+			}
+
+			// Validate image is not corrupted
+			_, err = jpeg.Decode(bytes.NewReader(imgData))
+			if err != nil {
+				return nil, err
+			}
+
+			return imgData, nil
+		},
+	)
 }

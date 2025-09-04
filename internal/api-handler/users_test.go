@@ -91,7 +91,7 @@ func TestAPIHandler_CreateUser(t *testing.T) {
 			},
 			prepFunc: func() {
 				mockDBClient.EXPECT().AddUser(gomock.Any(),
-					gomock.Any()).Return(nil, &dbErr.ConflictError{})
+					gomock.Any()).Return(nil, &dbErr.HintError{Err: dbErr.ErrConflict})
 			},
 			want: genRouter.CreateUserdefaultJSONResponse{
 				Body: genRouter.Generic{
@@ -181,7 +181,7 @@ func TestAPIHandler_DeleteUser(t *testing.T) {
 			},
 			prepFunc: func() {
 				mockDBClient.EXPECT().DeleteUser(gomock.Any(),
-					gomock.Any()).Return(dbErr.ErrInvalidID)
+					gomock.Any()).Return(dbErr.ErrInvalidValue)
 			},
 			want: genRouter.DeleteUserdefaultJSONResponse{
 				Body: genRouter.Generic{
@@ -213,7 +213,7 @@ func TestAPIHandler_DeleteUser(t *testing.T) {
 			},
 			prepFunc: func() {
 				mockDBClient.EXPECT().DeleteUser(gomock.Any(),
-					gomock.Any()).Return(&dbErr.ForeignKeyError{})
+					gomock.Any()).Return(&dbErr.HintError{Err: dbErr.ErrForeignKeyViolation})
 			},
 			want: genRouter.DeleteUserdefaultJSONResponse{
 				Body: genRouter.Generic{
@@ -308,7 +308,7 @@ func TestAPIHandler_GetUser(t *testing.T) {
 			},
 			prepFunc: func() {
 				mockDBClient.EXPECT().GetUser(gomock.Any(),
-					gomock.Any()).Return(nil, dbErr.ErrInvalidID)
+					gomock.Any()).Return(nil, dbErr.ErrInvalidValue)
 			},
 		},
 		{
@@ -451,7 +451,7 @@ func TestAPIHandler_PatchUser(t *testing.T) {
 			},
 			prepFunc: func() {
 				mockDBClient.EXPECT().PatchUser(gomock.Any(),
-					gomock.Any(), gomock.Any()).Return(nil, dbErr.ErrInvalidID)
+					gomock.Any(), gomock.Any()).Return(nil, dbErr.ErrInvalidValue)
 			},
 			want: genRouter.PatchUserdefaultJSONResponse{
 				Body: genRouter.Generic{
@@ -485,11 +485,11 @@ func TestAPIHandler_PatchUser(t *testing.T) {
 			},
 			prepFunc: func() {
 				mockDBClient.EXPECT().PatchUser(gomock.Any(),
-					gomock.Any(), gomock.Any()).Return(nil, &dbErr.ConflictError{})
+					gomock.Any(), gomock.Any()).Return(nil, dbErr.ErrConflict)
 			},
 			want: genRouter.PatchUserdefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: " " + errMsgAlreadyInUse,
+					Message: "phone_number " + errMsgAlreadyInUse,
 				},
 				StatusCode: http.StatusConflict,
 			},

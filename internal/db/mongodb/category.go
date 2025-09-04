@@ -14,7 +14,8 @@ import (
 	genRouter "github.com/vrv501/simple-api/internal/generated/router"
 )
 
-func (m *mongoClient) FindAnimalCategory(ctx context.Context, name string) (*genRouter.AnimalCategoryJSONResponse, error) {
+func (m *mongoClient) FindAnimalCategory(ctx context.Context,
+	name string) (*genRouter.AnimalCategoryJSONResponse, error) {
 	// Try exact match
 	res := m.mongoDbHandler.Collection(animalCategoryCollection).FindOne(ctx,
 		bson.M{nameField: name},
@@ -90,7 +91,7 @@ func (m *mongoClient) AddAnimalCategory(ctx context.Context, name string) (*genR
 	})
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return nil, &dbErr.ConflictError{Key: "name", Err: err}
+			return nil, dbErr.ErrConflict
 		}
 		return nil, err
 	}
@@ -105,7 +106,7 @@ func (m *mongoClient) UpdateAnimalCategory(ctx context.Context, id,
 	name string) (*genRouter.AnimalCategoryJSONResponse, error) {
 	bsonID, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, dbErr.ErrInvalidID
+		return nil, dbErr.ErrInvalidValue
 	}
 
 	err = m.mongoDbHandler.Collection(animalCategoryCollection).FindOneAndUpdate(ctx,
@@ -114,7 +115,7 @@ func (m *mongoClient) UpdateAnimalCategory(ctx context.Context, id,
 	).Err()
 	if err != nil {
 		if mongo.IsDuplicateKeyError(err) {
-			return nil, &dbErr.ConflictError{Key: "name", Err: err}
+			return nil, dbErr.ErrConflict
 		}
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, dbErr.ErrNotFound
