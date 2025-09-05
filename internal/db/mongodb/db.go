@@ -124,7 +124,6 @@ type pet struct {
 	ID         bson.ObjectID   `bson:"_id,omitempty"`
 	Name       string          `bson:"name"`        // "bsonType": "string"
 	CategoryID bson.ObjectID   `bson:"category_id"` // "bsonType": "objectId"
-	PhotoIDs   []string        `bson:"photo_ids"`   // "bsonType": "array"
 	UserID     bson.ObjectID   `bson:"user_id"`     // "bsonType": "objectId"
 	Price      bson.Decimal128 `bson:"price"`       // "bsonType": "decimal"
 	Status     string          `bson:"status"`      // "bsonType": "string"

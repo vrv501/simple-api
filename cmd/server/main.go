@@ -1,14 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"image"
-	"image/jpeg"
 	"io"
 	"net/http"
 	"os"
@@ -170,15 +166,7 @@ func registerBodyEncoders() {
 		"image/jpeg",
 		func(body any) ([]byte, error) {
 			if imgStr, ok := body.(string); ok {
-				imgBytes, err := base64.StdEncoding.DecodeString(imgStr)
-				if err != nil {
-					return nil, err
-				}
-				return imgBytes, nil
-			}
-
-			if imgBytes, ok := body.([]byte); ok {
-				return imgBytes, nil
+				return []byte(imgStr), nil
 			}
 			return nil, errors.New("cannot encode image data: expected string (base64) or []byte")
 		},
@@ -187,41 +175,17 @@ func registerBodyEncoders() {
 
 func registerBodyDecoders() {
 	openapi3filter.RegisterBodyDecoder("application/merge-patch+json", openapi3filter.JSONBodyDecoder)
-	openapi3filter.RegisterBodyDecoder(
-		"image/jpeg",
-		func(r io.Reader, header http.Header, schema *openapi3.SchemaRef,
-			encodingFn openapi3filter.EncodingFn) (any, error) {
-			imgData := make([]byte, constants.MaxImgSize+1)
-			n, err := io.ReadFull(r, imgData)
-			if err != nil && err != io.ErrUnexpectedEOF {
-				return nil, err
-			}
-
-			imgData = imgData[:n]
-			if len(imgData) == 0 || len(imgData) > constants.MaxImgSize {
-				return nil, errors.New("images should have min size 1B and max size 256KB")
-			}
-
-			reader := bytes.NewReader(imgData)
-			imgDetails, format, err := image.DecodeConfig(reader)
-			if err != nil {
-				return nil, err
-			}
-			if format != "jpeg" {
-				return nil, errors.New("invalid JPEG format found")
-			}
-			if imgDetails.Width < 256 || imgDetails.Width > 1080 ||
-				imgDetails.Height < 256 || imgDetails.Height > 1920 {
-				return nil,
-					errors.New("supported min resolution for images is 256x256px & max is 1920x1080px")
-			}
-
-			reader.Seek(0, 0)
-			_, err = jpeg.Decode(reader)
-			if err != nil {
-				return nil, err
-			}
-			return base64.StdEncoding.EncodeToString(imgData), nil
-		},
-	)
+	openapi3filter.RegisterBodyDecoder("image/jpeg", func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
+		_ openapi3filter.EncodingFn) (any, error) {
+		buf := make([]byte, constants.MaxImgSize+1)
+		n, err := io.ReadFull(body, buf)
+		if err != nil && !errors.Is(err, io.EOF) &&
+			!errors.Is(err, io.ErrUnexpectedEOF) {
+			return nil, err
+		}
+		if n == 0 || n > constants.MaxImgSize {
+			return nil, errors.New("images should have min size 1B and max size 256KB")
+		}
+		return string(buf[:n]), nil
+	})
 }

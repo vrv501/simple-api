@@ -479,6 +479,7 @@ components:
       description: Pet images (up to 10)
       minItems: 1
       maxItems: 10
+      uniqueItems: true
       items:
         type: string
         description: "Min size: 1B, Max size: 250KB"
