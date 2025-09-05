@@ -45,7 +45,6 @@ const (
 type mongoClient struct {
 	client         *mongo.Client
 	mongoDbHandler *mongo.Database
-	imageBucket    *mongo.GridFSBucket
 }
 
 // Note: Mongo By default stores date in UTC timezone only
@@ -100,18 +99,9 @@ func NewInstance(ctx context.Context) *mongoClient {
 		panic(fmt.Sprintf("failed to ping db %v", err))
 	}
 
-	mongoDbHandler := client.Database(dbName)
-	bucket := mongoDbHandler.GridFSBucket(
-		// default chunk size is 255KiB
-		options.GridFSBucket().SetName("images"),
-		options.GridFSBucket().SetWriteConcern(writeconcern.W1()),
-		options.GridFSBucket().SetReadConcern(readconcern.Local()),
-	)
-
 	return &mongoClient{
 		client:         client,
-		mongoDbHandler: mongoDbHandler,
-		imageBucket:    bucket,
+		mongoDbHandler: client.Database(dbName),
 	}
 }
 
@@ -151,6 +141,20 @@ const (
 	userIDField string = "user_id"
 )
 
+type image struct {
+	ID        bson.ObjectID `bson:"_id,omitempty"`
+	PetID     bson.ObjectID `bson:"pet_id"`     // "bsonType": "objectId"
+	Image     []byte        `bson:"image"`      // "bsonType": "binData"
+	DeletedOn *time.Time    `bson:"deleted_on"` // "bsonType": ["date", "null"]
+}
+
+const (
+	imagesCollection string = "images"
+
+	petIDField string = "pet_id"
+	imageField string = "image"
+)
+
 type user struct {
 	ID          bson.ObjectID `bson:"_id,omitempty"`
 	Username    string        `bson:"username"`     // "bsonType": "string"
@@ -187,19 +191,3 @@ type order struct {
 const (
 	ordersCollection string = "orders"
 )
-
-type fsFile struct {
-	ID         bson.ObjectID `bson:"_id,omitempty"`
-	Length     int64         `bson:"length"`     // "bsonType": "long"
-	ChunkSize  int32         `bson:"chunkSize"`  // "bsonType": "int"
-	UploadDate time.Time     `bson:"uploadDate"` // "bsonType": "date"
-	Filename   string        `bson:"filename"`   // "bsonType": "string"
-	Metadata   bson.M        `bson:"metadata"`   // "bsonType": "object"
-}
-
-type fsChunk struct {
-	ID      bson.ObjectID `bson:"_id,omitempty"`
-	FilesID bson.ObjectID `bson:"files_id"` // "bsonType": "objectId"
-	Length  int32         `bson:"n"`        // "bsonType": "int"
-	Data    []byte        `bson:"data"`     // "bsonType": "binData"
-}
