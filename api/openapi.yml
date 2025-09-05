@@ -211,15 +211,14 @@ paths:
           description: "Accepted Request"
         default:
           "$ref": "#/components/responses/Generic"
-  "/pets/{petId}/images/{imageId}":
+  "/images/{imageId}":
     get:
       tags:
-        - pets
+        - images
       summary: Get a pet image using ID.
       description: Get a pet image using ID.
-      operationId: getImageByPetId
+      operationId: getImageById
       parameters:
-        - "$ref": "#/components/parameters/PetId"
         - "$ref": "#/components/parameters/ImageId"
       responses:
         "200":
@@ -234,12 +233,11 @@ paths:
           "$ref": "#/components/responses/Generic"
     delete:
       tags:
-        - pets
+        - images
       summary: Delete a pet image.
       description: Delete a pet image.
       operationId: deletePetImage
       parameters:
-        - "$ref": "#/components/parameters/PetId"
         - "$ref": "#/components/parameters/ImageId"
       responses:
         "204":

@@ -7,7 +7,6 @@
                 "required": [
                     "name",
                     "category_id",
-                    "photo_uris",
                     "user_id",
                     "price",
                     "status",
@@ -27,16 +26,6 @@
                     "user_id": {
                         "bsonType": "objectId",
                         "description": "Reference to users collection _id"
-                    },
-                    "photo_uris": {
-                        "bsonType": [
-                            "array",
-                            "null"
-                        ],
-                        "items": {
-                            "bsonType": "string"
-                        },
-                        "description": "photo urls of the pet"
                     },
                     "price": {
                         "bsonType": "decimal",
