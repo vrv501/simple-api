@@ -7,12 +7,12 @@ info:
 servers:
   - url: "http://localhost:8300/api/v1"
     description: local-dev
-      
+
 security:
   - bearerAuth: []
 x-headers:
   paginationHeader: &paginationHeader
-    X-Next-Cursor: 
+    X-Next-Cursor:
       description: "Cursor for the next page (null if no more pages)"
       schema:
         type: string
@@ -23,7 +23,7 @@ paths:
       tags:
         - animal-categories
       summary: Find closest-matching animal-category
-      description: Find closest-matching animal-category. 
+      description: Find closest-matching animal-category.
       operationId: findAnimalCategory
       parameters:
         - name: name
@@ -62,7 +62,7 @@ paths:
           in: path
           required: true
           schema:
-            "$ref": "#/components/schemas/Id" 
+            "$ref": "#/components/schemas/Id"
       requestBody:
         "$ref": "#/components/requestBodies/AnimalCategory"
       responses:
@@ -90,7 +90,7 @@ paths:
           required: false
           explode: true
           schema:
-            type: array 
+            type: array
             items:
               "$ref": "#/components/schemas/PetStatus"
         - name: tags
@@ -111,7 +111,7 @@ paths:
               schema:
                 type: object
                 required:
-                  - count 
+                  - count
                   - pets
                 properties:
                   count:
@@ -151,8 +151,8 @@ paths:
           description: "Successful Pet object response"
           content:
             application/json:
-              schema: 
-                "$ref": "#/components/schemas/PetWithMetadata"                
+              schema:
+                "$ref": "#/components/schemas/PetWithMetadata"
         default:
           "$ref": "#/components/responses/Generic"
     put:
@@ -200,7 +200,7 @@ paths:
               required:
                 - photos
               properties:
-                photos: 
+                photos:
                   "$ref": "#/components/schemas/PetPhotos"
             encoding:
               photos:
@@ -258,7 +258,7 @@ paths:
           required: false
           explode: true
           schema:
-            type: array 
+            type: array
             items:
               "$ref": "#/components/schemas/OrderStatus"
         - name: afterDate
@@ -286,7 +286,7 @@ paths:
         content:
           application/json:
             schema:
-              type: array 
+              type: array
               minItems: 1
               maxItems: 10
               uniqueItems: true
@@ -308,7 +308,7 @@ paths:
         - orders
       summary: Find user order by ID.
       operationId: getOrderByID
-      parameters: 
+      parameters:
         - "$ref": "#/components/parameters/OrderId"
       responses:
         "200":
@@ -393,7 +393,7 @@ paths:
           "$ref": "#/components/responses/Generic"
 components:
   schemas:
-    Id: 
+    Id:
       type: string
       minLength: 1
       maxLength: 45
@@ -404,13 +404,13 @@ components:
       format: password
       minLength: 8
       maxLength: 30
-      pattern: "^[A-Za-z0-9&%$#@*:;<>~]+$" 
-    FullName: 
+      pattern: "^[A-Za-z0-9&%$#@*:;<>~]+$"
+    FullName:
       type: string
       example: tony stark
       pattern: "^[a-z\\- ]+$"
       minLength: 1
-      maxLength: 60  
+      maxLength: 60
     PhoneNumber:
       type: string
       pattern: "^\\+?[0-9-]{7,15}$"
@@ -450,7 +450,7 @@ components:
       default: available
       enum:
         - available
-        - sold      
+        - sold
     Pet:
       required:
         - name
@@ -508,13 +508,13 @@ components:
       enum:
         - placed
         - processing
-        - shipped 
+        - shipped
         - delivered
-        - cancelled 
-    Order: 
+        - cancelled
+    Order:
       type: object
       required:
-        - id 
+        - id
         - pet_id
         - status
         - shipped_date
@@ -585,7 +585,7 @@ components:
             properties: 
               pet:
                 "$ref": "#/components/schemas/Pet"
-              photos: 
+              photos:
                 "$ref": "#/components/schemas/PetPhotos"
           encoding:
             pet:
@@ -606,13 +606,13 @@ components:
                   - password
                 properties:
                   password:
-                    "$ref": "#/components/schemas/Password"      
+                    "$ref": "#/components/schemas/Password"
   responses:
-    AnimalCategory: 
+    AnimalCategory:
       description: "Successful Animal Category response"
       content:
         application/json:
-          schema: 
+          schema:
             type: object
             required:
               - id
@@ -620,7 +620,7 @@ components:
             properties:
               id:
                 "$ref": "#/components/schemas/Id"
-              name: 
+              name:
                 "$ref": "#/components/schemas/AnimalCategoryName"
     OrderArray:
       description: "Successful Order array response"
@@ -630,7 +630,7 @@ components:
           schema:
             type: object
             required:
-              - count 
+              - count
               - orders
             properties:
               count:
@@ -658,7 +658,7 @@ components:
             properties:
               message:
                 type: string
-  parameters: 
+  parameters:
     PetId:
       name: petId
       in: path
@@ -699,6 +699,6 @@ components:
   securitySchemes:
     bearerAuth:
       type: http
-      scheme: bearer          
-      bearerFormat: JWT 
+      scheme: bearer
+      bearerFormat: JWT
       description: "JWT Bearer token"
