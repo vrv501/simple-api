@@ -184,7 +184,7 @@ func registerBodyDecoders() {
 			return nil, err
 		}
 		if n == 0 || n > constants.MaxImgSize {
-			return nil, errors.New("images should have min size 1B and max size 256KB")
+			return nil, errors.New("images should have min size 1B and max size 250KB")
 		}
 		return string(buf[:n]), nil
 	})
