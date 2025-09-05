@@ -489,7 +489,7 @@ components:
       allOf:
         - type: object
           required:
-            - id 
+            - id
             - photo_ids
           properties:
             id:
@@ -582,7 +582,7 @@ components:
             required:
               - pet
               - photos
-            properties: 
+            properties:
               pet:
                 "$ref": "#/components/schemas/Pet"
               photos:

@@ -118,11 +118,11 @@ func (a *APIHandler) AddPet(ctx context.Context,
 			}
 			mpReq.Pet = petData
 		case "photos":
-			imgData, err := validateImage(part)
-			if err != nil {
+			imgData, errS := validateImage(part)
+			if errS != nil {
 				return genRouter.AddPetdefaultJSONResponse{
 					Body: genRouter.Generic{
-						Message: err.Error(),
+						Message: errS.Error(),
 					},
 					StatusCode: http.StatusBadRequest,
 				}, nil
