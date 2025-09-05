@@ -39,7 +39,7 @@ func validateImage(r io.Reader) ([]byte, error) {
 		return nil, errors.New("image data is corrupted")
 	}
 	if n == 0 || n > constants.MaxImgSize {
-		return nil, errors.New("images should have min size 1B and max size 256KB")
+		return nil, errors.New("images should have min size 1B and max size 250KB")
 	}
 	imgData = imgData[:n]
 
