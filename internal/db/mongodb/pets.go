@@ -39,7 +39,7 @@ func (m *mongoClient) AddPet(ctx context.Context, userID string,
 	err = res.Err()
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return &dbErr.HintError{Key: nameField, Err: dbErr.ErrNotFound}
+			return &dbErr.HintError{Key: animalCategoryCollection, Err: dbErr.ErrNotFound}
 		}
 		return err
 	}
@@ -61,7 +61,7 @@ func (m *mongoClient) AddPet(ctx context.Context, userID string,
 		errS = m.mongoDbHandler.Collection(usersCollection).
 			FindOne(
 				aCtx,
-				bson.M{iDField: userbsonID},
+				bson.M{iDField: userbsonID, deletedOnField: bson.Null{}},
 				options.FindOne().SetProjection(bson.M{iDField: 1}),
 			).Err()
 		if errS != nil {
