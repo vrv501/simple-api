@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	ogenMiddleware "github.com/oapi-codegen/nethttp-middleware"
 	"github.com/rs/zerolog"
@@ -51,9 +53,8 @@ func main() {
 		},
 		SilenceServersWarning: true,
 	})
-	if openapi3filter.RegisteredBodyDecoder("application/merge-patch+json") == nil {
-		openapi3filter.RegisterBodyDecoder("application/merge-patch+json", openapi3filter.JSONBodyDecoder)
-	}
+	registerBodyEncoders()
+	registerBodyDecoders()
 
 	logger := configLogger()
 	basePath, err := spec.Servers.BasePath()
@@ -158,4 +159,33 @@ func configLogger() zerolog.Logger {
 	}
 
 	return logger.Level(logLevel)
+}
+
+func registerBodyEncoders() {
+	openapi3filter.RegisterBodyEncoder(
+		"image/jpeg",
+		func(body any) ([]byte, error) {
+			if imgStr, ok := body.(string); ok {
+				return []byte(imgStr), nil
+			}
+			return nil, errors.New("cannot encode image data: expected string (base64) or []byte")
+		},
+	)
+}
+
+func registerBodyDecoders() {
+	openapi3filter.RegisterBodyDecoder("application/merge-patch+json", openapi3filter.JSONBodyDecoder)
+	openapi3filter.RegisterBodyDecoder("image/jpeg", func(body io.Reader, _ http.Header, _ *openapi3.SchemaRef,
+		_ openapi3filter.EncodingFn) (any, error) {
+		buf := make([]byte, constants.MaxImgSize+1)
+		n, err := io.ReadFull(body, buf)
+		if err != nil && !errors.Is(err, io.EOF) &&
+			!errors.Is(err, io.ErrUnexpectedEOF) {
+			return nil, err
+		}
+		if n == 0 || n > constants.MaxImgSize {
+			return nil, errors.New("images should have min size 1B and max size 250KB")
+		}
+		return string(buf[:n]), nil
+	})
 }

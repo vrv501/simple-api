@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	errMsgAlreadyInUse  = "already in use"
-	errMsgUserNotFound  = "user not found"
-	errMsgInvalidUserID = "Invalid user ID"
+	errMsgAlreadyInUse   = "already in use"
+	errMsgUserNotFound   = "user not found"
+	errMsgInvalidUserID  = "Invalid user ID"
+	errMsgUserIDNotFound = "userID not found in context"
 )
 
 func hashPassword(password string) (string, error) {
@@ -52,8 +53,8 @@ func (a *APIHandler) CreateUser(ctx context.Context,
 
 	res, err := a.dbClient.AddUser(ctx, userReq)
 	if err != nil {
-		var conflictErr *dbErr.ConflictError
-		if errors.As(err, &conflictErr) {
+		var conflictErr *dbErr.HintError
+		if errors.As(err, &conflictErr) && errors.Is(conflictErr.Err, dbErr.ErrConflict) {
 			return genRouter.CreateUserdefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: conflictErr.Key + " " + errMsgAlreadyInUse,
@@ -81,7 +82,7 @@ func (a *APIHandler) DeleteUser(ctx context.Context,
 	logger := log.Ctx(ctx)
 	userID, ok := contextKeys.UserIDFromContext(ctx)
 	if !ok {
-		logger.Error().Msg("userID not found in context")
+		logger.Error().Msg(errMsgUserIDNotFound)
 		return genRouter.DeleteUserdefaultJSONResponse{
 			Body: genRouter.Generic{
 				Message: http.StatusText(http.StatusInternalServerError),
@@ -92,9 +93,9 @@ func (a *APIHandler) DeleteUser(ctx context.Context,
 
 	err := a.dbClient.DeleteUser(ctx, userID)
 	if err != nil {
-		var fKeyErr *dbErr.ForeignKeyError
+		var fKeyErr *dbErr.HintError
 		switch {
-		case errors.Is(err, dbErr.ErrInvalidID):
+		case errors.Is(err, dbErr.ErrInvalidValue):
 			return genRouter.DeleteUserdefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: errMsgInvalidUserID,
@@ -108,7 +109,7 @@ func (a *APIHandler) DeleteUser(ctx context.Context,
 				},
 				StatusCode: http.StatusNotFound,
 			}, nil
-		case errors.As(err, &fKeyErr):
+		case errors.As(err, &fKeyErr) && errors.Is(fKeyErr.Err, dbErr.ErrForeignKeyViolation):
 			return genRouter.DeleteUserdefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: "User cannot be deleted as there are pending " + fKeyErr.Key,
@@ -148,7 +149,7 @@ func (a *APIHandler) GetUser(ctx context.Context,
 	res, err := a.dbClient.GetUser(ctx, userID)
 	if err != nil {
 		switch {
-		case errors.Is(err, dbErr.ErrInvalidID):
+		case errors.Is(err, dbErr.ErrInvalidValue):
 			return genRouter.GetUserdefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: errMsgInvalidUserID,
@@ -181,7 +182,7 @@ func (a *APIHandler) PatchUser(ctx context.Context,
 	logger := log.Ctx(ctx)
 	userID, ok := contextKeys.UserIDFromContext(ctx)
 	if !ok {
-		logger.Error().Msg("userID not found in context")
+		logger.Error().Msg(errMsgUserIDNotFound)
 		return genRouter.PatchUserdefaultJSONResponse{
 			Body: genRouter.Generic{
 				Message: http.StatusText(http.StatusInternalServerError),
@@ -216,9 +217,8 @@ func (a *APIHandler) PatchUser(ctx context.Context,
 
 	resp, err := a.dbClient.PatchUser(ctx, userID, userReq)
 	if err != nil {
-		var conflictErr *dbErr.ConflictError
 		switch {
-		case errors.Is(err, dbErr.ErrInvalidID):
+		case errors.Is(err, dbErr.ErrInvalidValue):
 			return genRouter.PatchUserdefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: errMsgInvalidUserID,
@@ -232,10 +232,10 @@ func (a *APIHandler) PatchUser(ctx context.Context,
 				},
 				StatusCode: http.StatusNotFound,
 			}, nil
-		case errors.As(err, &conflictErr):
+		case errors.Is(err, dbErr.ErrConflict):
 			return genRouter.PatchUserdefaultJSONResponse{
 				Body: genRouter.Generic{
-					Message: conflictErr.Key + " " + errMsgAlreadyInUse,
+					Message: "phone_number " + errMsgAlreadyInUse,
 				},
 				StatusCode: http.StatusConflict,
 			}, nil

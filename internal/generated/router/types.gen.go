@@ -87,10 +87,10 @@ type PetTags = []string
 
 // PetWithMetadata defines model for PetWithMetadata.
 type PetWithMetadata struct {
-	Category  AnimalCategoryName `json:"category"`
-	Id        Id                 `json:"id"`
-	Name      PetName            `json:"name"`
-	PhotoUris *[]string          `json:"photo_uris,omitempty"`
+	Category AnimalCategoryName `json:"category"`
+	Id       Id                 `json:"id"`
+	Name     PetName            `json:"name"`
+	PhotoIds []string           `json:"photo_ids"`
 
 	// Price Price in USD. Must be positive with max 2 decimal places.
 	Price string `json:"price"`
@@ -203,7 +203,7 @@ type AddPetMultipartBody struct {
 	Pet Pet `json:"pet"`
 
 	// Photos Pet images (up to 10)
-	Photos *PetPhotos `json:"photos,omitempty"`
+	Photos PetPhotos `json:"photos"`
 }
 
 // ReplacePetMultipartBody defines parameters for ReplacePet.
@@ -211,7 +211,7 @@ type ReplacePetMultipartBody struct {
 	Pet Pet `json:"pet"`
 
 	// Photos Pet images (up to 10)
-	Photos *PetPhotos `json:"photos,omitempty"`
+	Photos PetPhotos `json:"photos"`
 }
 
 // UploadPetImageMultipartBody defines parameters for UploadPetImage.

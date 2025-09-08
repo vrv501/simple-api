@@ -151,7 +151,7 @@ func TestAPIHandler_AddAnimalCategory(t *testing.T) {
 			},
 			prepare: func() {
 				mockDBClient.EXPECT().AddAnimalCategory(gomock.Any(), "Dog").
-					Return(nil, &dbErr.ConflictError{})
+					Return(nil, dbErr.ErrConflict)
 			},
 			wantErr: false,
 		},
@@ -255,7 +255,7 @@ func TestAPIHandler_ReplaceAnimalCategory(t *testing.T) {
 			},
 			prepare: func() {
 				mockDBClient.EXPECT().UpdateAnimalCategory(gomock.Any(), "invalid-id", "Dog").
-					Return(nil, dbErr.ErrInvalidID)
+					Return(nil, dbErr.ErrInvalidValue)
 			},
 			wantErr: false,
 		},
@@ -299,7 +299,7 @@ func TestAPIHandler_ReplaceAnimalCategory(t *testing.T) {
 			},
 			prepare: func() {
 				mockDBClient.EXPECT().UpdateAnimalCategory(gomock.Any(), "1", "Dog").
-					Return(nil, &dbErr.ConflictError{})
+					Return(nil, dbErr.ErrConflict)
 			},
 			wantErr: false,
 		},

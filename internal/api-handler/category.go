@@ -55,8 +55,7 @@ func (a *APIHandler) AddAnimalCategory(ctx context.Context,
 	categoryName := request.Body.Name
 	res, err := a.dbClient.AddAnimalCategory(ctx, categoryName)
 	if err != nil {
-		var conflictErr *dbErr.ConflictError
-		if errors.As(err, &conflictErr) {
+		if errors.Is(err, dbErr.ErrConflict) {
 			return genRouter.AddAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: fmt.Sprintf(errMsgAnimalCategoryExists, categoryName),
@@ -87,9 +86,8 @@ func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
 
 	res, err := a.dbClient.UpdateAnimalCategory(ctx, id, categoryName)
 	if err != nil {
-		var conflictErr *dbErr.ConflictError
 		switch {
-		case errors.Is(err, dbErr.ErrInvalidID):
+		case errors.Is(err, dbErr.ErrInvalidValue):
 			return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: errMsgInvalidAnimalCategoryID,
@@ -103,7 +101,7 @@ func (a *APIHandler) ReplaceAnimalCategory(ctx context.Context,
 				},
 				StatusCode: http.StatusNotFound,
 			}, nil
-		case errors.As(err, &conflictErr):
+		case errors.Is(err, dbErr.ErrConflict):
 			return genRouter.ReplaceAnimalCategorydefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: fmt.Sprintf(errMsgAnimalCategoryExists, categoryName),

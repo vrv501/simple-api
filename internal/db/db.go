@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"io"
 	"os"
 	"testing"
 
@@ -12,6 +13,7 @@ import (
 type Handler interface {
 	animalCategoryHandler
 	userHandler
+	petsHandler
 	Close(ctx context.Context) error
 }
 
@@ -29,6 +31,12 @@ type userHandler interface {
 	PatchUser(ctx context.Context, userID string,
 		userReq *genRouter.PatchUserApplicationMergePatchPlusJSONRequestBody) (*genRouter.UserJSONResponse, error)
 	DeleteUser(ctx context.Context, userID string) error
+}
+
+type petsHandler interface {
+	AddPet(ctx context.Context, userID string,
+		petReq *genRouter.AddPetMultipartBody) error
+	GetPetImage(ctx context.Context, imageID string) (io.Reader, int64, error)
 }
 
 func NewDBHandler(ctx context.Context) Handler {

@@ -1,0 +1,32 @@
+[
+    {
+        "create": "images",
+        "validator": {
+            "$jsonSchema": {
+                "bsonType": "object",
+                "required": [
+                    "pet_id",
+                    "image",
+                    "deleted_on"
+                ],
+                "properties": {
+                    "pet_id": {
+                        "bsonType": "objectId",
+                        "description": "Reference to pets collection _id"
+                    },
+                    "image": {
+                        "bsonType": "binData",
+                        "description": "Image data in binary format"
+                    },
+                    "deleted_on": {
+                        "bsonType": [
+                            "date",
+                            "null"
+                        ],
+                        "description": "deleted date and time(UTC) of document"
+                    }
+                }
+            }
+        }
+    }
+]

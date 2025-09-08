@@ -124,7 +124,6 @@ type pet struct {
 	ID         bson.ObjectID   `bson:"_id,omitempty"`
 	Name       string          `bson:"name"`        // "bsonType": "string"
 	CategoryID bson.ObjectID   `bson:"category_id"` // "bsonType": "objectId"
-	PhotoURIs  []string        `bson:"photo_uris"`  // "bsonType": ["array", "null"]
 	UserID     bson.ObjectID   `bson:"user_id"`     // "bsonType": "objectId"
 	Price      bson.Decimal128 `bson:"price"`       // "bsonType": "decimal"
 	Status     string          `bson:"status"`      // "bsonType": "string"
@@ -137,7 +136,22 @@ const (
 	petsCollection string = "pets"
 
 	statusField string = "status"
+	priceField  string = "price"
 	userIDField string = "user_id"
+)
+
+type image struct {
+	ID        bson.ObjectID `bson:"_id,omitempty"`
+	PetID     bson.ObjectID `bson:"pet_id"`     // "bsonType": "objectId"
+	Image     []byte        `bson:"image"`      // "bsonType": "binData"
+	DeletedOn *time.Time    `bson:"deleted_on"` // "bsonType": ["date", "null"]
+}
+
+const (
+	imagesCollection string = "images"
+
+	petIDField string = "pet_id"
+	imageField string = "image"
 )
 
 type user struct {
@@ -176,19 +190,3 @@ type order struct {
 const (
 	ordersCollection string = "orders"
 )
-
-type fsFile struct {
-	ID         bson.ObjectID `bson:"_id,omitempty"`
-	Length     int64         `bson:"length"`     // "bsonType": "long"
-	ChunkSize  int32         `bson:"chunkSize"`  // "bsonType": "int"
-	UploadDate time.Time     `bson:"uploadDate"` // "bsonType": "date"
-	Filename   string        `bson:"filename"`   // "bsonType": "string"
-	Metadata   bson.M        `bson:"metadata"`   // "bsonType": "object"
-}
-
-type fsChunk struct {
-	ID      bson.ObjectID `bson:"_id,omitempty"`
-	FilesID bson.ObjectID `bson:"files_id"` // "bsonType": "objectId"
-	Length  int32         `bson:"n"`        // "bsonType": "int"
-	Data    []byte        `bson:"data"`     // "bsonType": "binData"
-}

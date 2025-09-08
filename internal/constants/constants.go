@@ -14,7 +14,5 @@ const (
 // Default values for various configurations
 const (
 	DefaultTimeout = 3 * time.Minute
-
-	MongoDB  = "mongodb"
-	Postgres = "postgres"
+	MaxImgSize     = 250 * 1024 // 250 KB
 )

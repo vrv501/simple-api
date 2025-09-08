@@ -28,9 +28,9 @@ func (m *mongoClient) AddUser(ctx context.Context,
 			se := mongo.ServerError(nil)
 			_ = errors.As(err, &se)
 			if se.HasErrorMessage(phoneNumberField) {
-				return nil, &dbErr.ConflictError{Key: phoneNumberField, Err: err}
+				return nil, &dbErr.HintError{Key: phoneNumberField, Err: dbErr.ErrConflict}
 			}
-			return nil, &dbErr.ConflictError{Key: usernameField, Err: err}
+			return nil, &dbErr.HintError{Key: usernameField, Err: dbErr.ErrConflict}
 		}
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func (m *mongoClient) GetUser(ctx context.Context,
 	userID string) (*genRouter.UserJSONResponse, error) {
 	bsonID, err := bson.ObjectIDFromHex(userID)
 	if err != nil {
-		return nil, dbErr.ErrInvalidID
+		return nil, dbErr.ErrInvalidValue
 	}
 
 	res := m.mongoDbHandler.Collection(usersCollection).FindOne(
@@ -81,7 +81,7 @@ func (m *mongoClient) GetUser(ctx context.Context,
 func (m *mongoClient) DeleteUser(aInctx context.Context, userID string) error {
 	bsonID, err := bson.ObjectIDFromHex(userID)
 	if err != nil {
-		return dbErr.ErrInvalidID
+		return dbErr.ErrInvalidValue
 	}
 
 	_, err = m.performAdvisoryLockDBOperation(aInctx, bsonID, func(aCtx context.Context) (any, error) {
@@ -94,7 +94,7 @@ func (m *mongoClient) DeleteUser(aInctx context.Context, userID string) error {
 			return nil, errS
 		}
 		if errS == nil {
-			return nil, &dbErr.ForeignKeyError{Key: petsCollection, Err: errS}
+			return nil, &dbErr.HintError{Key: petsCollection, Err: dbErr.ErrForeignKeyViolation}
 		}
 
 		errS = m.mongoDbHandler.Collection(ordersCollection).FindOne(
@@ -114,12 +114,18 @@ func (m *mongoClient) DeleteUser(aInctx context.Context, userID string) error {
 			return nil, errS
 		}
 		if errS == nil {
-			return nil, &dbErr.ForeignKeyError{Key: ordersCollection, Err: errS}
+			return nil, &dbErr.HintError{Key: ordersCollection, Err: dbErr.ErrForeignKeyViolation}
 		}
 
-		_, errS = m.mongoDbHandler.Collection(usersCollection).
+		res, errS := m.mongoDbHandler.Collection(usersCollection).
 			UpdateOne(aCtx, bson.M{iDField: bsonID, deletedOnField: bson.Null{}},
 				bson.M{setOperator: bson.M{deletedOnField: time.Now().UTC()}})
+		if errS == nil {
+			if res.MatchedCount == 0 {
+				return nil, dbErr.ErrNotFound
+			}
+			return nil, nil
+		}
 		return nil, errS
 	})
 	return err
@@ -129,7 +135,7 @@ func (m *mongoClient) PatchUser(ctx context.Context, userID string,
 	userReq *genRouter.PatchUserApplicationMergePatchPlusJSONRequestBody) (*genRouter.UserJSONResponse, error) {
 	bsonID, err := bson.ObjectIDFromHex(userID)
 	if err != nil {
-		return nil, dbErr.ErrInvalidID
+		return nil, dbErr.ErrInvalidValue
 	}
 	updateDoc := bson.M{}
 	if userReq.FullName != nil {
@@ -159,7 +165,7 @@ func (m *mongoClient) PatchUser(ctx context.Context, userID string,
 			return nil, dbErr.ErrNotFound
 		}
 		if mongo.IsDuplicateKeyError(err) {
-			return nil, &dbErr.ConflictError{Key: phoneNumberField, Err: err}
+			return nil, dbErr.ErrConflict
 		}
 		return nil, err
 	}

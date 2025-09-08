@@ -28,6 +28,12 @@ type ServerInterface interface {
 	// Replace existing animal-category data using Id.
 	// (PUT /animal-categories/{animalCategoryId})
 	ReplaceAnimalCategory(w http.ResponseWriter, r *http.Request, animalCategoryId Id)
+	// Delete a pet image.
+	// (DELETE /images/{imageId})
+	DeletePetImage(w http.ResponseWriter, r *http.Request, imageId ImageId)
+	// Get a pet image using ID.
+	// (GET /images/{imageId})
+	GetImageById(w http.ResponseWriter, r *http.Request, imageId ImageId)
 	// Find Pets using name, status, tags.
 	// (GET /pets)
 	FindPets(w http.ResponseWriter, r *http.Request, params FindPetsParams)
@@ -46,12 +52,6 @@ type ServerInterface interface {
 	// Upload a new image for a pet.
 	// (POST /pets/{petId}/images)
 	UploadPetImage(w http.ResponseWriter, r *http.Request, petId PetId)
-	// Delete a pet image.
-	// (DELETE /pets/{petId}/images/{imageId})
-	DeletePetImage(w http.ResponseWriter, r *http.Request, petId PetId, imageId ImageId)
-	// Get a pet image using ID.
-	// (GET /pets/{petId}/images/{imageId})
-	GetImageByPetId(w http.ResponseWriter, r *http.Request, petId PetId, imageId ImageId)
 	// Find user orders using status.
 	// (GET /store/orders)
 	FindOrders(w http.ResponseWriter, r *http.Request, params FindOrdersParams)
@@ -169,6 +169,68 @@ func (siw *ServerInterfaceWrapper) ReplaceAnimalCategory(w http.ResponseWriter, 
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.ReplaceAnimalCategory(w, r, animalCategoryId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeletePetImage operation middleware
+func (siw *ServerInterfaceWrapper) DeletePetImage(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "imageId" -------------
+	var imageId ImageId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "imageId", r.PathValue("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "imageId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeletePetImage(w, r, imageId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetImageById operation middleware
+func (siw *ServerInterfaceWrapper) GetImageById(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "imageId" -------------
+	var imageId ImageId
+
+	err = runtime.BindStyledParameterWithOptions("simple", "imageId", r.PathValue("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "imageId", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetImageById(w, r, imageId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -378,86 +440,6 @@ func (siw *ServerInterfaceWrapper) UploadPetImage(w http.ResponseWriter, r *http
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.UploadPetImage(w, r, petId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// DeletePetImage operation middleware
-func (siw *ServerInterfaceWrapper) DeletePetImage(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "petId" -------------
-	var petId PetId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
-		return
-	}
-
-	// ------------- Path parameter "imageId" -------------
-	var imageId ImageId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "imageId", r.PathValue("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "imageId", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeletePetImage(w, r, petId, imageId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// GetImageByPetId operation middleware
-func (siw *ServerInterfaceWrapper) GetImageByPetId(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "petId" -------------
-	var petId PetId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "petId", r.PathValue("petId"), &petId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
-		return
-	}
-
-	// ------------- Path parameter "imageId" -------------
-	var imageId ImageId
-
-	err = runtime.BindStyledParameterWithOptions("simple", "imageId", r.PathValue("imageId"), &imageId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "imageId", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, BearerAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetImageByPetId(w, r, petId, imageId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -803,14 +785,14 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/animal-categories", wrapper.FindAnimalCategory)
 	m.HandleFunc("POST "+options.BaseURL+"/animal-categories", wrapper.AddAnimalCategory)
 	m.HandleFunc("PUT "+options.BaseURL+"/animal-categories/{animalCategoryId}", wrapper.ReplaceAnimalCategory)
+	m.HandleFunc("DELETE "+options.BaseURL+"/images/{imageId}", wrapper.DeletePetImage)
+	m.HandleFunc("GET "+options.BaseURL+"/images/{imageId}", wrapper.GetImageById)
 	m.HandleFunc("GET "+options.BaseURL+"/pets", wrapper.FindPets)
 	m.HandleFunc("POST "+options.BaseURL+"/pets", wrapper.AddPet)
 	m.HandleFunc("DELETE "+options.BaseURL+"/pets/{petId}", wrapper.DeletePet)
 	m.HandleFunc("GET "+options.BaseURL+"/pets/{petId}", wrapper.GetPetByID)
 	m.HandleFunc("PUT "+options.BaseURL+"/pets/{petId}", wrapper.ReplacePet)
 	m.HandleFunc("POST "+options.BaseURL+"/pets/{petId}/images", wrapper.UploadPetImage)
-	m.HandleFunc("DELETE "+options.BaseURL+"/pets/{petId}/images/{imageId}", wrapper.DeletePetImage)
-	m.HandleFunc("GET "+options.BaseURL+"/pets/{petId}/images/{imageId}", wrapper.GetImageByPetId)
 	m.HandleFunc("GET "+options.BaseURL+"/store/orders", wrapper.FindOrders)
 	m.HandleFunc("POST "+options.BaseURL+"/store/orders", wrapper.PlaceOrders)
 	m.HandleFunc("DELETE "+options.BaseURL+"/store/orders/{orderId}", wrapper.DeleteOrder)
@@ -935,6 +917,77 @@ type ReplaceAnimalCategorydefaultJSONResponse struct {
 }
 
 func (response ReplaceAnimalCategorydefaultJSONResponse) VisitReplaceAnimalCategoryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeletePetImageRequestObject struct {
+	ImageId ImageId `json:"imageId"`
+}
+
+type DeletePetImageResponseObject interface {
+	VisitDeletePetImageResponse(w http.ResponseWriter) error
+}
+
+type DeletePetImage204Response struct {
+}
+
+func (response DeletePetImage204Response) VisitDeletePetImageResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeletePetImagedefaultJSONResponse struct {
+	Body struct {
+		Message string `json:"message"`
+	}
+	StatusCode int
+}
+
+func (response DeletePetImagedefaultJSONResponse) VisitDeletePetImageResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetImageByIdRequestObject struct {
+	ImageId ImageId `json:"imageId"`
+}
+
+type GetImageByIdResponseObject interface {
+	VisitGetImageByIdResponse(w http.ResponseWriter) error
+}
+
+type GetImageById200ImagejpegResponse struct {
+	Body          io.Reader
+	ContentLength int64
+}
+
+func (response GetImageById200ImagejpegResponse) VisitGetImageByIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "image/jpeg")
+	if response.ContentLength != 0 {
+		w.Header().Set("Content-Length", fmt.Sprint(response.ContentLength))
+	}
+	w.WriteHeader(200)
+
+	if closer, ok := response.Body.(io.ReadCloser); ok {
+		defer closer.Close()
+	}
+	_, err := io.Copy(w, response.Body)
+	return err
+}
+
+type GetImageByIddefaultJSONResponse struct {
+	Body struct {
+		Message string `json:"message"`
+	}
+	StatusCode int
+}
+
+func (response GetImageByIddefaultJSONResponse) VisitGetImageByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.StatusCode)
 
@@ -1131,79 +1184,6 @@ type UploadPetImagedefaultJSONResponse struct {
 }
 
 func (response UploadPetImagedefaultJSONResponse) VisitUploadPetImageResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
-type DeletePetImageRequestObject struct {
-	PetId   PetId   `json:"petId"`
-	ImageId ImageId `json:"imageId"`
-}
-
-type DeletePetImageResponseObject interface {
-	VisitDeletePetImageResponse(w http.ResponseWriter) error
-}
-
-type DeletePetImage204Response struct {
-}
-
-func (response DeletePetImage204Response) VisitDeletePetImageResponse(w http.ResponseWriter) error {
-	w.WriteHeader(204)
-	return nil
-}
-
-type DeletePetImagedefaultJSONResponse struct {
-	Body struct {
-		Message string `json:"message"`
-	}
-	StatusCode int
-}
-
-func (response DeletePetImagedefaultJSONResponse) VisitDeletePetImageResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
-type GetImageByPetIdRequestObject struct {
-	PetId   PetId   `json:"petId"`
-	ImageId ImageId `json:"imageId"`
-}
-
-type GetImageByPetIdResponseObject interface {
-	VisitGetImageByPetIdResponse(w http.ResponseWriter) error
-}
-
-type GetImageByPetId200ImagejpegResponse struct {
-	Body          io.Reader
-	ContentLength int64
-}
-
-func (response GetImageByPetId200ImagejpegResponse) VisitGetImageByPetIdResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "image/jpeg")
-	if response.ContentLength != 0 {
-		w.Header().Set("Content-Length", fmt.Sprint(response.ContentLength))
-	}
-	w.WriteHeader(200)
-
-	if closer, ok := response.Body.(io.ReadCloser); ok {
-		defer closer.Close()
-	}
-	_, err := io.Copy(w, response.Body)
-	return err
-}
-
-type GetImageByPetIddefaultJSONResponse struct {
-	Body struct {
-		Message string `json:"message"`
-	}
-	StatusCode int
-}
-
-func (response GetImageByPetIddefaultJSONResponse) VisitGetImageByPetIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.StatusCode)
 
@@ -1467,6 +1447,12 @@ type StrictServerInterface interface {
 	// Replace existing animal-category data using Id.
 	// (PUT /animal-categories/{animalCategoryId})
 	ReplaceAnimalCategory(ctx context.Context, request ReplaceAnimalCategoryRequestObject) (ReplaceAnimalCategoryResponseObject, error)
+	// Delete a pet image.
+	// (DELETE /images/{imageId})
+	DeletePetImage(ctx context.Context, request DeletePetImageRequestObject) (DeletePetImageResponseObject, error)
+	// Get a pet image using ID.
+	// (GET /images/{imageId})
+	GetImageById(ctx context.Context, request GetImageByIdRequestObject) (GetImageByIdResponseObject, error)
 	// Find Pets using name, status, tags.
 	// (GET /pets)
 	FindPets(ctx context.Context, request FindPetsRequestObject) (FindPetsResponseObject, error)
@@ -1485,12 +1471,6 @@ type StrictServerInterface interface {
 	// Upload a new image for a pet.
 	// (POST /pets/{petId}/images)
 	UploadPetImage(ctx context.Context, request UploadPetImageRequestObject) (UploadPetImageResponseObject, error)
-	// Delete a pet image.
-	// (DELETE /pets/{petId}/images/{imageId})
-	DeletePetImage(ctx context.Context, request DeletePetImageRequestObject) (DeletePetImageResponseObject, error)
-	// Get a pet image using ID.
-	// (GET /pets/{petId}/images/{imageId})
-	GetImageByPetId(ctx context.Context, request GetImageByPetIdRequestObject) (GetImageByPetIdResponseObject, error)
 	// Find user orders using status.
 	// (GET /store/orders)
 	FindOrders(ctx context.Context, request FindOrdersRequestObject) (FindOrdersResponseObject, error)
@@ -1629,6 +1609,58 @@ func (sh *strictHandler) ReplaceAnimalCategory(w http.ResponseWriter, r *http.Re
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(ReplaceAnimalCategoryResponseObject); ok {
 		if err := validResponse.VisitReplaceAnimalCategoryResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeletePetImage operation middleware
+func (sh *strictHandler) DeletePetImage(w http.ResponseWriter, r *http.Request, imageId ImageId) {
+	var request DeletePetImageRequestObject
+
+	request.ImageId = imageId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.DeletePetImage(ctx, request.(DeletePetImageRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeletePetImage")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(DeletePetImageResponseObject); ok {
+		if err := validResponse.VisitDeletePetImageResponse(w); err != nil {
+			sh.options.ResponseErrorHandlerFunc(w, r, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetImageById operation middleware
+func (sh *strictHandler) GetImageById(w http.ResponseWriter, r *http.Request, imageId ImageId) {
+	var request GetImageByIdRequestObject
+
+	request.ImageId = imageId
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
+		return sh.ssi.GetImageById(ctx, request.(GetImageByIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetImageById")
+	}
+
+	response, err := handler(r.Context(), w, r, request)
+
+	if err != nil {
+		sh.options.ResponseErrorHandlerFunc(w, r, err)
+	} else if validResponse, ok := response.(GetImageByIdResponseObject); ok {
+		if err := validResponse.VisitGetImageByIdResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
@@ -1804,60 +1836,6 @@ func (sh *strictHandler) UploadPetImage(w http.ResponseWriter, r *http.Request, 
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
 	} else if validResponse, ok := response.(UploadPetImageResponseObject); ok {
 		if err := validResponse.VisitUploadPetImageResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// DeletePetImage operation middleware
-func (sh *strictHandler) DeletePetImage(w http.ResponseWriter, r *http.Request, petId PetId, imageId ImageId) {
-	var request DeletePetImageRequestObject
-
-	request.PetId = petId
-	request.ImageId = imageId
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.DeletePetImage(ctx, request.(DeletePetImageRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "DeletePetImage")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(DeletePetImageResponseObject); ok {
-		if err := validResponse.VisitDeletePetImageResponse(w); err != nil {
-			sh.options.ResponseErrorHandlerFunc(w, r, err)
-		}
-	} else if response != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetImageByPetId operation middleware
-func (sh *strictHandler) GetImageByPetId(w http.ResponseWriter, r *http.Request, petId PetId, imageId ImageId) {
-	var request GetImageByPetIdRequestObject
-
-	request.PetId = petId
-	request.ImageId = imageId
-
-	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.GetImageByPetId(ctx, request.(GetImageByPetIdRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetImageByPetId")
-	}
-
-	response, err := handler(r.Context(), w, r, request)
-
-	if err != nil {
-		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(GetImageByPetIdResponseObject); ok {
-		if err := validResponse.VisitGetImageByPetIdResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {
