@@ -44,12 +44,9 @@ func validateImage(r io.Reader) ([]byte, error) {
 	imgData = imgData[:n]
 
 	reader := bytes.NewReader(imgData)
-	imgDetails, format, err := image.DecodeConfig(reader)
+	imgDetails, _, err := image.DecodeConfig(reader)
 	if err != nil {
-		return nil, errors.New("image data is corrupted")
-	}
-	if format != "jpeg" {
-		return nil, errors.New("invalid JPEG format found")
+		return nil, errors.New("jpeg image is corrupted")
 	}
 	if imgDetails.Width < 256 || imgDetails.Width > 1920 ||
 		imgDetails.Height < 256 || imgDetails.Height > 1080 {
@@ -148,7 +145,7 @@ func (a *APIHandler) AddPet(ctx context.Context,
 			statusCode := http.StatusBadRequest
 			switch {
 			case errors.Is(err, dbErr.ErrInvalidValue):
-				errMsg = "invalid value for field: " + dberr.Key
+				errMsg = "invalid value for " + dberr.Key
 				statusCode = http.StatusBadRequest
 			case errors.Is(err, dbErr.ErrNotFound):
 				errMsg = dberr.Key + " not found"
