@@ -8,7 +8,7 @@ all: lint test build
 .PHONY: all
 
 build:
-	$(GO_BUILD_CMD) -o bin/app -a -v cmd/main.go
+	$(GO_BUILD_CMD) -o bin/app -a -v cmd/server/main.go
 .PHONY: build
 
 lint: .golangci.yml
