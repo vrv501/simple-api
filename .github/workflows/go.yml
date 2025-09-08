@@ -100,7 +100,7 @@ jobs:
         uses: github/codeql-action/init@f1f6e5f6af878fb37288ce1c627459e94dbf7d01
         with:
           languages: go
-          build-mode: manual
+          build-mode: autobuild
       - name: Build App
         run: |
           make build
