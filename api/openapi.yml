@@ -217,7 +217,7 @@ paths:
         - images
       summary: Get a pet image using ID.
       description: Get a pet image using ID.
-      operationId: getImageById
+      operationId: getImageByID
       parameters:
         - "$ref": "#/components/parameters/ImageId"
       responses:

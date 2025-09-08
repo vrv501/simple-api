@@ -194,8 +194,8 @@ func (a *APIHandler) GetPetByID(_ context.Context,
 
 // Replace existing pet data using Id.
 // (PUT /pets/{petId})
-func (a *APIHandler) ReplacePet(ctx context.Context,
-	request genRouter.ReplacePetRequestObject) (genRouter.ReplacePetResponseObject, error) {
+func (a *APIHandler) ReplacePet(_ context.Context,
+	_ genRouter.ReplacePetRequestObject) (genRouter.ReplacePetResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
@@ -255,21 +255,21 @@ func (a *APIHandler) DeletePetImage(ctx context.Context,
 
 // Get a pet image using ID.
 // (GET /images/{imageId})
-func (a *APIHandler) GetImageById(ctx context.Context,
-	request genRouter.GetImageByIdRequestObject) (genRouter.GetImageByIdResponseObject, error) {
+func (a *APIHandler) GetImageByID(ctx context.Context,
+	request genRouter.GetImageByIDRequestObject) (genRouter.GetImageByIDResponseObject, error) {
 	logger := log.Ctx(ctx)
 	reader, contentLength, err := a.dbClient.GetPetImage(ctx, request.ImageId)
 	if err != nil {
 		switch {
 		case errors.Is(err, dbErr.ErrNotFound):
-			return genRouter.GetImageByIddefaultJSONResponse{
+			return genRouter.GetImageByIDdefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: "image not found",
 				},
 				StatusCode: http.StatusNotFound,
 			}, nil
 		case errors.Is(err, dbErr.ErrInvalidValue):
-			return genRouter.GetImageByIddefaultJSONResponse{
+			return genRouter.GetImageByIDdefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: "invalid image ID",
 				},
@@ -277,14 +277,14 @@ func (a *APIHandler) GetImageById(ctx context.Context,
 			}, nil
 		}
 		logger.Error().Err(err).Msg("failed to get pet image")
-		return genRouter.GetImageByIddefaultJSONResponse{
+		return genRouter.GetImageByIDdefaultJSONResponse{
 			Body: genRouter.Generic{
 				Message: http.StatusText(http.StatusInternalServerError),
 			},
 			StatusCode: http.StatusInternalServerError,
 		}, nil
 	}
-	return genRouter.GetImageById200ImagejpegResponse{
+	return genRouter.GetImageByID200ImagejpegResponse{
 		Body:          reader,
 		ContentLength: contentLength,
 	}, nil

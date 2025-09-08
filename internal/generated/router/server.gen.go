@@ -33,7 +33,7 @@ type ServerInterface interface {
 	DeletePetImage(w http.ResponseWriter, r *http.Request, imageId ImageId)
 	// Get a pet image using ID.
 	// (GET /images/{imageId})
-	GetImageById(w http.ResponseWriter, r *http.Request, imageId ImageId)
+	GetImageByID(w http.ResponseWriter, r *http.Request, imageId ImageId)
 	// Find Pets using name, status, tags.
 	// (GET /pets)
 	FindPets(w http.ResponseWriter, r *http.Request, params FindPetsParams)
@@ -209,8 +209,8 @@ func (siw *ServerInterfaceWrapper) DeletePetImage(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r)
 }
 
-// GetImageById operation middleware
-func (siw *ServerInterfaceWrapper) GetImageById(w http.ResponseWriter, r *http.Request) {
+// GetImageByID operation middleware
+func (siw *ServerInterfaceWrapper) GetImageByID(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -230,7 +230,7 @@ func (siw *ServerInterfaceWrapper) GetImageById(w http.ResponseWriter, r *http.R
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetImageById(w, r, imageId)
+		siw.Handler.GetImageByID(w, r, imageId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -786,7 +786,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/animal-categories", wrapper.AddAnimalCategory)
 	m.HandleFunc("PUT "+options.BaseURL+"/animal-categories/{animalCategoryId}", wrapper.ReplaceAnimalCategory)
 	m.HandleFunc("DELETE "+options.BaseURL+"/images/{imageId}", wrapper.DeletePetImage)
-	m.HandleFunc("GET "+options.BaseURL+"/images/{imageId}", wrapper.GetImageById)
+	m.HandleFunc("GET "+options.BaseURL+"/images/{imageId}", wrapper.GetImageByID)
 	m.HandleFunc("GET "+options.BaseURL+"/pets", wrapper.FindPets)
 	m.HandleFunc("POST "+options.BaseURL+"/pets", wrapper.AddPet)
 	m.HandleFunc("DELETE "+options.BaseURL+"/pets/{petId}", wrapper.DeletePet)
@@ -953,20 +953,20 @@ func (response DeletePetImagedefaultJSONResponse) VisitDeletePetImageResponse(w 
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type GetImageByIdRequestObject struct {
+type GetImageByIDRequestObject struct {
 	ImageId ImageId `json:"imageId"`
 }
 
-type GetImageByIdResponseObject interface {
-	VisitGetImageByIdResponse(w http.ResponseWriter) error
+type GetImageByIDResponseObject interface {
+	VisitGetImageByIDResponse(w http.ResponseWriter) error
 }
 
-type GetImageById200ImagejpegResponse struct {
+type GetImageByID200ImagejpegResponse struct {
 	Body          io.Reader
 	ContentLength int64
 }
 
-func (response GetImageById200ImagejpegResponse) VisitGetImageByIdResponse(w http.ResponseWriter) error {
+func (response GetImageByID200ImagejpegResponse) VisitGetImageByIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "image/jpeg")
 	if response.ContentLength != 0 {
 		w.Header().Set("Content-Length", fmt.Sprint(response.ContentLength))
@@ -980,14 +980,14 @@ func (response GetImageById200ImagejpegResponse) VisitGetImageByIdResponse(w htt
 	return err
 }
 
-type GetImageByIddefaultJSONResponse struct {
+type GetImageByIDdefaultJSONResponse struct {
 	Body struct {
 		Message string `json:"message"`
 	}
 	StatusCode int
 }
 
-func (response GetImageByIddefaultJSONResponse) VisitGetImageByIdResponse(w http.ResponseWriter) error {
+func (response GetImageByIDdefaultJSONResponse) VisitGetImageByIDResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.StatusCode)
 
@@ -1452,7 +1452,7 @@ type StrictServerInterface interface {
 	DeletePetImage(ctx context.Context, request DeletePetImageRequestObject) (DeletePetImageResponseObject, error)
 	// Get a pet image using ID.
 	// (GET /images/{imageId})
-	GetImageById(ctx context.Context, request GetImageByIdRequestObject) (GetImageByIdResponseObject, error)
+	GetImageByID(ctx context.Context, request GetImageByIDRequestObject) (GetImageByIDResponseObject, error)
 	// Find Pets using name, status, tags.
 	// (GET /pets)
 	FindPets(ctx context.Context, request FindPetsRequestObject) (FindPetsResponseObject, error)
@@ -1642,25 +1642,25 @@ func (sh *strictHandler) DeletePetImage(w http.ResponseWriter, r *http.Request, 
 	}
 }
 
-// GetImageById operation middleware
-func (sh *strictHandler) GetImageById(w http.ResponseWriter, r *http.Request, imageId ImageId) {
-	var request GetImageByIdRequestObject
+// GetImageByID operation middleware
+func (sh *strictHandler) GetImageByID(w http.ResponseWriter, r *http.Request, imageId ImageId) {
+	var request GetImageByIDRequestObject
 
 	request.ImageId = imageId
 
 	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request, request interface{}) (interface{}, error) {
-		return sh.ssi.GetImageById(ctx, request.(GetImageByIdRequestObject))
+		return sh.ssi.GetImageByID(ctx, request.(GetImageByIDRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "GetImageById")
+		handler = middleware(handler, "GetImageByID")
 	}
 
 	response, err := handler(r.Context(), w, r, request)
 
 	if err != nil {
 		sh.options.ResponseErrorHandlerFunc(w, r, err)
-	} else if validResponse, ok := response.(GetImageByIdResponseObject); ok {
-		if err := validResponse.VisitGetImageByIdResponse(w); err != nil {
+	} else if validResponse, ok := response.(GetImageByIDResponseObject); ok {
+		if err := validResponse.VisitGetImageByIDResponse(w); err != nil {
 			sh.options.ResponseErrorHandlerFunc(w, r, err)
 		}
 	} else if response != nil {

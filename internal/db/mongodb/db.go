@@ -177,7 +177,7 @@ const (
 	addressField     string = "address"
 )
 
-type order struct { //nolint:unused
+type order struct { //nolint:unused //TODO: remove me
 	ID            bson.ObjectID `bson:"_id,omitempty"`
 	UserID        bson.ObjectID `bson:"user_id"`        // "bsonType": "objectId"
 	PetID         bson.ObjectID `bson:"pet_id"`         // "bsonType": "objectId"
