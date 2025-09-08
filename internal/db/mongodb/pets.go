@@ -103,6 +103,7 @@ func (m *mongoClient) AddPet(ctx context.Context, userID string,
 				imageList := make([]image, len(petReq.Photos))
 				for i := range petReq.Photos {
 					imgBytes, _ := petReq.Photos[i].Bytes()
+					imageList[i].UserID = userbsonID
 					imageList[i].PetID = petID
 					imageList[i].Image = imgBytes
 				}
@@ -141,4 +142,27 @@ func (m *mongoClient) GetPetImage(ctx context.Context, imageID string) (io.Reade
 	}
 
 	return bytes.NewReader(img.Image), int64(len(img.Image)), nil
+}
+
+func (m *mongoClient) DeletePetImage(ctx context.Context, userID, imageID string) error {
+	bsonImageID, err := bson.ObjectIDFromHex(imageID)
+	if err != nil {
+		return &dbErr.HintError{Key: iDField, Err: dbErr.ErrInvalidValue}
+	}
+	bsonUserID, err := bson.ObjectIDFromHex(userID)
+	if err != nil {
+		return &dbErr.HintError{Key: userIDField, Err: dbErr.ErrInvalidValue}
+	}
+
+	_, err = m.mongoDbHandler.Collection(imagesCollection).UpdateOne(
+		ctx,
+		bson.M{iDField: bsonImageID, userIDField: bsonUserID, deletedOnField: bson.Null{}},
+		bson.M{setOperator: bson.M{deletedOnField: time.Now().UTC()}},
+	)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return dbErr.ErrNotFound
+		}
+	}
+	return err
 }

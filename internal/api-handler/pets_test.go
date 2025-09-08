@@ -101,7 +101,7 @@ func createMultipartReader(t *testing.T, stringFields map[string]string, fileFie
 	return multipart.NewReader(&body, writer.Boundary())
 }
 
-func TestAPIHandler_GetImageById(t *testing.T) {
+func TestAPIHandler_GetImageByID(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -109,9 +109,9 @@ func TestAPIHandler_GetImageById(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		request genRouter.GetImageByIdRequestObject
+		request genRouter.GetImageByIDRequestObject
 		prepare func()
-		want    genRouter.GetImageByIdResponseObject
+		want    genRouter.GetImageByIDResponseObject
 	}{
 		{
 			name: "image not found",
@@ -119,7 +119,7 @@ func TestAPIHandler_GetImageById(t *testing.T) {
 				mockDBClient.EXPECT().GetPetImage(gomock.Any(), gomock.Any()).
 					Return(nil, int64(0), dbErr.ErrNotFound)
 			},
-			want: genRouter.GetImageByIddefaultJSONResponse{
+			want: genRouter.GetImageByIDdefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: "image not found",
 				},
@@ -132,7 +132,7 @@ func TestAPIHandler_GetImageById(t *testing.T) {
 				mockDBClient.EXPECT().GetPetImage(gomock.Any(), gomock.Any()).
 					Return(nil, int64(0), dbErr.ErrInvalidValue)
 			},
-			want: genRouter.GetImageByIddefaultJSONResponse{
+			want: genRouter.GetImageByIDdefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: "invalid image ID",
 				},
@@ -145,7 +145,7 @@ func TestAPIHandler_GetImageById(t *testing.T) {
 				mockDBClient.EXPECT().GetPetImage(gomock.Any(), gomock.Any()).
 					Return(nil, int64(0), errors.New(""))
 			},
-			want: genRouter.GetImageByIddefaultJSONResponse{
+			want: genRouter.GetImageByIDdefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: http.StatusText(http.StatusInternalServerError),
 				},
@@ -158,7 +158,7 @@ func TestAPIHandler_GetImageById(t *testing.T) {
 				mockDBClient.EXPECT().GetPetImage(gomock.Any(), gomock.Any()).
 					Return(nil, int64(0), nil)
 			},
-			want: genRouter.GetImageById200ImagejpegResponse{
+			want: genRouter.GetImageByID200ImagejpegResponse{
 				Body:          nil,
 				ContentLength: 0,
 			},
@@ -172,9 +172,9 @@ func TestAPIHandler_GetImageById(t *testing.T) {
 			if tt.prepare != nil {
 				tt.prepare()
 			}
-			got, _ := a.GetImageById(context.Background(), tt.request)
+			got, _ := a.GetImageByID(context.Background(), tt.request)
 			if !cmp.Equal(got, tt.want) {
-				t.Errorf("GetImageById() = %v, want %v", got, tt.want)
+				t.Errorf("GetImageByID() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -456,6 +456,111 @@ func TestAPIHandler_AddPet(t *testing.T) {
 			got, _ := a.AddPet(tt.ctx, tt.request)
 			if !cmp.Equal(got, tt.want) {
 				t.Errorf("AddPet() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAPIHandler_DeletePetImage(t *testing.T) {
+	t.Parallel()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	mockDBClient := mockdb.NewMockHandler(ctrl)
+	ctxU := contextKeys.ContextWithUserID(context.Background(), "1")
+
+	type args struct {
+		ctx     context.Context
+		request genRouter.DeletePetImageRequestObject
+	}
+	tests := []struct {
+		name    string
+		args    args
+		prepare func()
+		want    genRouter.DeletePetImageResponseObject
+	}{
+		{
+			name: "userID not in context",
+			args: args{
+				ctx: context.Background(),
+			},
+			want: genRouter.DeletePetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: http.StatusText(http.StatusInternalServerError),
+				},
+				StatusCode: http.StatusInternalServerError,
+			},
+		},
+		{
+			name: "invalid user id",
+			args: args{
+				ctx: ctxU,
+			},
+			prepare: func() {
+				mockDBClient.EXPECT().DeletePetImage(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&dbErr.HintError{Err: dbErr.ErrInvalidValue})
+			},
+			want: genRouter.DeletePetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: "invalid ",
+				},
+				StatusCode: http.StatusBadRequest,
+			},
+		},
+		{
+			name: "image not found",
+			args: args{
+				ctx: ctxU,
+			},
+			prepare: func() {
+				mockDBClient.EXPECT().DeletePetImage(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(dbErr.ErrNotFound)
+			},
+			want: genRouter.DeletePetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: "image not found",
+				},
+				StatusCode: http.StatusNotFound,
+			},
+		},
+		{
+			name: "internal error",
+			args: args{
+				ctx: ctxU,
+			},
+			prepare: func() {
+				mockDBClient.EXPECT().DeletePetImage(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(errors.New(""))
+			},
+			want: genRouter.DeletePetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: http.StatusText(http.StatusInternalServerError),
+				},
+				StatusCode: http.StatusInternalServerError,
+			},
+		},
+		{
+			name: "success",
+			args: args{
+				ctx: ctxU,
+			},
+			prepare: func() {
+				mockDBClient.EXPECT().DeletePetImage(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil)
+			},
+			want: genRouter.DeletePetImage204Response{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &APIHandler{
+				dbClient: mockDBClient,
+			}
+			if tt.prepare != nil {
+				tt.prepare()
+			}
+			got, _ := a.DeletePetImage(tt.args.ctx, tt.args.request)
+			if !cmp.Equal(got, tt.want) {
+				t.Errorf("APIHandler.DeletePetImage() = %v, want %v", got, tt.want)
 			}
 		})
 	}
