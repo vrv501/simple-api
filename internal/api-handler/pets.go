@@ -26,8 +26,8 @@ const (
 
 // Find Pets using name, status, tags.
 // (GET /pets)
-func (a *APIHandler) FindPets(ctx context.Context,
-	request genRouter.FindPetsRequestObject) (genRouter.FindPetsResponseObject, error) {
+func (a *APIHandler) FindPets(_ context.Context,
+	_ genRouter.FindPetsRequestObject) (genRouter.FindPetsResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
@@ -180,15 +180,15 @@ func (a *APIHandler) AddPet(ctx context.Context,
 
 // Delete a pet.
 // (DELETE /pets/{petId})
-func (a *APIHandler) DeletePet(ctx context.Context,
-	request genRouter.DeletePetRequestObject) (genRouter.DeletePetResponseObject, error) {
+func (a *APIHandler) DeletePet(_ context.Context,
+	_ genRouter.DeletePetRequestObject) (genRouter.DeletePetResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
 // Find pet by ID.
 // (GET /pets/{petId})
-func (a *APIHandler) GetPetByID(ctx context.Context,
-	request genRouter.GetPetByIDRequestObject) (genRouter.GetPetByIDResponseObject, error) {
+func (a *APIHandler) GetPetByID(_ context.Context,
+	_ genRouter.GetPetByIDRequestObject) (genRouter.GetPetByIDResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
@@ -201,8 +201,8 @@ func (a *APIHandler) ReplacePet(ctx context.Context,
 
 // Upload a new image for a pet.
 // (POST /pets/{petId}/images)
-func (a *APIHandler) UploadPetImage(ctx context.Context,
-	request genRouter.UploadPetImageRequestObject) (genRouter.UploadPetImageResponseObject, error) {
+func (a *APIHandler) UploadPetImage(_ context.Context,
+	_ genRouter.UploadPetImageRequestObject) (genRouter.UploadPetImageResponseObject, error) {
 	panic("not implemented") // TODO: Implement
 }
 
@@ -210,7 +210,47 @@ func (a *APIHandler) UploadPetImage(ctx context.Context,
 // (DELETE /images/{imageId})
 func (a *APIHandler) DeletePetImage(ctx context.Context,
 	request genRouter.DeletePetImageRequestObject) (genRouter.DeletePetImageResponseObject, error) {
-	panic("not implemented") // TODO: Implement
+	logger := log.Ctx(ctx)
+	userID, ok := contextKeys.UserIDFromContext(ctx)
+	if !ok {
+		logger.Error().Msg(errMsgUserIDNotFound)
+		return genRouter.DeletePetImagedefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+
+	err := a.dbClient.DeletePetImage(ctx, userID, request.ImageId)
+	if err != nil {
+		var invalidErr *dbErr.HintError
+		if errors.As(err, &invalidErr) {
+			return genRouter.DeletePetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: "invalid " + invalidErr.Key,
+				},
+				StatusCode: http.StatusBadRequest,
+			}, nil
+		} else if errors.Is(err, dbErr.ErrNotFound) {
+			return genRouter.DeletePetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: "image not found",
+				},
+				StatusCode: http.StatusNotFound,
+			}, nil
+		}
+		logger.Error().Err(err).Msgf("failed to soft-delete pet image %s", request.ImageId)
+		return genRouter.DeletePetImagedefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+
+	logger.Info().Msgf("Successfully soft-deleted pet image %s", request.ImageId)
+	return genRouter.DeletePetImage204Response{}, nil
 }
 
 // Get a pet image using ID.

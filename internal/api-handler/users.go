@@ -25,7 +25,7 @@ func hashPassword(password string) (string, error) {
 	return string(hash), err
 }
 
-func comparePasswords(hashedPswd, plainTextPswd string) error {
+func comparePasswords(hashedPswd, plainTextPswd string) error { //nolint:unused
 	return bcrypt.CompareHashAndPassword(
 		[]byte(hashedPswd),
 		[]byte(plainTextPswd),

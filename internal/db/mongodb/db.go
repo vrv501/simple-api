@@ -143,6 +143,7 @@ const (
 type image struct {
 	ID        bson.ObjectID `bson:"_id,omitempty"`
 	PetID     bson.ObjectID `bson:"pet_id"`     // "bsonType": "objectId"
+	UserID    bson.ObjectID `bson:"user_id"`    // "bsonType": "objectId"
 	Image     []byte        `bson:"image"`      // "bsonType": "binData"
 	DeletedOn *time.Time    `bson:"deleted_on"` // "bsonType": ["date", "null"]
 }
@@ -176,7 +177,7 @@ const (
 	addressField     string = "address"
 )
 
-type order struct {
+type order struct { //nolint:unused
 	ID            bson.ObjectID `bson:"_id,omitempty"`
 	UserID        bson.ObjectID `bson:"user_id"`        // "bsonType": "objectId"
 	PetID         bson.ObjectID `bson:"pet_id"`         // "bsonType": "objectId"
