@@ -11,7 +11,7 @@ build: tidy
 	$(GO_BUILD_CMD) -o bin/app -a -v cmd/server/main.go
 .PHONY: build
 
-lint: .golangci.yml
+lint: tidy .golangci.yml
 	@go vet ./...
 	@golangci-lint --version
 	golangci-lint run --config .golangci.yml ./...
