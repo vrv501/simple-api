@@ -7,7 +7,7 @@ GO_BUILD_CMD = CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 all: lint test build
 .PHONY: all
 
-build:
+build: tidy
 	$(GO_BUILD_CMD) -o bin/app -a -v cmd/server/main.go
 .PHONY: build
 
@@ -19,6 +19,7 @@ lint: .golangci.yml
 
 tidy:
 	@go mod tidy
+	@go mod download
 .PHONY: tidy
 
 degenerate:
@@ -29,11 +30,11 @@ generate: degenerate
 	@go generate -x ./...
 .PHONY: generate
 
-test: generate
+test: tidy generate
 	$(GO_TEST_CMD) -v ./...
 .PHONY: test
 
-coverage: generate
+coverage: tidy generate
 	@mkdir -p coverage
 	$(GO_TEST_CMD) -covermode=atomic -coverpkg=./... -coverprofile=coverage/coverage.out -v ./...
 .PHONY: coverage
