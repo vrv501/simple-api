@@ -30,11 +30,11 @@ generate: degenerate
 	@go generate -x ./...
 .PHONY: generate
 
-test: tidy generate
+test: generate tidy
 	$(GO_TEST_CMD) -v ./...
 .PHONY: test
 
-coverage: tidy generate
+coverage: generate tidy
 	@mkdir -p coverage
 	$(GO_TEST_CMD) -covermode=atomic -coverpkg=./... -coverprofile=coverage/coverage.out -v ./...
 .PHONY: coverage
