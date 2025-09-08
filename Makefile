@@ -7,7 +7,7 @@ GO_BUILD_CMD = CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 all: lint test build
 .PHONY: all
 
-build: tidy
+build: generate tidy
 	$(GO_BUILD_CMD) -o bin/app -a -v cmd/server/main.go
 .PHONY: build
 
