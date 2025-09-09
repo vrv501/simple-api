@@ -78,12 +78,6 @@ paths:
       description: Find Pets using name, status, tags. **Atleast one of the parameters is required**
       operationId: findPets
       parameters:
-        - name: name
-          in: query
-          required: false
-          description: Name of pet
-          schema:
-            "$ref": "#/components/schemas/PetName"
         - name: status
           in: query
           description: Status values that need to be considered for filter
@@ -186,7 +180,7 @@ paths:
   "/pets/{petId}/images":
     post:
       tags:
-        - pets
+        - images
       summary: Upload a new image for a pet.
       description: Upload a new image for a pet.
       operationId: uploadPetImage
@@ -423,12 +417,6 @@ components:
       minLength: 5
       maxLength: 250
       pattern: "^[A-Za-z0-9,\\- ]+$"
-    PetName:
-      type: string
-      example: max
-      minLength: 3
-      maxLength: 20
-      pattern: "^[a-z\\- ]+$"
     AnimalCategoryName:
       type: string
       example: dogs
@@ -459,7 +447,11 @@ components:
       type: object
       properties:
         name:
-          "$ref": "#/components/schemas/PetName"
+          type: string
+          example: max
+          minLength: 3
+          maxLength: 20
+          pattern: "^[a-z\\- ]+$"
         price:
           type: string
           format: decimal

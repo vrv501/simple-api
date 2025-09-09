@@ -143,7 +143,6 @@ const (
 type image struct {
 	ID        bson.ObjectID `bson:"_id,omitempty"`
 	PetID     bson.ObjectID `bson:"pet_id"`     // "bsonType": "objectId"
-	UserID    bson.ObjectID `bson:"user_id"`    // "bsonType": "objectId"
 	Image     []byte        `bson:"image"`      // "bsonType": "binData"
 	DeletedOn *time.Time    `bson:"deleted_on"` // "bsonType": ["date", "null"]
 }

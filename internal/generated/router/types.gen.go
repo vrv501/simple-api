@@ -63,7 +63,7 @@ type Password = string
 // Pet defines model for Pet.
 type Pet struct {
 	Category AnimalCategoryName `json:"category"`
-	Name     PetName            `json:"name"`
+	Name     string             `json:"name"`
 
 	// Price Price in USD. Must be positive with max 2 decimal places.
 	Price string `json:"price"`
@@ -72,9 +72,6 @@ type Pet struct {
 	Status *PetStatus `json:"status,omitempty"`
 	Tags   *PetTags   `json:"tags,omitempty"`
 }
-
-// PetName defines model for PetName.
-type PetName = string
 
 // PetPhotos Pet images (up to 10)
 type PetPhotos = []openapi_types.File
@@ -89,7 +86,7 @@ type PetTags = []string
 type PetWithMetadata struct {
 	Category AnimalCategoryName `json:"category"`
 	Id       Id                 `json:"id"`
-	Name     PetName            `json:"name"`
+	Name     string             `json:"name"`
 	PhotoIds []string           `json:"photo_ids"`
 
 	// Price Price in USD. Must be positive with max 2 decimal places.
@@ -182,9 +179,6 @@ type ReplaceAnimalCategoryJSONBody struct {
 
 // FindPetsParams defines parameters for FindPets.
 type FindPetsParams struct {
-	// Name Name of pet
-	Name *PetName `form:"name,omitempty" json:"name,omitempty"`
-
 	// Status Status values that need to be considered for filter
 	Status *[]PetStatus `form:"status,omitempty" json:"status,omitempty"`
 
