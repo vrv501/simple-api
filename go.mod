@@ -11,7 +11,7 @@ require (
 	go.mongodb.org/mongo-driver/v2 v2.3.0
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.42.0
-	sigs.k8s.io/controller-runtime v0.22.0
+	sigs.k8s.io/controller-runtime v0.22.1
 )
 
 require (
