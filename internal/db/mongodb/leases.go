@@ -44,12 +44,11 @@ func (m *mongoClient) performAdvisoryLockDBOperation(ctx context.Context, unique
 	if i >= retriesForLease {
 		return nil, errors.New("failed to acquire lock on uniqueID " + uniqueID.Hex())
 	}
-	defer func() {
-		m.mongoDbHandler.Collection(leasesCollection).UpdateOne(
+	defer m.mongoDbHandler.Collection(leasesCollection).UpdateOne(
 			ctx,
 			bson.M{iDField: uniqueID},
-			bson.M{setOperator: bson.M{lockedUntilField: bson.Null{}}})
-	}()
+			bson.M{setOperator: bson.M{lockedUntilField: bson.Null{}}}
+	)
 
 	return fn(ctx)
 }
