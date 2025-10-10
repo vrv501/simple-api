@@ -36,8 +36,10 @@ type userHandler interface {
 type petsHandler interface {
 	AddPet(ctx context.Context, userID string,
 		petReq *genRouter.AddPetMultipartBody) error
+	GetPetIDForImage(ctx context.Context, imageID string) (string, error)
+	GetPhotoCount(ctx context.Context, petID string) (int, error)
 	GetPetImage(ctx context.Context, imageID string) (io.Reader, int64, error)
-	DeletePetImage(ctx context.Context, userID, imageID string) error
+	DeletePetImage(ctx context.Context, userID, petID, imageID string) error
 }
 
 func NewDBHandler(ctx context.Context) Handler {

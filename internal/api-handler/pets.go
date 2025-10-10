@@ -201,8 +201,80 @@ func (a *APIHandler) ReplacePet(_ context.Context,
 
 // Upload a new image for a pet.
 // (POST /pets/{petId}/images)
-func (a *APIHandler) UploadPetImage(_ context.Context,
-	_ genRouter.UploadPetImageRequestObject) (genRouter.UploadPetImageResponseObject, error) {
+func (a *APIHandler) UploadPetImage(ctx context.Context,
+	request genRouter.UploadPetImageRequestObject) (genRouter.UploadPetImageResponseObject, error) {
+	logger := log.Ctx(ctx)
+	userID, ok := contextKeys.UserIDFromContext(ctx)
+	if !ok {
+		logger.Error().Msg(errMsgUserIDNotFound)
+		return genRouter.UploadPetImagedefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+
+	count, err := a.dbClient.GetPhotoCount(ctx, request.PetId)
+	if err != nil {
+		logger.Error().Err(err).Msg("failed to get photo count")
+		return genRouter.UploadPetImagedefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+	if count >= 10 {
+		return genRouter.UploadPetImagedefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: "maximum 10 images are allowed per pet",
+			},
+			StatusCode: http.StatusUnprocessableEntity,
+		}, nil
+	}
+
+	var (
+		part     *multipart.Part
+		imgData  []byte
+		oapifile openapi_types.File
+		mpReq    = genRouter.UploadPetImageMultipartBody{Photos: genRouter.PetPhotos{}}
+	)
+	for {
+		part, err = request.Body.NextPart()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			logger.Error().Err(err).Msg("failed to read request body")
+			return genRouter.UploadPetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: errMsgIncorrectReqEncoding,
+				},
+				StatusCode: http.StatusBadRequest,
+			}, nil
+		}
+		imgData, err = validateImage(part)
+		if err != nil {
+			return genRouter.UploadPetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: err.Error(),
+				},
+				StatusCode: http.StatusBadRequest,
+			}, nil
+		}
+		oapifile.InitFromBytes(imgData, part.FileName())
+		mpReq.Photos = append(mpReq.Photos, oapifile)
+		if len(mpReq.Photos)+count > 10 {
+			return genRouter.UploadPetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: "maximum 10 images are allowed per pet",
+				},
+				StatusCode: http.StatusUnprocessableEntity,
+			}, nil
+		}
+	}
+
 	panic("not implemented") // TODO: Implement
 }
 
@@ -221,23 +293,57 @@ func (a *APIHandler) DeletePetImage(ctx context.Context,
 			StatusCode: http.StatusInternalServerError,
 		}, nil
 	}
-
-	err := a.dbClient.DeletePetImage(ctx, userID, request.ImageId)
+	petID, err := a.dbClient.GetPetIDForImage(ctx, request.ImageId)
 	if err != nil {
-		var invalidErr *dbErr.HintError
-		if errors.As(err, &invalidErr) {
-			return genRouter.DeletePetImagedefaultJSONResponse{
-				Body: genRouter.Generic{
-					Message: "invalid " + invalidErr.Key,
-				},
-				StatusCode: http.StatusBadRequest,
-			}, nil
-		} else if errors.Is(err, dbErr.ErrNotFound) {
+		switch {
+		case errors.Is(err, dbErr.ErrNotFound):
 			return genRouter.DeletePetImagedefaultJSONResponse{
 				Body: genRouter.Generic{
 					Message: "image not found",
 				},
 				StatusCode: http.StatusNotFound,
+			}, nil
+		case errors.Is(err, dbErr.ErrInvalidValue):
+			return genRouter.DeletePetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: "invalid image ID",
+				},
+				StatusCode: http.StatusBadRequest,
+			}, nil
+		}
+		logger.Error().Err(err).Msg("failed to get pet ID for image")
+		return genRouter.DeletePetImagedefaultJSONResponse{
+			Body: genRouter.Generic{
+				Message: http.StatusText(http.StatusInternalServerError),
+			},
+			StatusCode: http.StatusInternalServerError,
+		}, nil
+	}
+
+	err = a.dbClient.DeletePetImage(ctx, userID, petID, request.ImageId)
+	if err != nil {
+		var invalidErr *dbErr.HintError
+		switch {
+		case errors.Is(err, dbErr.ErrNotFound):
+			return genRouter.DeletePetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: "image not found",
+				},
+				StatusCode: http.StatusNotFound,
+			}, nil
+		case errors.Is(err, dbErr.ErrUserIDMismatch):
+			return genRouter.DeletePetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: "user ID mismatch",
+				},
+				StatusCode: http.StatusForbidden,
+			}, nil
+		case errors.As(err, &invalidErr):
+			return genRouter.DeletePetImagedefaultJSONResponse{
+				Body: genRouter.Generic{
+					Message: "invalid " + invalidErr.Key,
+				},
+				StatusCode: http.StatusBadRequest,
 			}, nil
 		}
 		logger.Error().Err(err).Msgf("failed to soft-delete pet image %s", request.ImageId)

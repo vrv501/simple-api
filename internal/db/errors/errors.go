@@ -10,6 +10,8 @@ var (
 	ErrConflict = errors.New("conflict")
 
 	ErrForeignKeyViolation = errors.New("foreign key constraint failed")
+
+	ErrUserIDMismatch = errors.New("user ID mismatch")
 )
 
 type HintError struct {
