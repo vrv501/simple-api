@@ -8,7 +8,7 @@ require (
 	github.com/oapi-codegen/nethttp-middleware v1.1.2
 	github.com/oapi-codegen/runtime v1.1.2
 	github.com/rs/zerolog v1.34.0
-	go.mongodb.org/mongo-driver/v2 v2.3.0
+	go.mongodb.org/mongo-driver/v2 v2.4.1
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.42.0
 	sigs.k8s.io/controller-runtime v0.22.1
