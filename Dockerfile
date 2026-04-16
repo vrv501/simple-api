@@ -1,9 +1,9 @@
-FROM golang:1.24.6-bullseye AS builder
+FROM golang:1.26.2-bookworm AS builder
 WORKDIR /base
 COPY . .
 RUN make clean-build
 
-FROM debian:stable-20250908-slim
+FROM debian:stable-20260202-slim
 ARG APP_USER=app-user
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get upgrade -y && apt-get install -y ca-certificates && \
